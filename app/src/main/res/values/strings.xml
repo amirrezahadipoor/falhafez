@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">فال حافظ</string>
+    <string name="app_name_full">دیوان و فال حافظ</string>
+    <string name="draw">فال بگیر</string>
+    <string name="history">تاریخچه</string>
+    <string name="favorites">علاقه‌مندی‌ها</string>
+    <string name="library">دیوان</string>
+    <string name="settings">تنظیمات</string>
+    <string name="niyyat_hint">نیت خود را بنویس…</string>
+    <string name="ad_app_id">ca-app-pub-0000000000000000~0000000000</string>
+</resources>
