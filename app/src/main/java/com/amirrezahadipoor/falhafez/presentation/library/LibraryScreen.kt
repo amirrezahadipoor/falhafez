@@ -46,6 +46,7 @@ import com.amirrezahadipoor.falhafez.presentation.components.PoemCard
 import com.amirrezahadipoor.falhafez.presentation.components.PoemDetail
 import com.amirrezahadipoor.falhafez.presentation.components.RitualBackground
 import com.amirrezahadipoor.falhafez.presentation.components.ScreenHeader
+import com.amirrezahadipoor.falhafez.presentation.ads.NativeAdCard
 
 @Composable
 fun LibraryScreen(
@@ -228,6 +229,10 @@ private fun PoemsList(poems: List<com.amirrezahadipoor.falhafez.domain.model.Poe
     ) {
         items(poems.size) { index ->
             PoemCard(poem = poems[index], onClick = { onOpen(poems[index]) })
+            // One tastefully integrated, clearly-labeled native ad unit.
+            if (index == 3) {
+                NativeAdCard()
+            }
         }
     }
 }

@@ -7,9 +7,12 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
+import com.amirrezahadipoor.falhafez.core.util.findActivity
 import com.amirrezahadipoor.falhafez.presentation.components.RitualBackground
 
 @Composable
@@ -22,6 +25,9 @@ fun HomeScreen(
     val themeId by viewModel.themeId.collectAsStateWithLifecycle()
     val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
     val spec = FalThemeSpec.byId(themeId)
+
+    val context = LocalContext.current
+    val activity = remember(context) { context.findActivity() }
 
     RitualBackground(spec = spec) {
         AnimatedContent(
@@ -36,6 +42,7 @@ fun HomeScreen(
                     onQuestionChange = viewModel::onQuestionChange,
                     onCategorySelect = viewModel::onCategorySelect,
                     onDraw = viewModel::draw,
+                    onRewardedDraw = if (activity != null) { { viewModel.requestExtraDraw(activity) } } else null,
                     onOpenSettings = onOpenSettings
                 )
 
@@ -55,6 +62,7 @@ fun HomeScreen(
                     onQuestionChange = viewModel::onQuestionChange,
                     onCategorySelect = viewModel::onCategorySelect,
                     onDraw = viewModel::draw,
+                    onRewardedDraw = null,
                     onOpenSettings = onOpenSettings
                 )
 
@@ -68,14 +76,16 @@ fun HomeScreen(
                         remainingToday = state.remainingToday,
                         onToggleFavorite = viewModel::onToggleFavorite,
                         onDrawAgain = viewModel::draw,
+                        onRewarded = if (activity != null) { { viewModel.requestExtraDraw(activity) } } else null,
                         onOpenPoem = { onOpenPoem(entry.poem.id) },
-                        onDismiss = viewModel::onDismiss
+                        onDismiss = if (activity != null) { { viewModel.dismissAndMaybeAd(activity) } } else viewModel::dismissOnly
                     )
                 } ?: NiyyatContent(
                     spec = spec, state = state,
                     onQuestionChange = viewModel::onQuestionChange,
                     onCategorySelect = viewModel::onCategorySelect,
                     onDraw = viewModel::draw,
+                    onRewardedDraw = null,
                     onOpenSettings = onOpenSettings
                 )
             }

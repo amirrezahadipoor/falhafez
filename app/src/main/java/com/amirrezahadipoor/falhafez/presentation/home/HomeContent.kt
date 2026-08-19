@@ -55,6 +55,7 @@ import com.amirrezahadipoor.falhafez.domain.model.Verse
 import com.amirrezahadipoor.falhafez.presentation.components.GhostButton
 import com.amirrezahadipoor.falhafez.presentation.components.GoldButton
 import com.amirrezahadipoor.falhafez.presentation.components.OrnamentalDivider
+import com.amirrezahadipoor.falhafez.presentation.ads.BannerAdView
 import com.amirrezahadipoor.falhafez.presentation.share.SharePoemButton
 import kotlinx.coroutines.delay
 
@@ -84,6 +85,7 @@ fun NiyyatContent(
     onQuestionChange: (String) -> Unit,
     onCategorySelect: (FalCategory) -> Unit,
     onDraw: () -> Unit,
+    onRewardedDraw: (() -> Unit)? = null,
     onOpenSettings: () -> Unit
 ) {
     Column(
@@ -173,15 +175,19 @@ fun NiyyatContent(
 
         Spacer(Modifier.height(22.dp))
 
-        GoldButton(
-            text = when {
-                state.busy -> "در حال گشودن دیوان…"
-                state.remainingToday <= 0 -> "فالِ رایگانِ امروز تمام شد"
-                else -> "فال بگیر"
-            },
-            onClick = onDraw,
-            enabled = state.canDraw
-        )
+        if (state.remainingToday <= 0 && onRewardedDraw != null) {
+            GoldButton(text = "فال بیشتر — تماشای ویدئو", onClick = onRewardedDraw)
+        } else {
+            GoldButton(
+                text = when {
+                    state.busy -> "در حال گشودن دیوان…"
+                    state.remainingToday <= 0 -> "فالِ رایگانِ امروز تمام شد"
+                    else -> "فال بگیر"
+                },
+                onClick = onDraw,
+                enabled = state.canDraw
+            )
+        }
 
         if (state.remainingToday in 1..2) {
             Spacer(Modifier.height(10.dp))
@@ -192,6 +198,9 @@ fun NiyyatContent(
             )
         }
 
+        Spacer(Modifier.height(24.dp))
+        // Banner only on the calm niyyat/home screen — never during the ritual.
+        BannerAdView()
         Spacer(Modifier.height(28.dp))
     }
 }
@@ -267,6 +276,7 @@ fun InterpretationContent(
     remainingToday: Int,
     onToggleFavorite: () -> Unit,
     onDrawAgain: () -> Unit,
+    onRewarded: (() -> Unit)? = null,
     onOpenPoem: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -347,6 +357,8 @@ fun InterpretationContent(
             GoldButton(text = "فال دوباره", onClick = onDrawAgain, enabled = false)
         } else if (remainingToday > 0) {
             GoldButton(text = "فال دوباره", onClick = onDrawAgain)
+        } else if (onRewarded != null) {
+            GoldButton(text = "فال بیشتر — تماشای ویدئو", onClick = onRewarded)
         } else {
             Text(
                 "فالِ رایگانِ امروز تمام شد",

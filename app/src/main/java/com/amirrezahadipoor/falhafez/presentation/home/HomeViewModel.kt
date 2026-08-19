@@ -1,8 +1,10 @@
 package com.amirrezahadipoor.falhafez.presentation.home
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeId
+import com.amirrezahadipoor.falhafez.data.ads.AdManager
 import com.amirrezahadipoor.falhafez.domain.model.DrawEntry
 import com.amirrezahadipoor.falhafez.domain.model.FalCategory
 import com.amirrezahadipoor.falhafez.domain.repository.DrawRepository
@@ -27,7 +29,7 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
-/** Free draws allowed per day (offline policy — a rewarded-ad hook extends this, see AdManager). */
+/** Free draws allowed per day (offline policy — a rewarded-ad hook extends this). */
 private const val DAILY_FREE_LIMIT = 10
 
 /** Soft cooldown between consecutive draws to protect the ritual feeling. */
@@ -54,7 +56,8 @@ class HomeViewModel @Inject constructor(
     private val drawFal: DrawFalUseCase,
     private val drawRepository: DrawRepository,
     private val favoriteRepository: FavoriteRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val adManager: AdManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -87,8 +90,14 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch { performDraw(bypassCooldown = false) }
     }
 
-    /** Reward hook — an extra draw that also bypasses the repeat cooldown. */
-    fun grantExtraDraw() {
+    /** Rewarded hook — shows a rewarded video; grants an extra draw on completion. */
+    fun requestExtraDraw(activity: Activity) {
+        viewModelScope.launch {
+            adManager.showRewarded(activity) { grantExtraDraw() }
+        }
+    }
+
+    private fun grantExtraDraw() {
         viewModelScope.launch {
             settingsRepository.addRewardedDraw(1)
             recomputeRemaining()
@@ -106,6 +115,7 @@ class HomeViewModel @Inject constructor(
         val result = drawFal(question, s.category)
         _uiState.update { it.copy(lastDraw = result, cooldownActive = true, busy = false) }
         recomputeRemaining()
+        adManager.onDrawCompleted()
 
         launch {
             delay(COOLDOWN_MS)
@@ -138,5 +148,14 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch { favoriteRepository.toggle(poemId) }
     }
 
-    fun onDismiss() = _uiState.update { it.copy(stage = DrawStage.NIYYAT, lastDraw = null) }
+    /** Returns to the niyyat screen; shows a frequency-capped interstitial (never during ritual). */
+    fun dismissAndMaybeAd(activity: Activity) {
+        _uiState.update { it.copy(stage = DrawStage.NIYYAT, lastDraw = null) }
+        viewModelScope.launch { adManager.showInterstitial(activity) }
+    }
+
+    /** Plain dismiss (no ad) — used when no Activity is available. */
+    fun dismissOnly() {
+        _uiState.update { it.copy(stage = DrawStage.NIYYAT, lastDraw = null) }
+    }
 }

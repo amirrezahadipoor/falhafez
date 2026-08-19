@@ -8,5 +8,8 @@
     <string name="library">دیوان</string>
     <string name="settings">تنظیمات</string>
     <string name="niyyat_hint">نیت خود را بنویس…</string>
-    <string name="ad_app_id">ca-app-pub-0000000000000000~0000000000</string>
+    <!-- Google TEST app id — replace with your production id before release. -->
+    <string name="ad_app_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="ad_sponsored_label">حمایت‌شده</string>
+    <string name="ad_media_desc">تصویر تبلیغ</string>
 </resources>

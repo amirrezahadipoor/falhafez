@@ -1,6 +1,7 @@
 package com.amirrezahadipoor.falhafez.presentation.main
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
@@ -24,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.amirrezahadipoor.falhafez.core.designsystem.FalPalette
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
+import com.amirrezahadipoor.falhafez.presentation.ads.BannerAdView
 import com.amirrezahadipoor.falhafez.presentation.favorites.FavoritesScreen
 import com.amirrezahadipoor.falhafez.presentation.history.HistoryScreen
 import com.amirrezahadipoor.falhafez.presentation.home.HomeScreen
@@ -45,21 +47,28 @@ fun MainScreen(onOpenSettings: () -> Unit) {
     Scaffold(
         containerColor = FalPalette.Navy,
         bottomBar = {
-            NavigationBar(containerColor = FalPalette.Navy) {
-                MainTab.entries.forEachIndexed { index, tab ->
-                    NavigationBarItem(
-                        selected = index == selectedIndex,
-                        onClick = { selectedIndex = index },
-                        icon = { Icon(tab.icon, contentDescription = tab.faName) },
-                        label = { Text(tab.faName, style = FalText.caption) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = FalPalette.GoldBright,
-                            selectedTextColor = FalPalette.Gold,
-                            unselectedIconColor = FalPalette.CreamMuted,
-                            unselectedTextColor = FalPalette.CreamMuted,
-                            indicatorColor = FalPalette.NavyLight
+            Column {
+                // Persistent banner on History & Library only (Home has its own on the
+                // niyyat screen; the draw ritual and reveal stay completely ad-free).
+                if (selected == MainTab.HISTORY || selected == MainTab.LIBRARY) {
+                    BannerAdView()
+                }
+                NavigationBar(containerColor = FalPalette.Navy) {
+                    MainTab.entries.forEachIndexed { index, tab ->
+                        NavigationBarItem(
+                            selected = index == selectedIndex,
+                            onClick = { selectedIndex = index },
+                            icon = { Icon(tab.icon, contentDescription = tab.faName) },
+                            label = { Text(tab.faName, style = FalText.caption) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = FalPalette.GoldBright,
+                                selectedTextColor = FalPalette.Gold,
+                                unselectedIconColor = FalPalette.CreamMuted,
+                                unselectedTextColor = FalPalette.CreamMuted,
+                                indicatorColor = FalPalette.NavyLight
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
