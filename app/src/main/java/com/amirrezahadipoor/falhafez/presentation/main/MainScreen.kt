@@ -16,6 +16,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -37,6 +39,7 @@ enum class MainTab(val faName: String, val icon: ImageVector) {
 @Composable
 fun MainScreen(onOpenSettings: () -> Unit) {
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    var requestedPoemId by remember { mutableStateOf<Long?>(null) }
     val selected = MainTab.entries[selectedIndex]
 
     Scaffold(
@@ -63,9 +66,18 @@ fun MainScreen(onOpenSettings: () -> Unit) {
     ) { padding ->
         Box(Modifier.padding(padding)) {
             when (selected) {
-                MainTab.FAL -> HomeScreen(onOpenSettings = onOpenSettings)
+                MainTab.FAL -> HomeScreen(
+                    onOpenSettings = onOpenSettings,
+                    onOpenPoem = { id ->
+                        requestedPoemId = id
+                        selectedIndex = 2
+                    }
+                )
                 MainTab.HISTORY -> HistoryScreen()
-                MainTab.LIBRARY -> LibraryScreen()
+                MainTab.LIBRARY -> LibraryScreen(
+                    requestedPoemId = requestedPoemId,
+                    onRequestConsumed = { requestedPoemId = null }
+                )
                 MainTab.FAVORITES -> FavoritesScreen()
             }
         }

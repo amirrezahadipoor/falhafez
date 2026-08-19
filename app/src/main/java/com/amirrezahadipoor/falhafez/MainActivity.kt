@@ -8,10 +8,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.amirrezahadipoor.falhafez.core.designsystem.FalHafezTheme
+import com.amirrezahadipoor.falhafez.presentation.main.MainViewModel
 import com.amirrezahadipoor.falhafez.presentation.navigation.FalNavHost
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -21,8 +27,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            // The app is Persian-first: force RTL everywhere.
-            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            val mainViewModel: MainViewModel = hiltViewModel()
+            val fontScale by mainViewModel.fontSizeScale.collectAsStateWithLifecycle()
+            val baseDensity = LocalDensity.current
+
+            // Persian-first: force RTL everywhere + apply the user's reading-font scale.
+            CompositionLocalProvider(
+                LocalLayoutDirection provides LayoutDirection.Rtl,
+                LocalDensity provides Density(baseDensity.density, baseDensity.fontScale * fontScale)
+            ) {
                 FalHafezTheme {
                     Surface(
                         modifier = Modifier.fillMaxSize(),

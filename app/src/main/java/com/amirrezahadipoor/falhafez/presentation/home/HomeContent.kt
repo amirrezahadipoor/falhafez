@@ -55,6 +55,7 @@ import com.amirrezahadipoor.falhafez.domain.model.Verse
 import com.amirrezahadipoor.falhafez.presentation.components.GhostButton
 import com.amirrezahadipoor.falhafez.presentation.components.GoldButton
 import com.amirrezahadipoor.falhafez.presentation.components.OrnamentalDivider
+import com.amirrezahadipoor.falhafez.presentation.share.SharePoemButton
 import kotlinx.coroutines.delay
 
 /* ------------------------------------------------------------------ */
@@ -323,6 +324,12 @@ fun InterpretationContent(
                     tint = if (isFavorite) spec.accent else spec.onBackgroundMuted
                 )
             }
+            SharePoemButton(
+                poem = poem,
+                category = category,
+                spec = spec,
+                tint = spec.onBackgroundMuted
+            )
             IconButton(onClick = onOpenPoem) {
                 Icon(
                     imageVector = Icons.Outlined.MenuBook,
