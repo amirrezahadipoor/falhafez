@@ -1,12 +1,12 @@
 # فال حافظ — Fal-e Hafez (دیوان و فال حافظ)
 
-A Persian-language **native Android** app for the centuries-old Iranian tradition of *fal-e Hafez*: you make a silent wish (نیّت), draw a random poem from the Divan of Hafez, and receive the verse together with a warm modern-Persian interpretation of what it means for your wish. Additional collections from **Saadi**, **Rumi (Molana)** and **Khayyam** are included.
+A Persian-language **native Android** app for the centuries-old Iranian tradition of *fal-e Hafez*: you make a silent wish (نیّت), draw a random poem from the Divan of Hafez, and receive the verse together with a warm modern-Persian interpretation of what it means for your wish. The **complete Divan-e Hafez (495 ghazals)** and **complete Ruba'iyat of Khayyam (178)** ship offline, plus selected verses from **Saadi** and **Rumi (Molana)**.
 
 > ✅ **All seven phases complete** (see [PROJECT.md](PROJECT.md) and [docs/QA_AND_ACCESSIBILITY.md](docs/QA_AND_ACCESSIBILITY.md)).
 
 ## Highlights
 
-- **100% offline** core functionality — poems, interpretations, fonts, artwork and logic all bundled at install time. Only ads and optional update-checks may touch the network.
+- **100% offline** core functionality — 702 poems (4,885 beits), interpretations, fonts, artwork and logic all bundled at install time. Only ads and optional update-checks may touch the network.
 - **Native Kotlin + Jetpack Compose (Material 3)**, MVVM + Unidirectional Data Flow, Clean Architecture (data / domain / presentation), Room, Hilt.
 - **Full RTL + Persian typography** (Vazirmatn for reading, Nastaliq-style display face for verses).
 - A genuine **draw ritual**: نیّت → animated "opening of the Divan" → line-by-line verse reveal → interpretation reveal.
