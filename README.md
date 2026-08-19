@@ -2,7 +2,7 @@
 
 A Persian-language **native Android** app for the centuries-old Iranian tradition of *fal-e Hafez*: you make a silent wish (نیّت), draw a random poem from the Divan of Hafez, and receive the verse together with a warm modern-Persian interpretation of what it means for your wish. Additional collections from **Saadi**, **Rumi (Molana)** and **Khayyam** are included.
 
-> 🚧 **Work in progress** — built in phases (see [PROJECT.md](PROJECT.md)). The core draw experience works end-to-end; secondary features are being added phase by phase.
+> ✅ **All seven phases complete** (see [PROJECT.md](PROJECT.md) and [docs/QA_AND_ACCESSIBILITY.md](docs/QA_AND_ACCESSIBILITY.md)).
 
 ## Highlights
 

@@ -40,17 +40,6 @@ fun RitualBackground(
     showParticles: Boolean = true,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val transition = rememberInfiniteTransition(label = "ritual-bg")
-    val time by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 9000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "ritual-bg-time"
-    )
-
     val context = LocalContext.current
     val artwork = remember(spec.artworkRes) {
         spec.artworkRes?.let { res ->
@@ -78,12 +67,27 @@ fun RitualBackground(
             )
         }
         if (showParticles) {
-            Canvas(Modifier.fillMaxSize()) {
-                drawGlow(spec)
-                drawParticles(spec, time)
-            }
+            ParticlesLayer(spec)
         }
         content()
+    }
+}
+
+@Composable
+private fun ParticlesLayer(spec: FalThemeSpec) {
+    val transition = rememberInfiniteTransition(label = "ritual-bg")
+    val time by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 9000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "ritual-bg-time"
+    )
+    Canvas(Modifier.fillMaxSize()) {
+        drawGlow(spec)
+        drawParticles(spec, time)
     }
 }
 

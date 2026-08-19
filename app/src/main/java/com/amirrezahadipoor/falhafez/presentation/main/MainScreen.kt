@@ -2,6 +2,7 @@ package com.amirrezahadipoor.falhafez.presentation.main
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
@@ -23,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import com.amirrezahadipoor.falhafez.core.designsystem.FalPalette
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
 import com.amirrezahadipoor.falhafez.presentation.ads.BannerAdView
@@ -46,6 +48,9 @@ fun MainScreen(onOpenSettings: () -> Unit) {
 
     Scaffold(
         containerColor = FalPalette.Navy,
+        // Each screen manages its own status-bar inset (ScreenHeader/statusBarsPadding),
+        // so the Scaffold must not add a second top inset.
+        contentWindowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
         bottomBar = {
             Column {
                 // Persistent banner on History & Library only (Home has its own on the

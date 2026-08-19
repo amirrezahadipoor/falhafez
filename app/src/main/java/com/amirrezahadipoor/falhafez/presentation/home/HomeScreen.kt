@@ -3,6 +3,7 @@ package com.amirrezahadipoor.falhafez.presentation.home
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
@@ -32,7 +33,10 @@ fun HomeScreen(
     RitualBackground(spec = spec) {
         AnimatedContent(
             targetState = state.stage,
-            transitionSpec = { fadeIn(tween(450)) togetherWith fadeOut(tween(260)) },
+            transitionSpec = {
+                (fadeIn(tween(450)) + slideInVertically(tween(450)) { it / 10 })
+                    .togetherWith(fadeOut(tween(260)))
+            },
             label = "draw-stage"
         ) { stage ->
             when (stage) {
