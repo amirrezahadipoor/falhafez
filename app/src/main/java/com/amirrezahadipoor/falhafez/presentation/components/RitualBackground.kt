@@ -1,5 +1,6 @@
 package com.amirrezahadipoor.falhafez.presentation.components
 
+import android.graphics.BitmapFactory
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -7,23 +8,30 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
 import kotlin.math.PI
 import kotlin.math.sin
 
 /**
- * The atmospheric backdrop for the whole ritual: a vertical gradient plus a soft
- * central glow and gently twinkling particles, all driven by the active [FalThemeSpec].
+ * The atmospheric backdrop for the whole ritual: a vertical gradient, the theme's
+ * original generated artwork (if any), a soft central glow and gently twinkling
+ * particles — all driven by the active [FalThemeSpec].
  */
 @Composable
 fun RitualBackground(
@@ -43,6 +51,15 @@ fun RitualBackground(
         label = "ritual-bg-time"
     )
 
+    val context = LocalContext.current
+    val artwork = remember(spec.artworkRes) {
+        spec.artworkRes?.let { res ->
+            runCatching {
+                BitmapFactory.decodeResource(context.resources, res).asImageBitmap()
+            }.getOrNull()
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -50,6 +67,16 @@ fun RitualBackground(
                 Brush.verticalGradient(listOf(spec.backgroundTop, spec.backgroundBottom))
             )
     ) {
+        if (artwork != null) {
+            Image(
+                bitmap = artwork,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = spec.artworkAlpha }
+            )
+        }
         if (showParticles) {
             Canvas(Modifier.fillMaxSize()) {
                 drawGlow(spec)

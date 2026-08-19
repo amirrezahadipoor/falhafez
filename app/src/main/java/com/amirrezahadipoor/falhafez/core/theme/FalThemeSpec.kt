@@ -1,6 +1,8 @@
 package com.amirrezahadipoor.falhafez.core.theme
 
+import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color
+import com.amirrezahadipoor.falhafez.R
 
 enum class FalThemeId(val id: String, val faName: String) {
     TAZHIB("tazhib", "تذهیب"),
@@ -14,8 +16,9 @@ enum class FalThemeId(val id: String, val faName: String) {
 }
 
 /**
- * A ritual visual theme: background gradient, accents, particles and border tones
- * for the entire draw flow. Data-driven so new themes can be added without touching UI.
+ * A ritual visual theme: background gradient + original generated artwork, accents,
+ * particles and border tones for the entire draw flow. Data-driven so new themes can
+ * be added without touching UI code.
  */
 data class FalThemeSpec(
     val id: FalThemeId,
@@ -29,7 +32,9 @@ data class FalThemeSpec(
     val particle: Color,
     val particleSecondary: Color,
     val border: Color,
-    val locked: Boolean = false
+    val locked: Boolean = false,
+    @DrawableRes val artworkRes: Int? = null,
+    val artworkAlpha: Float = 0.55f
 ) {
     companion object {
         val All: List<FalThemeSpec> = listOf(tazhib(), candle(), garden(), minimal())
@@ -48,7 +53,9 @@ data class FalThemeSpec(
             card = Color(0xFF131B2E),
             particle = Color(0xFFE7C878),
             particleSecondary = Color(0xFFC9A24B),
-            border = Color(0xFF8A6D2F)
+            border = Color(0xFF8A6D2F),
+            artworkRes = R.drawable.theme_tazhib,
+            artworkAlpha = 0.60f
         )
 
         /** شبِ شمع — Candlelight night: warm amber on near-black. */
@@ -63,7 +70,9 @@ data class FalThemeSpec(
             card = Color(0xFF241407),
             particle = Color(0xFFE8A33D),
             particleSecondary = Color(0xFFF5C87A),
-            border = Color(0xFF7A4E1F)
+            border = Color(0xFF7A4E1F),
+            artworkRes = R.drawable.theme_candle,
+            artworkAlpha = 0.60f
         )
 
         /** باغِ ستاره — Starlit garden: deep indigo night, fireflies, teal/violet. */
@@ -78,7 +87,9 @@ data class FalThemeSpec(
             card = Color(0xFF121838),
             particle = Color(0xFFBFE8FF),
             particleSecondary = Color(0xFF6FD3C7),
-            border = Color(0xFF35506B)
+            border = Color(0xFF35506B),
+            artworkRes = R.drawable.theme_garden,
+            artworkAlpha = 0.60f
         )
 
         /** مینیمالِ مدرن — Modern minimal: calm cream & terracotta. */
@@ -93,7 +104,9 @@ data class FalThemeSpec(
             card = Color(0xFFFFFFFF),
             particle = Color(0xFFD9C6A5),
             particleSecondary = Color(0xFFC4AC85),
-            border = Color(0xFFD8C9B0)
+            border = Color(0xFFD8C9B0),
+            artworkRes = R.drawable.theme_minimal,
+            artworkAlpha = 0.80f
         )
     }
 }
