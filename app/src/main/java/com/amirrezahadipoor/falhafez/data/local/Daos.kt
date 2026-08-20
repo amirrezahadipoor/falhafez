@@ -38,6 +38,18 @@ interface PoemDao {
     @Query("SELECT id FROM poems WHERE id NOT IN (:exclude)")
     suspend fun getCandidateIds(exclude: List<Long>): List<Long>
 
+    @Query("SELECT id FROM poems WHERE poet = :poet AND id NOT IN (:exclude)")
+    suspend fun getCandidateIdsForPoet(poet: String, exclude: List<Long>): List<Long>
+
+    @Query("SELECT id FROM poems WHERE poet = :poet")
+    suspend fun getPoemIdsForPoet(poet: String): List<Long>
+
+    @Query("SELECT id FROM poems WHERE poet = :poet ORDER BY id LIMIT 1 OFFSET :offset")
+    suspend fun getPoemIdAtForPoet(poet: String, offset: Int): Long?
+
+    @Query("SELECT COUNT(*) FROM poems WHERE poet = :poet")
+    suspend fun countForPoet(poet: String): Int
+
     @Query("SELECT COUNT(*) FROM poems")
     suspend fun count(): Int
 

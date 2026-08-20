@@ -14,7 +14,10 @@ enum class FalThemeId(val id: String, val faName: String) {
     DAWN("dawn", "سپیده‌دم"),
     SEA("sea", "شبِ دریا"),
     DESERT("desert", "کویر"),
-    MOONLIGHT("moonlight", "مهتاب");
+    MOONLIGHT("moonlight", "مهتاب"),
+    ROSE("rose", "گل و مرغ"),
+    MORNING("morning", "صبحِ روشن"),
+    PARCHMENT("parchment", "کاغذِ کهنه");
 
     companion object {
         fun fromId(id: String?): FalThemeId = entries.firstOrNull { it.id == id } ?: TAZHIB
@@ -40,7 +43,7 @@ data class FalThemeSpec(
     companion object {
         val All: List<FalThemeSpec> = listOf(
             tazhib(), candle(), garden(), minimal(), nowruz(), yalda(),
-            dawn(), sea(), desert(), moonlight()
+            dawn(), sea(), desert(), moonlight(), rose(), morning(), parchment()
         )
 
         fun byId(id: FalThemeId): FalThemeSpec = All.first { it.id == id }
@@ -133,6 +136,36 @@ data class FalThemeSpec(
             onBackground = Color(0xFFE9EEFA), onBackgroundMuted = Color(0xFF9FA9C4),
             card = Color(0xFF10162E), particle = Color(0xFFC9D6F5), particleSecondary = Color(0xFF9FB8E8),
             border = Color(0xFF3A4A6B), artworkRes = R.drawable.theme_moonlight, artworkAlpha = 0.55f
+        )
+
+        /** گل و مرغ — light ivory & rose (روشن). */
+        fun rose() = FalThemeSpec(
+            id = FalThemeId.ROSE,
+            backgroundTop = Color(0xFFFDF6F0), backgroundBottom = Color(0xFFF7E7E2),
+            accent = Color(0xFFC25B6E), accentSoft = Color(0xFFE08B9A),
+            onBackground = Color(0xFF3A2228), onBackgroundMuted = Color(0xFF8A626C),
+            card = Color(0xFFFFFFFF), particle = Color(0xFFE8A8B4), particleSecondary = Color(0xFFC25B6E),
+            border = Color(0xFFD9A6AE), artworkRes = R.drawable.theme_rose, artworkAlpha = 0.72f
+        )
+
+        /** صبحِ روشن — bright morning sky (روشن). */
+        fun morning() = FalThemeSpec(
+            id = FalThemeId.MORNING,
+            backgroundTop = Color(0xFFF2F9FF), backgroundBottom = Color(0xFFE3F0FA),
+            accent = Color(0xFF2E7DB8), accentSoft = Color(0xFF63A7D8),
+            onBackground = Color(0xFF1C2A38), onBackgroundMuted = Color(0xFF5A7286),
+            card = Color(0xFFFFFFFF), particle = Color(0xFFA9D4F2), particleSecondary = Color(0xFF6FB2E6),
+            border = Color(0xFFB6CFE2), artworkRes = R.drawable.theme_morning, artworkAlpha = 0.72f
+        )
+
+        /** کاغذِ کهنه — aged manuscript paper (روشن). */
+        fun parchment() = FalThemeSpec(
+            id = FalThemeId.PARCHMENT,
+            backgroundTop = Color(0xFFF6EBD6), backgroundBottom = Color(0xFFE9D9BC),
+            accent = Color(0xFF9A7B3C), accentSoft = Color(0xFFC0A163),
+            onBackground = Color(0xFF332712), onBackgroundMuted = Color(0xFF7A6640),
+            card = Color(0xFFFFFBF2), particle = Color(0xFFD9C193), particleSecondary = Color(0xFFC0A163),
+            border = Color(0xFFCDB88E), artworkRes = R.drawable.theme_parchment, artworkAlpha = 0.75f
         )
     }
 }

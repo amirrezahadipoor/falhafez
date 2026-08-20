@@ -53,7 +53,7 @@ object ShareImageRenderer {
         var y = 150f
 
         y = drawText(
-            canvas, "فالِ حافظ", 64f, nastaliq, spec.accentSoft.toArgb(),
+            canvas, "هم‌فال", 64f, nastaliq, spec.accentSoft.toArgb(),
             textWidth, PAD, y, Layout.Alignment.ALIGN_CENTER, 1.2f
         )
         y += 6f
@@ -105,7 +105,7 @@ object ShareImageRenderer {
         val footerY = H - 150f
         drawDividerOrnament(canvas, footerY - 30f, spec.accent.copy(alpha = 0.6f).toArgb())
         drawText(
-            canvas, "دیوان و فالِ حافظ", 30f, vazir, spec.onBackgroundMuted.toArgb(),
+            canvas, "هم‌فال — دیوان و فالِ حافظ", 30f, vazir, spec.onBackgroundMuted.toArgb(),
             textWidth, PAD, footerY, Layout.Alignment.ALIGN_CENTER, 1.0f
         )
 

@@ -1,4 +1,4 @@
-# Project status — فال حافظ (Fal-e Hafez)
+# Project status — هم‌فال (دیوان و فالِ حافظ)
 
 Built in phases per the master prompt. Each phase is committed separately on `main`.
 

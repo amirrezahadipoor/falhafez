@@ -53,10 +53,10 @@ class DailyFalWidgetProvider : AppWidgetProvider() {
                 .build()
             try {
                 val poemDao = db.poemDao()
-                val count = poemDao.count()
+                val count = poemDao.countForPoet("hafez")
                 if (count <= 0) return
                 val day = System.currentTimeMillis() / 86_400_000L
-                val poemId = poemDao.getPoemIdAt((day % count.toLong()).toInt()) ?: return
+                val poemId = poemDao.getPoemIdAtForPoet("hafez", (day % count.toLong()).toInt()) ?: return
                 val withVerses = poemDao.getPoemWithVerses(poemId) ?: return
                 val opening = withVerses.verses.sortedBy { it.position }
                     .take(3)

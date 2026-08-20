@@ -40,11 +40,17 @@ fun SplashScreen(onFinished: (seenOnboarding: Boolean) -> Unit) {
         ) {
             Box(contentAlignment = Alignment.Center) {
                 RotatingStar(tint = FalPalette.Gold.copy(alpha = 0.55f), size = 150.dp)
-                Text(text = "فال حافظ", style = FalText.display, color = FalPalette.GoldBright)
+                Text(text = "هم‌فال", style = FalText.display, color = FalPalette.GoldBright)
             }
             Spacer(Modifier.height(12.dp))
             OrnamentalDivider(color = FalPalette.Gold, modifier = Modifier.fillMaxWidth(0.5f))
             Spacer(Modifier.height(28.dp))
+            Text(
+                text = "دیوان و فالِ حافظ",
+                style = FalText.caption,
+                color = FalPalette.CreamMuted
+            )
+            Spacer(Modifier.height(6.dp))
             Text(
                 text = "دیوان در حال گشوده شدن است…",
                 style = FalText.bodyMuted,

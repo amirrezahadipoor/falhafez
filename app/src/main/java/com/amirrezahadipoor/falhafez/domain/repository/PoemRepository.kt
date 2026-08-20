@@ -10,9 +10,14 @@ interface PoemRepository {
     suspend fun getPoemsByPoet(poet: Poet): List<Poem>
     suspend fun getPoemsByCollection(collection: Collection): List<Poem>
     suspend fun search(query: String): List<Poem>
-    suspend fun getRandomPoem(excludeIds: List<Long> = emptyList()): Poem?
-    /** Deterministic pick (used by فالِ روز — same poem for everyone on a given day). */
-    suspend fun getPoemAt(index: Int): Poem?
+    /**
+     * Draws a random poem — by default only from the Divan of Hafez (the fal source).
+     * Pass another [poet] explicitly if a different source is ever needed.
+     */
+    suspend fun getRandomPoem(excludeIds: List<Long> = emptyList(), poet: Poet = Poet.HAFEZ): Poem?
+    /** Deterministic pick for فالِ روز — same poem for everyone on a given day (Hafez only). */
+    suspend fun getPoemAt(poet: Poet, index: Int): Poem?
+    suspend fun countForPoet(poet: Poet): Int
     suspend fun count(): Int
     fun observeCount(): Flow<Int>
 }

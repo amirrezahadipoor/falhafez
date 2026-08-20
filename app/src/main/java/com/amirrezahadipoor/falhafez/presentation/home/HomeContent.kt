@@ -104,12 +104,10 @@ fun NiyyatContent(
     ) {
         // ---- fixed header ----
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = "فال حافظ",
-                style = FalText.displaySmall,
-                color = spec.accentSoft,
-                modifier = Modifier.weight(1f)
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = "هم‌فال", style = FalText.displaySmall, color = spec.accentSoft)
+                Text(text = "دیوان و فالِ حافظ", style = FalText.caption, color = spec.onBackgroundMuted)
+            }
             IconButton(onClick = onOpenSettings) {
                 Icon(Icons.Outlined.Settings, contentDescription = "تنظیمات", tint = spec.onBackgroundMuted)
             }

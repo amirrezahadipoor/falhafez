@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">فال حافظ</string>
-    <string name="app_name_full">دیوان و فال حافظ</string>
+    <string name="app_name">هم‌فال</string>
+    <string name="app_name_full">هم‌فال — دیوان و فالِ حافظ</string>
     <string name="draw">فال بگیر</string>
     <string name="history">تاریخچه</string>
     <string name="favorites">علاقه‌مندی‌ها</string>

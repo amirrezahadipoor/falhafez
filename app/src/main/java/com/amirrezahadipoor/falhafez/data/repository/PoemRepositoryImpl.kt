@@ -30,17 +30,21 @@ class PoemRepositoryImpl @Inject constructor(
         return poemDao.search(matchQuery).mapWithVerses()
     }
 
-    override suspend fun getRandomPoem(excludeIds: List<Long>): Poem? {
-        val candidates = poemDao.getCandidateIds(excludeIds)
-        val pool = candidates.ifEmpty { poemDao.getAllPoemIds() }
+    override suspend fun getRandomPoem(excludeIds: List<Long>, poet: Poet): Poem? {
+        // The fal comes from the Divan of Hafez (poet key "hafez") — never mixed with
+        // Saadi / Rumi / Khayyam unless a different poet is passed explicitly.
+        val candidates = poemDao.getCandidateIdsForPoet(poet.key, excludeIds)
+        val pool = candidates.ifEmpty { poemDao.getPoemIdsForPoet(poet.key) }
         val chosen = pool.randomOrNull() ?: return null
         return getPoem(chosen)
     }
 
-    override suspend fun getPoemAt(index: Int): Poem? {
-        val id = poemDao.getPoemIdAt(index) ?: return null
+    override suspend fun getPoemAt(poet: Poet, index: Int): Poem? {
+        val id = poemDao.getPoemIdAtForPoet(poet.key, index) ?: return null
         return getPoem(id)
     }
+
+    override suspend fun countForPoet(poet: Poet): Int = poemDao.countForPoet(poet.key)
 
     override suspend fun count(): Int = poemDao.count()
 
