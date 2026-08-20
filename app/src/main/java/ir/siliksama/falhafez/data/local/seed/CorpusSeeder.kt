@@ -24,13 +24,14 @@ class CorpusSeeder @Inject constructor(
     private val mutex = Mutex()
 
     // Hafez FIRST — the app becomes ready (count > 0) as soon as the Divan commits.
-    // gzip شده در زمان build تا حجم APK به حداقل برسد؛ اینجا decompress می‌شود.
+    // gzip شده در زمان build با پسوند .dat (که aapt2 آن را از حالت فشرده خارج نمی‌کند)
+    // تا حجم APK به حداقل برسد؛ اینجا با GZIPInputStream باز می‌شود.
     private val corpusFiles = listOf(
-        "corpus/hafez.json.gz",
-        "corpus/khayyam.json.gz",
-        "corpus/saadi.json.gz",
-        "corpus/rumi.json.gz",
-        "corpus/stories.json.gz"
+        "corpus/hafez.dat",
+        "corpus/khayyam.dat",
+        "corpus/saadi.dat",
+        "corpus/rumi.dat",
+        "corpus/stories.dat"
     )
 
     suspend fun seedIfNeeded() = mutex.withLock {

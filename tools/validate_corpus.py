@@ -2,7 +2,7 @@
 import gzip, json, sys
 total = 0
 for name in ["hafez", "khayyam", "saadi", "rumi", "stories"]:
-    p = f"app/src/main/assets/corpus/{name}.json.gz"
+    p = f"app/src/main/assets/corpus/{name}.dat"
     d = json.loads(gzip.open(p, "rt", encoding="utf-8").read())
     ids = [x["id"] for x in d]
     assert len(ids) == len(set(ids)), f"{name}: duplicate ids"
