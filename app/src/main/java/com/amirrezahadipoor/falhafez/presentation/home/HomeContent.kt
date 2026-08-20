@@ -10,8 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +18,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -35,7 +35,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.amirrezahadipoor.falhafez.core.designsystem.BreathingRing
 import com.amirrezahadipoor.falhafez.core.designsystem.BreathingRosette
@@ -59,10 +59,10 @@ import com.amirrezahadipoor.falhafez.core.util.PersianText
 import com.amirrezahadipoor.falhafez.domain.model.FalCategory
 import com.amirrezahadipoor.falhafez.domain.model.Poem
 import com.amirrezahadipoor.falhafez.domain.model.Verse
+import com.amirrezahadipoor.falhafez.presentation.ads.BannerAdView
 import com.amirrezahadipoor.falhafez.presentation.components.GhostButton
 import com.amirrezahadipoor.falhafez.presentation.components.GoldButton
 import com.amirrezahadipoor.falhafez.presentation.components.OrnamentalDivider
-import com.amirrezahadipoor.falhafez.presentation.ads.BannerAdView
 import com.amirrezahadipoor.falhafez.presentation.share.SharePoemButton
 import kotlinx.coroutines.delay
 
@@ -82,9 +82,8 @@ object CategoryAngles {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Niyyat — calm, unhurried intention moment                          */
+/*  Niyyat — a single, scroll-free ritual screen                       */
 /* ------------------------------------------------------------------ */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NiyyatContent(
     spec: FalThemeSpec,
@@ -99,11 +98,11 @@ fun NiyyatContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
             .statusBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 12.dp),
+            .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // ---- fixed header ----
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = "فال حافظ",
@@ -115,90 +114,80 @@ fun NiyyatContent(
                 Icon(Icons.Outlined.Settings, contentDescription = "تنظیمات", tint = spec.onBackgroundMuted)
             }
         }
-
-        Spacer(Modifier.height(16.dp))
         OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.6f))
-        Spacer(Modifier.height(18.dp))
 
-        Box(contentAlignment = Alignment.Center) {
-            BreathingRing(tint = spec.accent, ringSize = 110.dp)
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("دل به نیّت بسپار", style = FalText.heading, color = spec.onBackground)
-                Spacer(Modifier.height(4.dp))
-                Text("نفس بکش…", style = FalText.caption, color = spec.onBackgroundMuted)
-            }
-        }
-        Spacer(Modifier.height(4.dp))
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "چند نفس آرام بکش؛ در دل خود نیّتی کن، و وقتی آماده شدی، دیوان را بگشا.",
-            style = FalText.bodyMuted,
-            color = spec.onBackgroundMuted,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(Modifier.height(20.dp))
-
-        OutlinedTextField(
-            value = state.question,
-            onValueChange = onQuestionChange,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("نیّت خود را بنویس… (اختیاری)", style = FalText.bodyMuted) },
-            textStyle = FalText.body,
-            minLines = 2,
-            maxLines = 4,
-            shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = spec.accent,
-                unfocusedBorderColor = spec.border.copy(alpha = 0.6f),
-                focusedTextColor = spec.onBackground,
-                unfocusedTextColor = spec.onBackground,
-                cursorColor = spec.accent,
-                focusedContainerColor = spec.card.copy(alpha = 0.6f),
-                unfocusedContainerColor = spec.card.copy(alpha = 0.4f),
-                focusedPlaceholderColor = spec.onBackgroundMuted,
-                unfocusedPlaceholderColor = spec.onBackgroundMuted
-            )
-        )
-
-        Spacer(Modifier.height(14.dp))
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        // ---- centered ritual (fits, no scroll) ----
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            FalCategory.entries.filter { it != FalCategory.NONE }.forEach { category ->
-                val selected = category == state.category
-                FilterChip(
-                    selected = selected,
-                    onClick = { onCategorySelect(category) },
-                    label = { Text(category.faName, style = FalText.caption) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = spec.accent,
-                        selectedLabelColor = Color(0xFF14100A),
-                        containerColor = spec.card.copy(alpha = 0.5f),
-                        labelColor = spec.onBackgroundMuted
-                    ),
-                    border = FilterChipDefaults.filterChipBorder(
-                        enabled = true,
-                        selected = selected,
-                        borderColor = spec.border.copy(alpha = 0.5f),
-                        selectedBorderColor = spec.accentSoft
-                    )
+            Box(contentAlignment = Alignment.Center) {
+                BreathingRing(tint = spec.accent, ringSize = 92.dp)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("دل به نیّت بسپار", style = FalText.heading, color = spec.onBackground)
+                    Text("نفس بکش…", style = FalText.caption, color = spec.onBackgroundMuted)
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+
+            OutlinedTextField(
+                value = state.question,
+                onValueChange = onQuestionChange,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("نیّت خود را بنویس… (اختیاری)", style = FalText.caption) },
+                textStyle = FalText.body,
+                minLines = 1,
+                maxLines = 2,
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = spec.accent,
+                    unfocusedBorderColor = spec.border.copy(alpha = 0.6f),
+                    focusedTextColor = spec.onBackground,
+                    unfocusedTextColor = spec.onBackground,
+                    cursorColor = spec.accent,
+                    focusedContainerColor = spec.card.copy(alpha = 0.6f),
+                    unfocusedContainerColor = spec.card.copy(alpha = 0.4f),
+                    focusedPlaceholderColor = spec.onBackgroundMuted,
+                    unfocusedPlaceholderColor = spec.onBackgroundMuted
                 )
+            )
+
+            Spacer(Modifier.height(10.dp))
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+            ) {
+                items(FalCategory.entries.filter { it != FalCategory.NONE }) { category ->
+                    val selected = category == state.category
+                    FilterChip(
+                        selected = selected,
+                        onClick = { onCategorySelect(category) },
+                        label = { Text(category.faName, style = FalText.caption) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = spec.accent,
+                            selectedLabelColor = Color(0xFF14100A),
+                            containerColor = spec.card.copy(alpha = 0.5f),
+                            labelColor = spec.onBackgroundMuted
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = selected,
+                            borderColor = spec.border.copy(alpha = 0.5f),
+                            selectedBorderColor = spec.accentSoft
+                        )
+                    )
+                }
             }
         }
 
-        Spacer(Modifier.height(22.dp))
-
+        // ---- fixed bottom: CTA + daily fal + banner ----
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            BreathingRosette(tint = spec.accent)
+            BreathingRosette(tint = spec.accent, size = 130.dp)
             if (state.remainingToday <= 0 && onRewardedDraw != null) {
-                GoldButton(
-                    text = "فال بیشتر — تماشای ویدئو",
-                    onClick = onRewardedDraw,
-                    glow = true
-                )
+                GoldButton(text = "فال بیشتر — تماشای ویدئو", onClick = onRewardedDraw, glow = true)
             } else {
                 GoldButton(
                     text = when {
@@ -212,9 +201,24 @@ fun NiyyatContent(
                 )
             }
         }
+        Spacer(Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(spec.card.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                .border(1.dp, spec.border.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                .clickable(onClick = onDailyFal)
+                .padding(horizontal = 14.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            MoonStar(tint = spec.accent, size = 26.dp)
+            Spacer(Modifier.size(8.dp))
+            Text("فالِ امروز", style = FalText.body, color = spec.onBackground, modifier = Modifier.weight(1f))
+            Text(Jalali.shortDate(System.currentTimeMillis()), style = FalText.caption, color = spec.onBackgroundMuted)
+        }
 
         if (state.remainingToday in 1..2) {
-            Spacer(Modifier.height(10.dp))
             Text(
                 "فالِ رایگانِ باقی‌ماندهٔ امروز: ${PersianText.number(state.remainingToday)}",
                 style = FalText.caption,
@@ -222,40 +226,13 @@ fun NiyyatContent(
             )
         }
 
-        Spacer(Modifier.height(18.dp))
-
-        // فالِ روز — deterministic, shared ritual
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(spec.card.copy(alpha = 0.5f), RoundedCornerShape(18.dp))
-                .border(1.dp, spec.border.copy(alpha = 0.5f), RoundedCornerShape(18.dp))
-                .clickable(onClick = onDailyFal)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                MoonStar(tint = spec.accent, size = 34.dp)
-                Spacer(Modifier.size(10.dp))
-                Text("فالِ امروز", style = FalText.heading, color = spec.onBackground)
-            }
-            Spacer(Modifier.height(4.dp))
-            Text(
-                Jalali.shortDate(System.currentTimeMillis()),
-                style = FalText.caption,
-                color = spec.onBackgroundMuted
-            )
-        }
-
-        Spacer(Modifier.height(24.dp))
-        // Banner only on the calm niyyat/home screen — never during the ritual.
+        Spacer(Modifier.height(8.dp))
         BannerAdView()
-        Spacer(Modifier.height(28.dp))
     }
 }
 
 /* ------------------------------------------------------------------ */
-/*  Reveal — verse appears line by line                                 */
+/*  Reveal — verse hero with a pinned action button                    */
 /* ------------------------------------------------------------------ */
 @Composable
 fun RevealContent(
@@ -269,7 +246,7 @@ fun RevealContent(
     LaunchedEffect(poem.id) {
         for (i in 1..poem.verses.size) {
             visibleCount = i
-            delay(480L)
+            delay(430L)
         }
         allRevealed = 1
     }
@@ -277,43 +254,53 @@ fun RevealContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
             .statusBarsPadding()
-            .padding(horizontal = 26.dp, vertical = 20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 24.dp)
     ) {
         Text(
             text = "${poem.collection.poet.faName} — ${poem.collection.faName}",
             style = FalText.caption,
-            color = spec.onBackgroundMuted
+            color = spec.onBackgroundMuted,
+            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+            textAlign = TextAlign.Center
         )
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(6.dp))
 
-        poem.verses.forEachIndexed { index, verse ->
-            val visible = index < visibleCount
-            AnimatedVisibility(
-                visible = visible,
-                enter = fadeIn(tween(700)) + slideInVertically(tween(700)) { it / 3 }
-            ) {
-                VerseView(verse = verse, color = spec.onBackground)
+        // scrollable middle (only if the ghazal is longer than the screen)
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            poem.verses.forEachIndexed { index, verse ->
+                AnimatedVisibility(
+                    visible = index < visibleCount,
+                    enter = fadeIn(tween(650)) + slideInVertically(tween(650)) { it / 3 }
+                ) {
+                    VerseView(verse = verse, color = spec.onBackground)
+                }
+                Spacer(Modifier.height(14.dp))
             }
-            Spacer(Modifier.height(18.dp))
         }
 
-        AnimatedVisibility(visible = allRevealed > 0, enter = fadeIn(tween(600))) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Spacer(Modifier.height(6.dp))
-                LaurelDivider(tint = spec.accent, modifier = Modifier.fillMaxWidth(0.7f))
-                Spacer(Modifier.height(22.dp))
-                GoldButton(text = "تفسیرِ فال را بخوان", onClick = onReadInterpretation, glow = true)
-                Spacer(Modifier.height(24.dp))
+        // fixed bottom action
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            AnimatedVisibility(visible = allRevealed > 0, enter = fadeIn(tween(600))) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    LaurelDivider(tint = spec.accent, modifier = Modifier.fillMaxWidth(0.7f))
+                    Spacer(Modifier.height(12.dp))
+                    GoldButton(text = "تفسیرِ فال را بخوان", onClick = onReadInterpretation, glow = true)
+                }
             }
+            Spacer(Modifier.height(14.dp))
         }
     }
 }
 
 /* ------------------------------------------------------------------ */
-/*  Interpretation — "the wise narrator reads the fal"                  */
+/*  Interpretation — tafsir on top, actions pinned at the bottom       */
 /* ------------------------------------------------------------------ */
 @Composable
 fun InterpretationContent(
@@ -334,56 +321,54 @@ fun InterpretationContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
             .statusBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 22.dp)
     ) {
-        Text("تفسیرِ فال", style = FalText.heading, color = spec.accent)
-        Spacer(Modifier.height(6.dp))
-        Text(
-            "گویی دانایی، فالِ تو را می‌خواند…",
-            style = FalText.caption,
-            color = spec.onBackgroundMuted
-        )
-        Spacer(Modifier.height(14.dp))
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(spec.card.copy(alpha = 0.85f), RoundedCornerShape(22.dp))
-                .border(1.dp, spec.border.copy(alpha = 0.6f), RoundedCornerShape(22.dp))
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CornerOrnaments(
-                modifier = Modifier.matchParentSize(),
-                tint = spec.accent,
-                size = 44.dp
-            )
-            Column(
-                modifier = Modifier.padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Text("تفسیرِ فال", style = FalText.heading, color = spec.accent)
+            Text("گویی دانایی، فالِ تو را می‌خواند…", style = FalText.caption, color = spec.onBackgroundMuted)
+        }
+        Spacer(Modifier.height(8.dp))
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(spec.card.copy(alpha = 0.85f), RoundedCornerShape(22.dp))
+                    .border(1.dp, spec.border.copy(alpha = 0.6f), RoundedCornerShape(22.dp))
             ) {
-                Text(
-                    text = poem.tafsir,
-                    style = FalText.tafsir,
-                    color = spec.onBackground
-                )
-                if (categoryAngle != null) {
-                    Spacer(Modifier.height(16.dp))
-                    OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.5f))
-                    Spacer(Modifier.height(14.dp))
-                    Text(
-                        text = categoryAngle,
-                        style = FalText.bodyMuted,
-                        color = spec.accentSoft,
-                        textAlign = TextAlign.Center
-                    )
+                CornerOrnaments(modifier = Modifier.matchParentSize(), tint = spec.accent, size = 40.dp)
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = poem.tafsir, style = FalText.tafsir, color = spec.onBackground)
+                    if (categoryAngle != null) {
+                        Spacer(Modifier.height(12.dp))
+                        OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.5f))
+                        Spacer(Modifier.height(10.dp))
+                        Text(
+                            text = categoryAngle,
+                            style = FalText.bodyMuted,
+                            color = spec.accentSoft,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
+            Spacer(Modifier.height(10.dp))
         }
 
-        Spacer(Modifier.height(24.dp))
-
+        // fixed bottom actions
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -396,46 +381,33 @@ fun InterpretationContent(
                     tint = if (isFavorite) spec.accent else spec.onBackgroundMuted
                 )
             }
-            SharePoemButton(
-                poem = poem,
-                category = category,
-                spec = spec,
-                tint = spec.onBackgroundMuted
-            )
+            SharePoemButton(poem = poem, category = category, spec = spec, tint = spec.onBackgroundMuted)
             IconButton(onClick = onOpenPoem) {
-                Icon(
-                    imageVector = Icons.Outlined.MenuBook,
-                    contentDescription = "مشاهده در دیوان",
-                    tint = spec.onBackgroundMuted
-                )
+                Icon(Icons.Outlined.MenuBook, contentDescription = "مشاهده در دیوان", tint = spec.onBackgroundMuted)
             }
         }
 
-        Spacer(Modifier.height(6.dp))
-
-        if (cooldownActive && onRewarded != null) {
-            Text("دلت می‌خواهد دوباره فال بگیری؟", style = FalText.caption, color = spec.onBackgroundMuted)
-            Spacer(Modifier.height(12.dp))
-            GoldButton(text = "فال فوری — تماشای ویدئو", onClick = onRewarded, glow = true)
-        } else if (cooldownActive) {
-            Text("لحظه‌ای درنگ…", style = FalText.caption, color = spec.onBackgroundMuted)
-            Spacer(Modifier.height(12.dp))
-            GoldButton(text = "فال دوباره", onClick = onDrawAgain, enabled = false)
-        } else if (remainingToday > 0) {
-            GoldButton(text = "فال دوباره", onClick = onDrawAgain)
-        } else if (onRewarded != null) {
-            GoldButton(text = "فال بیشتر — تماشای ویدئو", onClick = onRewarded)
-        } else {
-            Text(
-                "فالِ رایگانِ امروز تمام شد",
-                style = FalText.caption,
-                color = spec.onBackgroundMuted
+        when {
+            cooldownActive && onRewarded != null -> GoldButton(
+                text = "فال فوری — تماشای ویدئو", onClick = onRewarded, glow = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            cooldownActive -> GoldButton(
+                text = "لحظه‌ای درنگ…", onClick = onDrawAgain, enabled = false,
+                modifier = Modifier.fillMaxWidth()
+            )
+            remainingToday > 0 -> GoldButton(
+                text = "فال دوباره", onClick = onDrawAgain, glow = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            else -> GhostButton(
+                text = "فالِ رایگانِ امروز تمام شد", onClick = {}, textColor = spec.onBackgroundMuted,
+                modifier = Modifier.fillMaxWidth()
             )
         }
-
+        Spacer(Modifier.height(6.dp))
+        GhostButton(text = "بازگشت", onClick = onDismiss, textColor = spec.onBackgroundMuted, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(12.dp))
-        GhostButton(text = "بازگشت", onClick = onDismiss, textColor = spec.onBackgroundMuted)
-        Spacer(Modifier.height(20.dp))
     }
 }
 
@@ -444,7 +416,7 @@ private fun VerseView(verse: Verse, color: Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = verse.first, style = FalText.verse, color = color)
         if (verse.isCouplet) {
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(3.dp))
             Text(text = verse.second!!, style = FalText.verse, color = color)
         }
     }

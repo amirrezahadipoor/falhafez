@@ -39,7 +39,7 @@ import com.amirrezahadipoor.falhafez.domain.model.Poem
 import com.amirrezahadipoor.falhafez.domain.model.Verse
 import com.amirrezahadipoor.falhafez.presentation.share.SharePoemButton
 
-/** Full-poem reader with beit-by-beit meaning, a study mode and copy-to-clipboard. */
+/** Full-poem reader: beit meanings, study mode, copy — actions pinned at the bottom. */
 @Composable
 fun PoemDetail(
     poem: Poem,
@@ -53,13 +53,7 @@ fun PoemDetail(
     var showMeaning by remember(poem.id) { mutableStateOf(true) }
     var studyMode by remember(poem.id) { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp)) {
         ScreenHeader(
             title = if (studyMode) "" else "${poem.collection.poet.faName} — ${poem.collection.faName}",
             onBack = onBack,
@@ -97,54 +91,50 @@ fun PoemDetail(
                     )
                 )
             }
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(8.dp))
         }
 
-        poem.verses.forEach { verse ->
-            VerseView(
-                verse = verse,
-                color = spec.onBackground,
-                meaningColor = spec.onBackgroundMuted,
-                showMeaning = showMeaning
-            )
-            Spacer(Modifier.height(16.dp))
-        }
-
-        if (!studyMode) {
-            OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.7f))
-            Spacer(Modifier.height(18.dp))
-
-            Text("تفسیر", style = FalText.heading, color = spec.accent)
-            Spacer(Modifier.height(10.dp))
-            Text(poem.tafsir, style = FalText.tafsir, color = spec.onBackground)
-
-            Spacer(Modifier.height(22.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onToggleFavorite) {
-                    Icon(
-                        imageVector = if (isFavorite) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
-                        contentDescription = "علاقه‌مندی",
-                        tint = if (isFavorite) spec.accent else spec.onBackgroundMuted
-                    )
-                }
-                SharePoemButton(
-                    poem = poem,
-                    category = category,
-                    spec = spec,
-                    tint = spec.onBackgroundMuted
-                )
-                IconButton(onClick = { Clipboard.copy(context, "متن شعر", poem.verses.joinToString("\n") { it.fullText } + "\n\n" + poem.tafsir) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.ContentCopy,
-                        contentDescription = "کپی متن",
-                        tint = spec.onBackgroundMuted
-                    )
-                }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            poem.verses.forEach { verse ->
+                VerseView(verse = verse, color = spec.onBackground, meaningColor = spec.onBackgroundMuted, showMeaning = showMeaning)
+                Spacer(Modifier.height(13.dp))
             }
-            Spacer(Modifier.height(20.dp))
-        } else {
-            Spacer(Modifier.height(20.dp))
+
+            if (!studyMode) {
+                OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.7f))
+                Spacer(Modifier.height(12.dp))
+                Text("تفسیر", style = FalText.heading, color = spec.accent)
+                Spacer(Modifier.height(8.dp))
+                Text(poem.tafsir, style = FalText.tafsir, color = spec.onBackground)
+                Spacer(Modifier.height(10.dp))
+            }
         }
+
+        // fixed bottom actions
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onToggleFavorite) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                    contentDescription = "علاقه‌مندی",
+                    tint = if (isFavorite) spec.accent else spec.onBackgroundMuted
+                )
+            }
+            SharePoemButton(poem = poem, category = category, spec = spec, tint = spec.onBackgroundMuted)
+            IconButton(onClick = { Clipboard.copy(context, "متن شعر", poem.verses.joinToString("\n") { it.fullText } + "\n\n" + poem.tafsir) }) {
+                Icon(Icons.Outlined.ContentCopy, contentDescription = "کپی متن", tint = spec.onBackgroundMuted)
+            }
+        }
+        Spacer(Modifier.height(12.dp))
     }
 }
 
@@ -158,20 +148,17 @@ private fun VerseView(
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(verse.first, style = FalText.verse, color = color)
         if (verse.isCouplet) {
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(3.dp))
             Text(verse.second!!, style = FalText.verse, color = color)
         }
         if (showMeaning && !verse.meaning.isNullOrBlank()) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(7.dp))
             Text(
                 text = verse.meaning,
                 style = FalText.caption,
                 color = meaningColor,
                 modifier = Modifier
-                    .background(
-                        meaningColor.copy(alpha = 0.08f),
-                        RoundedCornerShape(10.dp)
-                    )
+                    .background(meaningColor.copy(alpha = 0.08f), RoundedCornerShape(10.dp))
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             )
         }

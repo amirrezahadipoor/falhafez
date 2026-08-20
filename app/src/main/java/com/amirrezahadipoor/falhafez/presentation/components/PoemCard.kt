@@ -12,14 +12,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.amirrezahadipoor.falhafez.core.designsystem.FalPalette
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
 import com.amirrezahadipoor.falhafez.domain.model.Poem
 
-/** Ornamental card used across the library, history and favorites lists. */
+/** Compact ornamental card (2-column grid tile) used across library, search, favorites. */
 @Composable
 fun PoemCard(
     poem: Poem,
@@ -29,22 +28,24 @@ fun PoemCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(FalPalette.NavySoft, RoundedCornerShape(18.dp))
-            .border(1.dp, FalPalette.GoldDeep.copy(alpha = 0.4f), RoundedCornerShape(18.dp))
+            .background(FalPalette.NavySoft, RoundedCornerShape(16.dp))
+            .border(1.dp, FalPalette.GoldDeep.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .padding(16.dp)
+            .padding(12.dp)
     ) {
         Text(
             text = "${poem.collection.poet.faName} — ${poem.collection.faName}",
             style = FalText.caption,
-            color = FalPalette.CreamMuted
+            color = FalPalette.CreamMuted,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(6.dp))
         Text(
             text = poem.opening,
             style = FalText.verseSmall,
             color = FalPalette.Cream,
-            maxLines = 2,
+            maxLines = 3,
             overflow = TextOverflow.Ellipsis
         )
     }

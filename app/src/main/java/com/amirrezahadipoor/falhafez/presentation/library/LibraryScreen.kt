@@ -17,6 +17,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Clear
@@ -220,7 +226,6 @@ private val THEME_FA = mapOf(
     "faith" to "ایمان", "decision" to "تصمیم", "general" to "عمومی"
 )
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PoemsList(poems: List<com.amirrezahadipoor.falhafez.domain.model.Poem>, loading: Boolean, onOpen: (com.amirrezahadipoor.falhafez.domain.model.Poem) -> Unit) {
     if (loading) {
@@ -244,29 +249,31 @@ private fun PoemsList(poems: List<com.amirrezahadipoor.falhafez.domain.model.Poe
     var selectedTag by remember(poems) { mutableStateOf<String?>(null) }
     val filtered = if (selectedTag == null) poems else poems.filter { it.themeTag == selectedTag }
 
-    LazyColumn(
+    // 2-column grid — twice the poems per screen, single-row filter (no vertical space)
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         if (tags.size > 1) {
-            item {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilterChip(
-                        selected = selectedTag == null,
-                        onClick = { selectedTag = null },
-                        label = { Text("همه", style = FalText.caption) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = FalPalette.Gold,
-                            selectedLabelColor = androidx.compose.ui.graphics.Color(0xFF14100A),
-                            containerColor = FalPalette.NavySoft,
-                            labelColor = FalPalette.CreamMuted
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    item {
+                        FilterChip(
+                            selected = selectedTag == null,
+                            onClick = { selectedTag = null },
+                            label = { Text("همه", style = FalText.caption) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = FalPalette.Gold,
+                                selectedLabelColor = androidx.compose.ui.graphics.Color(0xFF14100A),
+                                containerColor = FalPalette.NavySoft,
+                                labelColor = FalPalette.CreamMuted
+                            )
                         )
-                    )
-                    tags.forEach { tag ->
+                    }
+                    items(tags) { tag ->
                         FilterChip(
                             selected = selectedTag == tag,
                             onClick = { selectedTag = if (selectedTag == tag) null else tag },
@@ -280,14 +287,13 @@ private fun PoemsList(poems: List<com.amirrezahadipoor.falhafez.domain.model.Poe
                         )
                     }
                 }
-                Spacer(Modifier.height(4.dp))
             }
         }
         items(filtered.size) { index ->
             PoemCard(poem = filtered[index], onClick = { onOpen(filtered[index]) })
-            if (index == 3) {
-                NativeAdCard()
-            }
+        }
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            NativeAdCard()
         }
     }
 }
@@ -304,13 +310,15 @@ private fun SearchResults(results: List<com.amirrezahadipoor.falhafez.domain.mod
         }
         return
     }
-    LazyColumn(
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        items(results.size) { index ->
-            PoemCard(poem = results[index], onClick = { onOpen(results[index]) })
+        items(results) { poem ->
+            PoemCard(poem = poem, onClick = { onOpen(poem) })
         }
     }
 }

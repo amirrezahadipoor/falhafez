@@ -6,13 +6,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -39,6 +41,7 @@ import com.amirrezahadipoor.falhafez.core.util.Clipboard
 import com.amirrezahadipoor.falhafez.core.util.PersianText
 import com.amirrezahadipoor.falhafez.domain.model.Poem
 import com.amirrezahadipoor.falhafez.presentation.components.EmptyState
+import com.amirrezahadipoor.falhafez.presentation.components.GhostButton
 import com.amirrezahadipoor.falhafez.presentation.components.RitualBackground
 import com.amirrezahadipoor.falhafez.presentation.components.ScreenHeader
 
@@ -67,13 +70,16 @@ fun StoriesScreen() {
                     )
                 }
             } else {
-                LazyColumn(
+                // 2-column grid → ~2× more stories per screen, far less scrolling
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(stories.size) { index ->
-                        StoryCard(story = stories[index], onClick = { viewModel.open(stories[index]) })
+                    items(stories) { story ->
+                        StoryTile(story = story, onClick = { viewModel.open(story) })
                     }
                 }
             }
@@ -82,27 +88,27 @@ fun StoriesScreen() {
 }
 
 @Composable
-private fun StoryCard(story: Poem, onClick: () -> Unit) {
+private fun StoryTile(story: Poem, onClick: () -> Unit) {
     val prose = story.verses.firstOrNull { !it.isCouplet }?.first ?: story.opening
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(FalPalette.NavySoft, RoundedCornerShape(18.dp))
-            .border(1.dp, FalPalette.GoldDeep.copy(alpha = 0.4f), RoundedCornerShape(18.dp))
+            .background(FalPalette.NavySoft, RoundedCornerShape(16.dp))
+            .border(1.dp, FalPalette.GoldDeep.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .padding(16.dp)
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Text(
             text = "داستانِ ${PersianText.number(story.number)}",
             style = FalText.heading,
             color = FalPalette.GoldBright
         )
-        Spacer(Modifier.height(8.dp))
         Text(
             text = prose,
-            style = FalText.bodyMuted,
+            style = FalText.caption,
             color = FalPalette.Cream,
-            maxLines = 3,
+            maxLines = 4,
             overflow = TextOverflow.Ellipsis
         )
     }
@@ -115,70 +121,65 @@ private fun StoryDetail(story: Poem, spec: FalThemeSpec, onBack: () -> Unit) {
     val morals = story.verses.filter { it.isCouplet }
 
     RitualBackground(spec = spec, showParticles = false) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp)) {
             ScreenHeader(
                 title = "داستانِ ${PersianText.number(story.number)}",
                 onBack = onBack,
                 titleColor = spec.onBackground
             )
 
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text = prose,
-                style = FalText.tafsir,
-                color = spec.onBackground,
-                textAlign = TextAlign.Justify
-            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = prose, style = FalText.tafsir, color = spec.onBackground, textAlign = TextAlign.Justify)
 
-            if (morals.isNotEmpty()) {
-                Spacer(Modifier.height(22.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(spec.card.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
-                        .border(1.dp, spec.accent.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
-                        .padding(18.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("درسِ این حکایت", style = FalText.caption, color = spec.accentSoft)
-                        Spacer(Modifier.height(10.dp))
-                        morals.forEach { m ->
-                            Text(m.first, style = FalText.verse, color = spec.onBackground)
-                            if (m.isCouplet) {
-                                Spacer(Modifier.height(4.dp))
-                                Text(m.second!!, style = FalText.verse, color = spec.onBackground)
+                if (morals.isNotEmpty()) {
+                    Spacer(Modifier.height(16.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(spec.card.copy(alpha = 0.9f), RoundedCornerShape(18.dp))
+                            .border(1.dp, spec.accent.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("درسِ این حکایت", style = FalText.caption, color = spec.accentSoft)
+                            Spacer(Modifier.height(8.dp))
+                            morals.forEach { m ->
+                                Text(m.first, style = FalText.verse, color = spec.onBackground)
+                                if (m.isCouplet) {
+                                    Spacer(Modifier.height(3.dp))
+                                    Text(m.second!!, style = FalText.verse, color = spec.onBackground)
+                                }
                             }
                         }
                     }
                 }
+
+                Spacer(Modifier.height(12.dp))
+                Text(story.tafsir, style = FalText.bodyMuted, color = spec.onBackgroundMuted, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(10.dp))
             }
 
-            Spacer(Modifier.height(18.dp))
-            Text(
-                text = story.tafsir,
-                style = FalText.bodyMuted,
-                color = spec.onBackgroundMuted,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(Modifier.height(18.dp))
-            IconButton(onClick = {
-                Clipboard.copy(context, "داستان", "$prose\n\n${morals.joinToString("\n") { it.fullText }}")
-            }) {
-                Icon(
-                    imageVector = Icons.Outlined.ContentCopy,
-                    contentDescription = "کپی داستان",
-                    tint = spec.onBackgroundMuted
-                )
+            // fixed bottom actions
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = {
+                    Clipboard.copy(context, "داستان", "$prose\n\n${morals.joinToString("\n") { it.fullText }}")
+                }) {
+                    Icon(Icons.Outlined.ContentCopy, contentDescription = "کپی داستان", tint = spec.onBackgroundMuted)
+                }
             }
-            Spacer(Modifier.height(20.dp))
+            GhostButton(text = "بازگشت", onClick = onBack, textColor = spec.onBackgroundMuted, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(12.dp))
         }
     }
 }

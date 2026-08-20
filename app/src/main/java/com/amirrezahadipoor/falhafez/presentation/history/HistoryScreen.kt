@@ -12,11 +12,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -110,36 +113,34 @@ fun HistoryScreen() {
 
 @Composable
 private fun HistoryItem(draw: DrawEntry, onClick: () -> Unit) {
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(FalPalette.NavySoft, RoundedCornerShape(18.dp))
-            .border(1.dp, FalPalette.GoldDeep.copy(alpha = 0.4f), RoundedCornerShape(18.dp))
+            .background(FalPalette.NavySoft, RoundedCornerShape(14.dp))
+            .border(1.dp, FalPalette.GoldDeep.copy(alpha = 0.4f), RoundedCornerShape(14.dp))
             .clickable(onClick = onClick)
-            .padding(16.dp)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = Jalali.format(draw.drawnAt),
+            text = Jalali.shortDate(draw.drawnAt),
             style = FalText.caption,
-            color = FalPalette.Gold
+            color = FalPalette.Gold,
+            modifier = Modifier.width(96.dp)
         )
-        if (!draw.question.isNullOrBlank()) {
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = "نیّت: ${draw.question}",
-                style = FalText.caption,
-                color = FalPalette.CreamMuted,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-        Spacer(Modifier.height(10.dp))
         Text(
-            text = draw.poem.opening,
-            style = FalText.verseSmall,
+            text = if (draw.question.isNullOrBlank()) draw.poem.opening else "«${draw.question}» — ${draw.poem.opening}",
+            style = FalText.bodyMuted,
             color = FalPalette.Cream,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+            contentDescription = null,
+            tint = FalPalette.CreamMuted,
+            modifier = Modifier.size(18.dp)
         )
     }
 }

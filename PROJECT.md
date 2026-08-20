@@ -17,6 +17,7 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 11 — CI/CD + store | ✅ | GitHub Actions builds **debug + release APK** (release 6.5 MB, R8), emulator screenshot workflow, Cafe Bazaar assets (icon 512, descriptions, checklist), Persian privacy policy on GitHub Pages |
 | 12 — Compile pass | ✅ | First real compile on GitHub runners — fixed 8 Kotlin/Room issues (FTS4 rowid, imports, smart casts, signing types); CI is **green** |
 | 13 — Full divans + stories + sound | ✅ | **Complete Saadi (1,158) + Rumi (4,246)** — 6,177 poems total; **100 instructive stories** from Golestan; 10 visual themes; synthesized ritual sounds (buttons/draw/reveal/ambient) + haptics toggles; release-only CI |
+| 14 — Scroll-free layout | ✅ | Whole-app redesign to minimize scrolling: single-screen niyyat ritual, pinned bottom action bars on reveal/interpretation/poem/story, 2-column grids (library, search, favorites, stories, themes), dense single-line history, tabbed settings — no features removed |
 
 ## Corpus (complete, offline) — 6,177 poems
 > Saadi: غزلیات (637) + گلستان (291) + بوستان (230) · Rumi: مثنوی (972) + دیوان شمس (3,274) · Hafez 495 · Khayyam 178 · + 100 داستان آموزنده
