@@ -15,6 +15,7 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 9 — Social share + polish | ✅ | Direct share to Telegram/WhatsApp/Rubika/Bale/Instagram/Eitaa/Soroush + gallery save; animated shimmer buttons, SVG-style ornaments; humanized, poet-aware interpretations |
 | 10 — Retention & monetization | ✅ | beit-by-beit meaning (4,548 beits), deterministic daily fal (فالِ روز), home-screen widget, personal stats/streak (کارنامه), theme filter + study mode, rewarded cooldown-skip & premium-theme unlock (نوروز + یلدا), haptics, copy-text, JSON export |
 | 11 — CI/CD + store | ✅ | GitHub Actions builds **debug + release APK** (release 6.5 MB, R8), emulator screenshot workflow, Cafe Bazaar assets (icon 512, descriptions, checklist), Persian privacy policy on GitHub Pages |
+| 12 — Compile pass | ✅ | First real compile on GitHub runners — fixed 8 Kotlin/Room issues (FTS4 rowid, imports, smart casts, signing types); CI is **green** |
 
 ## Corpus (complete, offline)
 | Poet | Collection | Count | Beits |
