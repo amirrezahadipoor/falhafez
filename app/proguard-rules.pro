@@ -17,3 +17,7 @@
 # Tapsell Mediation SDK (rules included automatically, kept as a safety net)
 -keep class ir.tapsell.** { *; }
 -dontwarn ir.tapsell.**
+
+# Poolakey (پرداخت درون‌برنامه‌ای کافه‌بازار)
+-keep class ir.cafebazaar.poolakey.** { *; }
+-dontwarn ir.cafebazaar.poolakey.**
