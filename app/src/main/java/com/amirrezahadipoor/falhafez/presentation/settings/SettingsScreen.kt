@@ -140,7 +140,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                         onSelect = { spec ->
                             when {
                                 !spec.locked -> viewModel.setTheme(spec.id)
-                                spec.id.id in unlocked -> viewModel.setTheme(spec.id)
+                                spec.id.id in unlockedThemes -> viewModel.setTheme(spec.id)
                                 activity != null -> viewModel.requestUnlockTheme(activity, spec.id)
                             }
                         }
