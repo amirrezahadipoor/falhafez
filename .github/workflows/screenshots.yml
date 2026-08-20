@@ -19,6 +19,9 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install emulator system deps
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libpulse0
+
       - name: Build debug APK
         run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
 
