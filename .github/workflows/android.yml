@@ -47,6 +47,15 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew clean assembleRelease --no-daemon --no-build-cache --stacktrace
 
+      - name: Inspect assets (diagnostic)
+        run: |
+          echo "=== source assets ==="
+          ls -la app/src/main/assets/corpus/
+          echo "=== merged assets ==="
+          ls -la app/build/intermediates/assets/release/mergeReleaseAssets/corpus/ 2>/dev/null || echo "no merged dir"
+          echo "=== APK corpus entries ==="
+          unzip -l app/build/outputs/apk/release/app-release.apk | grep corpus || echo "no corpus in apk"
+
       - name: Rename artifact
         run: |
           mkdir -p dist
