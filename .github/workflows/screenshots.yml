@@ -37,25 +37,14 @@ jobs:
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb logcat -c
             adb shell am start -n com.amirrezahadipoor.falhafez.debug/com.amirrezahadipoor.falhafez.MainActivity
-            for i in $(seq 1 30); do
-              adb logcat -d 2>/dev/null | grep -q "Corpus seeded" && break
-              sleep 2
-            done
-            sleep 2
-            adb exec-out screencap -p > 01-splash.png
-            adb shell input tap 540 1700
-            sleep 4
-            adb exec-out screencap -p > 02-onboarding.png
-            adb shell input tap 540 1700
-            sleep 4
-            adb exec-out screencap -p > 03-home.png
+            sleep 25
+            adb exec-out screencap -p > 01-onboarding.png
+            adb shell input tap 540 1560
+            sleep 5
+            adb exec-out screencap -p > 02-home.png
+            adb shell input tap 540 1100
+            sleep 16
+            adb exec-out screencap -p > 03-reveal.png
             adb shell input tap 540 1500
-            sleep 14
-            adb exec-out screencap -p > 04-draw.png
-
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v4
-        with:
-          name: store-screenshots
-          path: "*.png"
-          retention-days: 14
+            sleep 7
+            adb exec-out screencap -p > 04-interpretation.png
