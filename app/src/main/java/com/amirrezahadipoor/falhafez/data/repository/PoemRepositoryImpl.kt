@@ -30,11 +30,16 @@ class PoemRepositoryImpl @Inject constructor(
         return poemDao.search(matchQuery).mapWithVerses()
     }
 
-    override suspend fun getRandomPoem(excludeIds: List<Long>, poet: Poet): Poem? {
-        // The fal comes from the Divan of Hafez (poet key "hafez") — never mixed with
-        // Saadi / Rumi / Khayyam unless a different poet is passed explicitly.
-        val candidates = poemDao.getCandidateIdsForPoet(poet.key, excludeIds)
-        val pool = candidates.ifEmpty { poemDao.getPoemIdsForPoet(poet.key) }
+    override suspend fun getRandomPoem(excludeIds: List<Long>, poet: Poet?): Poem? {
+        // null poet = draw from every collection; otherwise only that poet's divan.
+        val candidates = if (poet == null) {
+            poemDao.getCandidateIds(excludeIds)
+        } else {
+            poemDao.getCandidateIdsForPoet(poet.key, excludeIds)
+        }
+        val pool = if (candidates.isNotEmpty()) candidates else {
+            if (poet == null) poemDao.getAllPoemIds() else poemDao.getPoemIdsForPoet(poet.key)
+        }
         val chosen = pool.randomOrNull() ?: return null
         return getPoem(chosen)
     }

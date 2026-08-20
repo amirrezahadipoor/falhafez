@@ -12,6 +12,7 @@ interface SettingsRepository {
     val unlockedThemes: Flow<Set<String>>
     val soundEnabled: Flow<Boolean>
     val hapticsEnabled: Flow<Boolean>
+    val fontColor: Flow<String>
 
     suspend fun setTheme(id: FalThemeId)
     suspend fun setFontSizeScale(scale: Float)
@@ -21,4 +22,5 @@ interface SettingsRepository {
     suspend fun unlockTheme(id: FalThemeId)
     suspend fun setSoundEnabled(enabled: Boolean)
     suspend fun setHapticsEnabled(enabled: Boolean)
+    suspend fun setFontColor(key: String)
 }

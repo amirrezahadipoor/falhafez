@@ -50,6 +50,9 @@ class SettingsViewModel @Inject constructor(
     val hapticsEnabled: StateFlow<Boolean> = settingsRepository.hapticsEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    val fontColor: StateFlow<String> = settingsRepository.fontColor
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "theme")
+
     fun setTheme(id: FalThemeId) {
         viewModelScope.launch { settingsRepository.setTheme(id) }
     }
@@ -73,6 +76,10 @@ class SettingsViewModel @Inject constructor(
     fun setHaptics(enabled: Boolean) {
         Sounds.hapticsEnabled = enabled
         viewModelScope.launch { settingsRepository.setHapticsEnabled(enabled) }
+    }
+
+    fun setFontColor(key: String) {
+        viewModelScope.launch { settingsRepository.setFontColor(key) }
     }
 
     /** Rewarded unlock for premium themes (شب یلدا …). */

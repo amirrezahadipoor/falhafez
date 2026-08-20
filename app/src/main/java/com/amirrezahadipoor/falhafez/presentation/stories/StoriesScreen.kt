@@ -36,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.amirrezahadipoor.falhafez.core.designsystem.FalPalette
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
+import com.amirrezahadipoor.falhafez.core.designsystem.readingColor
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
 import com.amirrezahadipoor.falhafez.core.util.Clipboard
 import com.amirrezahadipoor.falhafez.core.util.PersianText
@@ -135,7 +136,7 @@ private fun StoryDetail(story: Poem, spec: FalThemeSpec, onBack: () -> Unit) {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = prose, style = FalText.tafsir, color = spec.onBackground, textAlign = TextAlign.Justify)
+                Text(text = prose, style = FalText.tafsir, color = readingColor(spec.onBackground), textAlign = TextAlign.Justify)
 
                 if (morals.isNotEmpty()) {
                     Spacer(Modifier.height(16.dp))
@@ -151,10 +152,10 @@ private fun StoryDetail(story: Poem, spec: FalThemeSpec, onBack: () -> Unit) {
                             Text("درسِ این حکایت", style = FalText.caption, color = spec.accentSoft)
                             Spacer(Modifier.height(8.dp))
                             morals.forEach { m ->
-                                Text(m.first, style = FalText.verse, color = spec.onBackground)
+                                Text(m.first, style = FalText.verse, color = readingColor(spec.onBackground))
                                 if (m.isCouplet) {
                                     Spacer(Modifier.height(3.dp))
-                                    Text(m.second!!, style = FalText.verse, color = spec.onBackground)
+                                    Text(m.second!!, style = FalText.verse, color = readingColor(spec.onBackground))
                                 }
                             }
                         }
@@ -162,7 +163,7 @@ private fun StoryDetail(story: Poem, spec: FalThemeSpec, onBack: () -> Unit) {
                 }
 
                 Spacer(Modifier.height(12.dp))
-                Text(story.tafsir, style = FalText.bodyMuted, color = spec.onBackgroundMuted, textAlign = TextAlign.Center)
+                Text(story.tafsir, style = FalText.bodyMuted, color = readingColor(spec.onBackgroundMuted), textAlign = TextAlign.Center)
                 Spacer(Modifier.height(10.dp))
             }
 

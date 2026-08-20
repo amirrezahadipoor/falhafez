@@ -30,6 +30,7 @@ class SettingsDataStore @Inject constructor(
         val UNLOCKED_THEMES = stringSetPreferencesKey("unlocked_themes")
         val SOUND = booleanPreferencesKey("sound_enabled")
         val HAPTICS = booleanPreferencesKey("haptics_enabled")
+        val FONT_COLOR = stringPreferencesKey("font_color")
     }
 
     val themeId: Flow<FalThemeId> =
@@ -55,6 +56,9 @@ class SettingsDataStore @Inject constructor(
 
     val hapticsEnabled: Flow<Boolean> =
         context.settingsDataStore.data.map { it[Keys.HAPTICS] ?: true }
+
+    val fontColor: Flow<String> =
+        context.settingsDataStore.data.map { it[Keys.FONT_COLOR] ?: "theme" }
 
     suspend fun setTheme(id: FalThemeId) =
         context.settingsDataStore.edit { it[Keys.THEME] = id.id }
@@ -85,4 +89,7 @@ class SettingsDataStore @Inject constructor(
 
     suspend fun setHapticsEnabled(enabled: Boolean) =
         context.settingsDataStore.edit { it[Keys.HAPTICS] = enabled }
+
+    suspend fun setFontColor(key: String) =
+        context.settingsDataStore.edit { it[Keys.FONT_COLOR] = key }
 }

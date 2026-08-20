@@ -41,7 +41,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
         ) {
             Box(contentAlignment = Alignment.Center) {
                 RotatingStar(tint = spec.accent.copy(alpha = 0.6f), size = 140.dp)
-                Text(text = "هم‌فال", style = FalText.display, color = spec.accentSoft)
+                Text(text = "نیّت", style = FalText.display, color = spec.accentSoft)
             }
             Spacer(Modifier.height(12.dp))
             OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.5f))

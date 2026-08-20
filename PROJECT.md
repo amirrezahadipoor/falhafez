@@ -1,4 +1,4 @@
-# Project status — هم‌فال (دیوان و فالِ حافظ)
+# Project status — نیّت (دیوان و فالِ حافظ)
 
 Built in phases per the master prompt. Each phase is committed separately on `main`.
 
@@ -17,9 +17,11 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 11 — CI/CD + store | ✅ | GitHub Actions builds **debug + release APK** (release 6.5 MB, R8), emulator screenshot workflow, Cafe Bazaar assets (icon 512, descriptions, checklist), Persian privacy policy on GitHub Pages |
 | 12 — Compile pass | ✅ | First real compile on GitHub runners — fixed 8 Kotlin/Room issues (FTS4 rowid, imports, smart casts, signing types); CI is **green** |
 | 13 — Full divans + stories + sound | ✅ | **Complete Saadi (1,158) + Rumi (4,246)** — 6,177 poems total; **100 instructive stories** from Golestan; 10 visual themes; synthesized ritual sounds (buttons/draw/reveal/ambient) + haptics toggles; release-only CI |
-| 14 — Scroll-free layout | ✅ | Whole-app redesign to minimize scrolling: single-screen niyyat ritual, pinned bottom action bars on reveal/interpretation/poem/story, 2-column grids (library, search, favorites, stories, themes), dense single-line history, tabbed settings — no features removed |
+| 14 — Scroll-free layout | ✅ | Whole-app redesign to minimize scrolling: single-screen niyyat ritual, pinned bottom action bars, 2-column grids, dense history, tabbed settings |
+| 15 — Polish + release | ✅ | Fal-source selector (حافظ/سعدی/مولانا/خیام/همه) with live poem counts; font size + font COLOR presets; complete Rumi rubaiyat (1,994) + Saadi minor collections — **8,368 poems**; brand «نیّت»; generated release keystore + random secrets; CI signs release when secrets present |
 
-## Corpus (complete, offline) — 6,177 poems
+## Corpus (complete, offline) — 8,368 poems
+> Hafez 495 · Khayyam 178 · Saadi 1,355 (غزلیات 637 + گلستان 291 + بوستان 230 + رباعیات 146 + قطعات 20 + ملحقات 31) · Rumi 6,240 (مثنوی 972 + شمس 3,274 + رباعیات 1,994) · + 100 داستان آموزنده
 > Saadi: غزلیات (637) + گلستان (291) + بوستان (230) · Rumi: مثنوی (972) + دیوان شمس (3,274) · Hafez 495 · Khayyam 178 · + 100 داستان آموزنده
 
 ## Corpus (previous) — for reference

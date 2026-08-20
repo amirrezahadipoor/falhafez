@@ -9,7 +9,9 @@ import com.amirrezahadipoor.falhafez.data.ads.AdManager
 import com.amirrezahadipoor.falhafez.domain.model.DrawEntry
 import com.amirrezahadipoor.falhafez.domain.model.FalCategory
 import com.amirrezahadipoor.falhafez.domain.model.Poem
+import com.amirrezahadipoor.falhafez.domain.model.Poet
 import com.amirrezahadipoor.falhafez.domain.repository.DrawRepository
+import com.amirrezahadipoor.falhafez.domain.repository.PoemRepository
 import com.amirrezahadipoor.falhafez.domain.repository.FavoriteRepository
 import com.amirrezahadipoor.falhafez.domain.repository.SettingsRepository
 import com.amirrezahadipoor.falhafez.domain.usecase.DailyFalUseCase
@@ -39,6 +41,8 @@ enum class DrawStage { NIYYAT, DRAWING, REVEAL, INTERPRETATION }
 data class HomeUiState(
     val question: String = "",
     val category: FalCategory = FalCategory.NONE,
+    val falSource: Poet? = Poet.HAFEZ,
+    val sourceCount: Int = 495,
     val stage: DrawStage = DrawStage.NIYYAT,
     val lastDraw: DrawEntry? = null,
     val dailyFal: Poem? = null,
@@ -56,6 +60,7 @@ class HomeViewModel @Inject constructor(
     private val drawFal: DrawFalUseCase,
     private val dailyFal: DailyFalUseCase,
     private val drawRepository: DrawRepository,
+    private val poemRepository: PoemRepository,
     private val favoriteRepository: FavoriteRepository,
     private val settingsRepository: SettingsRepository,
     private val adManager: AdManager
@@ -76,14 +81,29 @@ class HomeViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    private var counts: Map<Poet, Int> = emptyMap()
+
     init {
-        viewModelScope.launch { recomputeRemaining() }
+        viewModelScope.launch {
+            recomputeRemaining()
+            counts = Poet.entries.associateWith { poemRepository.countForPoet(it) }
+            _uiState.update { it.copy(sourceCount = counts[it.falSource ?: return@update] ?: 495) }
+        }
     }
 
     fun onQuestionChange(value: String) = _uiState.update { it.copy(question = value) }
 
     fun onCategorySelect(category: FalCategory) = _uiState.update {
         it.copy(category = if (it.category == category) FalCategory.NONE else category)
+    }
+
+    /** Fal source: حافظ / سعدی / مولانا / خیام / همهٔ مجموعه‌ها. */
+    fun onSourceSelect(source: Poet?) = _uiState.update {
+        val count = when (source) {
+            null -> counts.values.sum()
+            else -> counts[source] ?: 0
+        }
+        it.copy(falSource = source, sourceCount = count)
     }
 
     fun draw() {
@@ -122,7 +142,7 @@ class HomeViewModel @Inject constructor(
         Sounds.draw()
 
         val question = s.question.trim().ifBlank { null }
-        val result = drawFal(question, s.category)
+        val result = drawFal(question, s.category, s.falSource)
         favoriteTargetId.value = result?.poem?.id
         _uiState.update { it.copy(lastDraw = result, dailyFal = null, cooldownActive = true, busy = false) }
         recomputeRemaining()

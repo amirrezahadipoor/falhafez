@@ -1,4 +1,4 @@
-# هم‌فال — دیوان و فالِ حافظ (Fal-e Hafez)
+# نیّت — دیوان و فالِ حافظ (Fal-e Hafez)
 
 [![Android CI](https://github.com/amirrezahadipoor/falhafez/actions/workflows/android.yml/badge.svg)](https://github.com/amirrezahadipoor/falhafez/actions/workflows/android.yml)
 

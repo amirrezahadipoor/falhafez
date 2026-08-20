@@ -58,6 +58,7 @@ fun HomeScreen(
                     onCategorySelect = viewModel::onCategorySelect,
                     onDraw = viewModel::draw,
                     onRewardedDraw = if (activity != null) { { viewModel.requestExtraDraw(activity) } } else null,
+                    onSourceSelect = viewModel::onSourceSelect,
                     onDailyFal = viewModel::openDailyFal,
                     onOpenSettings = onOpenSettings
                 )
@@ -79,6 +80,7 @@ fun HomeScreen(
                     onCategorySelect = viewModel::onCategorySelect,
                     onDraw = viewModel::draw,
                     onRewardedDraw = null,
+                    onSourceSelect = viewModel::onSourceSelect,
                     onDailyFal = viewModel::openDailyFal,
                     onOpenSettings = onOpenSettings
                 )
@@ -103,6 +105,7 @@ fun HomeScreen(
                     onCategorySelect = viewModel::onCategorySelect,
                     onDraw = viewModel::draw,
                     onRewardedDraw = null,
+                    onSourceSelect = viewModel::onSourceSelect,
                     onDailyFal = viewModel::openDailyFal,
                     onOpenSettings = onOpenSettings
                 )

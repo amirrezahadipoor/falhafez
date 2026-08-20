@@ -28,6 +28,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -57,6 +59,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.amirrezahadipoor.falhafez.core.designsystem.FalPalette
+import com.amirrezahadipoor.falhafez.core.designsystem.FalFontColors
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
 import com.amirrezahadipoor.falhafez.core.util.PersianText
@@ -75,6 +78,7 @@ fun SettingsScreen(onBack: () -> Unit) {
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
     val soundEnabled by viewModel.soundEnabled.collectAsStateWithLifecycle()
     val hapticsEnabled by viewModel.hapticsEnabled.collectAsStateWithLifecycle()
+    val fontColor by viewModel.fontColor.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
@@ -153,6 +157,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         CardBox {
+                            Text("اندازهٔ قلم", style = FalText.heading, color = FalPalette.GoldBright)
+                            Spacer(Modifier.height(8.dp))
                             Text("نمونه: غزلِ حافظ با قلمِ خوانا", style = FalText.body, color = FalPalette.Cream)
                             Spacer(Modifier.height(12.dp))
                             Slider(
@@ -170,6 +176,32 @@ fun SettingsScreen(onBack: () -> Unit) {
                                 style = FalText.caption,
                                 color = FalPalette.CreamMuted
                             )
+                        }
+                        CardBox {
+                            Text("رنگِ قلم", style = FalText.heading, color = FalPalette.GoldBright)
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "رنگِ ابیات و تفسیر — یا دنبالهٔ قالبِ انتخابی",
+                                style = FalText.caption,
+                                color = FalPalette.CreamMuted
+                            )
+                            Spacer(Modifier.height(10.dp))
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                val keys = listOf("theme", "cream", "white", "gold", "emerald", "azure")
+                                items(keys) { key ->
+                                    FilterChip(
+                                        selected = fontColor == key,
+                                        onClick = { viewModel.setFontColor(key) },
+                                        label = { Text(FalFontColors.label(key), style = FalText.caption) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = FalPalette.Gold,
+                                            selectedLabelColor = androidx.compose.ui.graphics.Color(0xFF14100A),
+                                            containerColor = FalPalette.NavyLight,
+                                            labelColor = FalPalette.Cream
+                                        )
+                                    )
+                                }
+                            }
                         }
                     }
                     SettingsTab.SOUND -> Column(

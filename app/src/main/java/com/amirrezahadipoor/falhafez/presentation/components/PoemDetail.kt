@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
+import com.amirrezahadipoor.falhafez.core.designsystem.readingColor
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
 import com.amirrezahadipoor.falhafez.core.util.Clipboard
 import com.amirrezahadipoor.falhafez.domain.model.FalCategory
@@ -102,7 +103,7 @@ fun PoemDetail(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             poem.verses.forEach { verse ->
-                VerseView(verse = verse, color = spec.onBackground, meaningColor = spec.onBackgroundMuted, showMeaning = showMeaning)
+                VerseView(verse = verse, color = readingColor(spec.onBackground), meaningColor = spec.onBackgroundMuted, showMeaning = showMeaning)
                 Spacer(Modifier.height(13.dp))
             }
 
@@ -111,7 +112,7 @@ fun PoemDetail(
                 Spacer(Modifier.height(12.dp))
                 Text("تفسیر", style = FalText.heading, color = spec.accent)
                 Spacer(Modifier.height(8.dp))
-                Text(poem.tafsir, style = FalText.tafsir, color = spec.onBackground)
+                Text(poem.tafsir, style = FalText.tafsir, color = readingColor(spec.onBackground))
                 Spacer(Modifier.height(10.dp))
             }
         }

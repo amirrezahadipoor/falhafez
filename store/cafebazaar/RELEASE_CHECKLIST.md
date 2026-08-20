@@ -11,9 +11,8 @@
 ## نکات کلیدی کافه‌بازار
 1. **تبلیغات**: برای ایران، Tapsell ضروری است (AdMob بدون Google Play Services روی بیشتر گوشی‌های ایرانی کار نمی‌کند).
    → `docs/TAPSELL_INTEGRATION.md` را بخوان؛ کلید Tapsell را از پنل tapsell.ir بگیر.
-2. **کلید امضا**: یک keystore با keytool بساز و در Secrets گیت‌هاب بگذار:
-   `KEYSTORE_PATH`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`
-   (ورک‌فلو اگر این متغیرها باشند، release را با همان کلید امضا می‌کند.)
+2. **کلید امضا**: ✅ ساخته شده — `store/keystore/release.keystore` + رمزها در `store/keystore/credentials.txt` (هر دو از گیت نادیده گرفته می‌شوند).
+   برای CI امضاشده، رمزها را در Secrets گیت‌هاب بگذار: `KEYSTORE_PATH` (base64 کلید), `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`.
 3. **ورژن**: هر انتشار باید `versionCode` را بالا ببرد (app/build.gradle.kts).
 4. **دسته**: ادبیات / سرگرمی. **ردهٔ سنی**: +3.
 5. اگر کافه‌بازار درخواست «لینک پشتیبانی» کرد، یک ایمیل یا کانال پشتیبانی بده.

@@ -53,11 +53,13 @@ import com.amirrezahadipoor.falhafez.core.designsystem.CornerOrnaments
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
 import com.amirrezahadipoor.falhafez.core.designsystem.LaurelDivider
 import com.amirrezahadipoor.falhafez.core.designsystem.MoonStar
+import com.amirrezahadipoor.falhafez.core.designsystem.readingColor
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
 import com.amirrezahadipoor.falhafez.core.util.Jalali
 import com.amirrezahadipoor.falhafez.core.util.PersianText
 import com.amirrezahadipoor.falhafez.domain.model.FalCategory
 import com.amirrezahadipoor.falhafez.domain.model.Poem
+import com.amirrezahadipoor.falhafez.domain.model.Poet
 import com.amirrezahadipoor.falhafez.domain.model.Verse
 import com.amirrezahadipoor.falhafez.presentation.ads.BannerAdView
 import com.amirrezahadipoor.falhafez.presentation.components.GhostButton
@@ -92,6 +94,7 @@ fun NiyyatContent(
     onCategorySelect: (FalCategory) -> Unit,
     onDraw: () -> Unit,
     onRewardedDraw: (() -> Unit)? = null,
+    onSourceSelect: (Poet?) -> Unit,
     onDailyFal: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
@@ -105,7 +108,7 @@ fun NiyyatContent(
         // ---- fixed header ----
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "هم‌فال", style = FalText.displaySmall, color = spec.accentSoft)
+                Text(text = "نیّت", style = FalText.displaySmall, color = spec.accentSoft)
                 Text(text = "دیوان و فالِ حافظ", style = FalText.caption, color = spec.onBackgroundMuted)
             }
             IconButton(onClick = onOpenSettings) {
@@ -153,7 +156,45 @@ fun NiyyatContent(
                 )
             )
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(8.dp))
+
+            // ---- fal source selector ----
+            Text("منبعِ فال", style = FalText.caption, color = spec.onBackgroundMuted)
+            Spacer(Modifier.height(4.dp))
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+            ) {
+                val sources: List<Pair<String, Poet?>> =
+                    listOf("حافظ" to Poet.HAFEZ, "سعدی" to Poet.SAADI, "مولانا" to Poet.RUMI, "خیام" to Poet.KHAYYAM, "همه" to null)
+                items(sources) { (label, poet) ->
+                    val selected = state.falSource == poet
+                    FilterChip(
+                        selected = selected,
+                        onClick = { onSourceSelect(poet) },
+                        label = { Text(label, style = FalText.caption) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = spec.accent,
+                            selectedLabelColor = Color(0xFF14100A),
+                            containerColor = spec.card.copy(alpha = 0.5f),
+                            labelColor = spec.onBackgroundMuted
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = selected,
+                            borderColor = spec.border.copy(alpha = 0.5f),
+                            selectedBorderColor = spec.accentSoft
+                        )
+                    )
+                }
+            }
+            Text(
+                text = "فال از میانِ ${PersianText.number(state.sourceCount)} شعر",
+                style = FalText.caption,
+                color = spec.onBackgroundMuted
+            )
+
+            Spacer(Modifier.height(8.dp))
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
@@ -277,7 +318,7 @@ fun RevealContent(
                     visible = index < visibleCount,
                     enter = fadeIn(tween(650)) + slideInVertically(tween(650)) { it / 3 }
                 ) {
-                    VerseView(verse = verse, color = spec.onBackground)
+                    VerseView(verse = verse, color = readingColor(spec.onBackground))
                 }
                 Spacer(Modifier.height(14.dp))
             }
@@ -349,7 +390,7 @@ fun InterpretationContent(
                     modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = poem.tafsir, style = FalText.tafsir, color = spec.onBackground)
+                    Text(text = poem.tafsir, style = FalText.tafsir, color = readingColor(spec.onBackground))
                     if (categoryAngle != null) {
                         Spacer(Modifier.height(12.dp))
                         OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.5f))

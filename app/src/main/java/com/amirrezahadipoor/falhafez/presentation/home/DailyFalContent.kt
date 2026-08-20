@@ -39,6 +39,7 @@ import com.amirrezahadipoor.falhafez.core.designsystem.CornerOrnaments
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
 import com.amirrezahadipoor.falhafez.core.designsystem.MoonStar
 import com.amirrezahadipoor.falhafez.core.designsystem.RotatingStar
+import com.amirrezahadipoor.falhafez.core.designsystem.readingColor
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
 import com.amirrezahadipoor.falhafez.core.util.Jalali
 import com.amirrezahadipoor.falhafez.domain.model.FalCategory
@@ -103,10 +104,10 @@ fun DailyFalContent(
                     enter = fadeIn(tween(600)) + slideInVertically(tween(600)) { it / 3 }
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(verse.first, style = FalText.verse, color = spec.onBackground)
+                        Text(verse.first, style = FalText.verse, color = readingColor(spec.onBackground))
                         if (verse.isCouplet) {
                             Spacer(Modifier.height(3.dp))
-                            Text(verse.second!!, style = FalText.verse, color = spec.onBackground)
+                            Text(verse.second!!, style = FalText.verse, color = readingColor(spec.onBackground))
                         }
                     }
                 }
@@ -123,7 +124,7 @@ fun DailyFalContent(
                 Column(modifier = Modifier.padding(18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("تفسیر", style = FalText.heading, color = spec.accent)
                     Spacer(Modifier.height(8.dp))
-                    Text(poem.tafsir, style = FalText.tafsir, color = spec.onBackground)
+                    Text(poem.tafsir, style = FalText.tafsir, color = readingColor(spec.onBackground))
                 }
             }
             Spacer(Modifier.height(8.dp))

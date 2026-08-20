@@ -16,9 +16,13 @@ enum class Collection(val key: String, val faName: String, val poet: Poet) {
     SAADI_GOLESTAN("golestan", "گلستان", Poet.SAADI),
     SAADI_BUSTAN("bustan", "بوستان", Poet.SAADI),
     SAADI_GHAZAL("saadi-ghazal", "غزلیات", Poet.SAADI),
+    SAADI_ROBAEE("saadi-robaee", "رباعیات", Poet.SAADI),
+    SAADI_GHETE("saadi-ghete", "قطعات", Poet.SAADI),
+    SAADI_MOLHAGHAT("saadi-molhaghat", "ملحقات", Poet.SAADI),
     STORIES("stories", "داستان‌های آموزنده", Poet.SAADI),
     RUMI_MASNAVI("masnavi", "مثنوی معنوی", Poet.RUMI),
     RUMI_SHAMS("shams", "دیوان شمس", Poet.RUMI),
+    RUMI_ROBAEE("robaee", "رباعیات", Poet.RUMI),
     KHAYYAM_RUBAI("rubaiyat", "رباعیات", Poet.KHAYYAM);
 
     companion object {

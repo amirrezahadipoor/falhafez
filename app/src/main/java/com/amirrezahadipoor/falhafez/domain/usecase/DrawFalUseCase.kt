@@ -2,13 +2,15 @@ package com.amirrezahadipoor.falhafez.domain.usecase
 
 import com.amirrezahadipoor.falhafez.domain.model.DrawEntry
 import com.amirrezahadipoor.falhafez.domain.model.FalCategory
+import com.amirrezahadipoor.falhafez.domain.model.Poet
 import com.amirrezahadipoor.falhafez.domain.repository.DrawRepository
 import com.amirrezahadipoor.falhafez.domain.repository.PoemRepository
 import javax.inject.Inject
 
 /**
- * Draws a random fal: picks a weighted-random poem (excluding recently drawn ones
- * to reduce immediate repeats) and records it in history.
+ * Draws a random fal: picks a weighted-random poem (excluding recently drawn ones to
+ * reduce immediate repeats) and records it in history. [source] = null draws from ALL
+ * collections (حافظ + سعدی + مولانا + خیام); otherwise only that poet's divan.
  */
 class DrawFalUseCase @Inject constructor(
     private val poemRepository: PoemRepository,
@@ -16,10 +18,11 @@ class DrawFalUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         question: String?,
-        category: FalCategory
+        category: FalCategory,
+        source: Poet? = Poet.HAFEZ
     ): DrawEntry? {
         val recentIds = drawRepository.recentPoemIds(limit = 30)
-        val poem = poemRepository.getRandomPoem(excludeIds = recentIds) ?: return null
+        val poem = poemRepository.getRandomPoem(excludeIds = recentIds, poet = source) ?: return null
         val drawId = drawRepository.record(poem.id, question, category)
         return DrawEntry(
             id = drawId,

@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.amirrezahadipoor.falhafez.core.designsystem.FalHafezTheme
+import com.amirrezahadipoor.falhafez.core.designsystem.LocalReadingColor
 import com.amirrezahadipoor.falhafez.presentation.main.MainViewModel
 import com.amirrezahadipoor.falhafez.presentation.navigation.FalNavHost
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,12 +32,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             val mainViewModel: MainViewModel = hiltViewModel()
             val fontScale by mainViewModel.fontSizeScale.collectAsStateWithLifecycle()
+            val fontColor by mainViewModel.fontColor.collectAsStateWithLifecycle()
             val baseDensity = LocalDensity.current
 
             // Persian-first: force RTL everywhere + apply the user's reading-font scale.
             CompositionLocalProvider(
                 LocalLayoutDirection provides LayoutDirection.Rtl,
-                LocalDensity provides Density(baseDensity.density, baseDensity.fontScale * fontScale)
+                LocalDensity provides Density(baseDensity.density, baseDensity.fontScale * fontScale),
+                LocalReadingColor provides fontColor
             ) {
                 FalHafezTheme {
                     Surface(
