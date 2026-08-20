@@ -15,18 +15,20 @@ android {
         applicationId = "ir.siliksama.falhafez"
         minSdk = 23
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
+
+        // کلید اپلیکیشن تپسل — توسط SDK از مانیفست خوانده می‌شود (auto-init).
+        addManifestPlaceholders(mapOf("TapsellMediationAppKey" to "tcgrrdhdhqmccrmqjeobdfsppktsqfhdqpijdkrfmkstiersqilbhfojrjblshbosqdkrb"))
     }
 
     signingConfigs {
-        // Release signing: a real keystore is provided via CI env vars
-        // (KEYSTORE_PATH / KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD).
-        // Falls back to the debug key when none is provided (local builds + CI smoke tests).
+        // Release signing: keystore via CI env vars (KEYSTORE_PATH/KEYSTORE_PASSWORD/KEY_ALIAS/KEY_PASSWORD).
+        // Falls back to the debug key when none is provided (local smoke builds).
         create("release") {
             val ksPath = System.getenv("KEYSTORE_PATH")
-            if (!ksPath.isNullOrBlank() && file(ksPath).exists()) {
-                storeFile = file(ksPath)
+            if (!ksPath.isNullOrBlank() && rootProject.file(ksPath).exists()) {
+                storeFile = rootProject.file(ksPath)
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("KEY_ALIAS")
                 keyPassword = System.getenv("KEY_PASSWORD")
@@ -104,6 +106,10 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.lottie.compose)
+
+    // تپسل — شبکهٔ اصلی تبلیغات (Mediation SDK، نسخهٔ پایدار از Maven Central)
+    implementation(libs.tapsell)
+    implementation(libs.tapsell.legacy.adapter)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)

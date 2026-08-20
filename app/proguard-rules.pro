@@ -13,3 +13,7 @@
 -keep class * extends androidx.room.RoomDatabase { *; }
 -keep @androidx.room.Entity class *
 -dontwarn androidx.room.paging.**
+
+# Tapsell Mediation SDK (rules included automatically, kept as a safety net)
+-keep class ir.tapsell.** { *; }
+-dontwarn ir.tapsell.**

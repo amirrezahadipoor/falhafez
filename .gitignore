@@ -13,3 +13,5 @@ local.properties
 /.artwork/
 
 /store/keystore/
+
+release.keystore

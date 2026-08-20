@@ -1,6 +1,7 @@
 package ir.siliksama.falhafez
 
 import android.app.Application
+
 import ir.siliksama.falhafez.core.sound.Sounds
 import ir.siliksama.falhafez.data.local.seed.CorpusSeeder
 import dagger.hilt.android.HiltAndroidApp
@@ -23,6 +24,7 @@ class FalHafezApp : Application() {
         // Seed the bundled poem corpus on first launch (fully offline).
         appScope.launch { corpusSeeder.seedIfNeeded() }
         Sounds.init(this)
+        // تپسل به‌صورت خودکار (ContentProvider) با کلیدِ مانیفست راه‌اندازی می‌شود — بدون نیاز به کد.
     }
 
     companion object {
