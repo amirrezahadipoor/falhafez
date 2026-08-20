@@ -22,6 +22,9 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Setup Gradle (cache)
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Validate corpus assets
         run: python3 tools/validate_corpus.py
 

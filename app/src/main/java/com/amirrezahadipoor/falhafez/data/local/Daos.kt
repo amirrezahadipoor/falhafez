@@ -49,7 +49,7 @@ interface PoemDao {
 
     @Query(
         "SELECT * FROM poems WHERE id IN " +
-            "(SELECT poemId FROM poems_fts WHERE poems_fts MATCH :query) ORDER BY number"
+            "(SELECT rowid FROM poems_fts WHERE poems_fts MATCH :query) ORDER BY number"
     )
     suspend fun search(query: String): List<PoemEntity>
 

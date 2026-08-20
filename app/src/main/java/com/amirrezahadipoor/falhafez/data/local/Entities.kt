@@ -1,5 +1,6 @@
 package com.amirrezahadipoor.falhafez.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -50,6 +51,7 @@ data class VerseEntity(
 @Fts4(tokenizer = FtsOptions.TOKENIZER_UNICODE61)
 @Entity(tableName = "poems_fts")
 data class PoemFtsEntity(
+    @ColumnInfo(name = "rowid")
     @PrimaryKey val poemId: Long,
     val text: String
 )
