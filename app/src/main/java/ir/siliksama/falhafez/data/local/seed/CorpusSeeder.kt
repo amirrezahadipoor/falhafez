@@ -24,12 +24,13 @@ class CorpusSeeder @Inject constructor(
     private val mutex = Mutex()
 
     // Hafez FIRST — the app becomes ready (count > 0) as soon as the Divan commits.
+    // gzip شده در زمان build تا حجم APK به حداقل برسد؛ اینجا decompress می‌شود.
     private val corpusFiles = listOf(
-        "corpus/hafez.json",
-        "corpus/khayyam.json",
-        "corpus/saadi.json",
-        "corpus/rumi.json",
-        "corpus/stories.json"
+        "corpus/hafez.json.gz",
+        "corpus/khayyam.json.gz",
+        "corpus/saadi.json.gz",
+        "corpus/rumi.json.gz",
+        "corpus/stories.json.gz"
     )
 
     suspend fun seedIfNeeded() = mutex.withLock {
@@ -39,7 +40,7 @@ class CorpusSeeder @Inject constructor(
         var any = false
         for (file in corpusFiles) {
             val batch = runCatching {
-                val text = context.assets.open(file)
+                val text = java.util.zip.GZIPInputStream(context.assets.open(file))
                     .bufferedReader(Charsets.UTF_8).use { it.readText() }
                 json.decodeFromString<List<SeedPoem>>(text)
             }.getOrDefault(emptyList())

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-import json, sys
+import gzip, json, sys
 total = 0
 for name in ["hafez", "khayyam", "saadi", "rumi", "stories"]:
-    p = f"app/src/main/assets/corpus/{name}.json"
-    d = json.load(open(p, encoding="utf-8"))
+    p = f"app/src/main/assets/corpus/{name}.json.gz"
+    d = json.loads(gzip.open(p, "rt", encoding="utf-8").read())
     ids = [x["id"] for x in d]
     assert len(ids) == len(set(ids)), f"{name}: duplicate ids"
     for x in d:

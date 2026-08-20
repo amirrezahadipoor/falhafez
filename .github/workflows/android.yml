@@ -1,4 +1,4 @@
-name: Android CI
+name: Android CI — Universal Release APK
 
 on:
   push:
@@ -37,7 +37,9 @@ jobs:
         if: ${{ env.KEYSTORE_B64 != '' }}
         run: echo "$KEYSTORE_B64" | base64 -d > release.keystore
 
-      - name: Build release APK
+      # Universal release APK: single APK containing every ABI
+      # (arm64-v8a, armeabi-v7a, x86, x86_64) — no debug APK, no AAB splits.
+      - name: Build universal release APK
         env:
           KEYSTORE_PATH: release.keystore
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -45,9 +47,14 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew assembleRelease --no-daemon --stacktrace
 
-      - name: Upload release APK
+      - name: Rename artifact
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/release/app-release.apk dist/FalHafez-universal-release.apk
+
+      - name: Upload universal release APK
         uses: actions/upload-artifact@v4
         with:
-          name: falhafez-release-apk
-          path: app/build/outputs/apk/release/*.apk
+          name: falhafez-universal-release
+          path: dist/FalHafez-universal-release.apk
           retention-days: 30
