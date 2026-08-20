@@ -31,7 +31,7 @@ jobs:
           api-level: 33
           arch: x86_64
           disable-animations: true
-          emulator-options: -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect -skin 1080x2280
+          emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect -skin 1080x2280
           script: |
             adb shell wm size
             adb install -r app/build/outputs/apk/debug/app-debug.apk
