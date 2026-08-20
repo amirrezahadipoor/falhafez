@@ -17,11 +17,27 @@ class SettingsRepositoryImpl @Inject constructor(
     override val rewardedExtraDraws: Flow<Int> = dataStore.rewardedExtraDraws
     override val unlockedThemes: Flow<Set<String>> = dataStore.unlockedThemes
 
-    override suspend fun setTheme(id: FalThemeId) = dataStore.setTheme(id)
-    override suspend fun setFontSizeScale(scale: Float) = dataStore.setFontSizeScale(scale)
-    override suspend fun setNotificationsEnabled(enabled: Boolean) = dataStore.setNotificationsEnabled(enabled)
-    override suspend fun setSeenOnboarding(seen: Boolean) = dataStore.setSeenOnboarding(seen)
-    override suspend fun addRewardedDraw(count: Int) = dataStore.addRewardedDraws(count)
+    override suspend fun setTheme(id: FalThemeId) {
+        dataStore.setTheme(id)
+    }
 
-    override suspend fun unlockTheme(id: FalThemeId) = dataStore.unlockTheme(id.id)
+    override suspend fun setFontSizeScale(scale: Float) {
+        dataStore.setFontSizeScale(scale)
+    }
+
+    override suspend fun setNotificationsEnabled(enabled: Boolean) {
+        dataStore.setNotificationsEnabled(enabled)
+    }
+
+    override suspend fun setSeenOnboarding(seen: Boolean) {
+        dataStore.setSeenOnboarding(seen)
+    }
+
+    override suspend fun addRewardedDraw(count: Int) {
+        dataStore.addRewardedDraws(count)
+    }
+
+    override suspend fun unlockTheme(id: FalThemeId) {
+        dataStore.unlockTheme(id.id)
+    }
 }

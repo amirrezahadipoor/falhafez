@@ -12,6 +12,7 @@ import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextDirectionHeuristics
 import android.text.TextPaint
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.res.ResourcesCompat
 import com.amirrezahadipoor.falhafez.R
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec

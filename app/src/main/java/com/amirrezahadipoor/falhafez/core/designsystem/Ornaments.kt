@@ -3,7 +3,6 @@ package com.amirrezahadipoor.falhafez.core.designsystem
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -103,7 +102,7 @@ fun BreathingRosette(
 @Composable
 fun BreathingRing(
     modifier: Modifier = Modifier,
-    size: Dp = 120.dp,
+    ringSize: Dp = 120.dp,
     tint: Color = FalPalette.Gold,
     durationMillis: Int = 3800
 ) {
@@ -127,7 +126,7 @@ fun BreathingRing(
         label = "breath-alpha"
     )
     Box(
-        modifier = modifier.size(size),
+        modifier = modifier.size(ringSize),
         contentAlignment = Alignment.Center
     ) {
         Canvas(Modifier.matchParentSize()) {

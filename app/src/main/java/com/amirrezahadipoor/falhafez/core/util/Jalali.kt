@@ -39,8 +39,8 @@ object Jalali {
     fun format(epochMillis: Long): String {
         val c = Calendar.getInstance().apply { timeInMillis = epochMillis }
         val j = fromGregorian(c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH))
-        val hour = PersianText.number(c.get(Calendar.HOUR_OF_DAY).toString().padStart(2, '0'))
-        val minute = PersianText.number(c.get(Calendar.MINUTE).toString().padStart(2, '0'))
+        val hour = PersianText.digits(c.get(Calendar.HOUR_OF_DAY).toString().padStart(2, '0'))
+        val minute = PersianText.digits(c.get(Calendar.MINUTE).toString().padStart(2, '0'))
         return "${PersianText.number(j.day)} ${months[j.month - 1]} ${PersianText.number(j.year)} — ساعت $hour:$minute"
     }
 

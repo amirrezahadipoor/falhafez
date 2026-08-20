@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -71,7 +70,6 @@ class HomeViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FalThemeId.TAZHIB)
 
     val isFavorite: StateFlow<Boolean> = favoriteTargetId
-        .distinctUntilChanged()
         .flatMapLatest { id ->
             if (id == null) flowOf(false) else favoriteRepository.observeIsFavorite(id)
         }
@@ -128,7 +126,7 @@ class HomeViewModel @Inject constructor(
         recomputeRemaining()
         adManager.onDrawCompleted()
 
-        launch {
+        viewModelScope.launch {
             delay(COOLDOWN_MS)
             _uiState.update { it.copy(cooldownActive = false) }
         }

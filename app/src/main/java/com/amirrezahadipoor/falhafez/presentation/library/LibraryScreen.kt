@@ -99,15 +99,17 @@ fun LibraryScreen(
                 query = state.query,
                 onQueryChange = viewModel::onQueryChange
             )
+            val currentPoet = state.poet
+            val currentCollection = state.collection
             when {
                 state.query.isNotBlank() -> SearchResults(results = results, onOpen = viewModel::openPoem)
-                state.collection != null -> PoemsList(
+                currentCollection != null -> PoemsList(
                     poems = state.poems,
                     loading = state.loading,
                     onOpen = viewModel::openPoem
                 )
-                state.poet != null -> CollectionsList(
-                    collections = Collection.byPoet(state.poet),
+                currentPoet != null -> CollectionsList(
+                    collections = Collection.byPoet(currentPoet),
                     onOpen = viewModel::openCollection
                 )
                 else -> PoetsList(onOpen = viewModel::openPoet)
