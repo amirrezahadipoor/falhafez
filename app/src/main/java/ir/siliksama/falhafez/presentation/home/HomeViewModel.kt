@@ -35,10 +35,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import javax.inject.Inject
 
-private const val DAILY_FREE_LIMIT = 10
 private const val COOLDOWN_MS = 8_000L
 
 enum class DrawStage { NIYYAT, DRAWING, REVEAL, INTERPRETATION }
@@ -52,7 +50,7 @@ data class HomeUiState(
     val lastDraw: DrawEntry? = null,
     val dailyFal: Poem? = null,
     val cooldownActive: Boolean = false,
-    val remainingToday: Int = DAILY_FREE_LIMIT,
+    val remainingToday: Int = Int.MAX_VALUE,
     val busy: Boolean = false,
     val supportOpen: Boolean = false
 ) {
@@ -189,24 +187,8 @@ class HomeViewModel @Inject constructor(
     }
 
     private suspend fun recomputeRemaining() {
-        val used = drawRepository.countSince(startOfToday())
-        val extra = settingsRepository.rewardedExtraDraws.first()
-        val bonus = when (supportRepository.tier.first()) {
-            SupportTier.PLUS -> 5
-            SupportTier.GOLD -> 20
-            else -> 0
-        }
-        _uiState.update { it.copy(remainingToday = DAILY_FREE_LIMIT - used + extra + bonus) }
-    }
-
-    private fun startOfToday(): Long {
-        val c = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        return c.timeInMillis
+        // فال نامحدود است — هیچ محدودیت روزانه‌ای وجود ندارد.
+        _uiState.update { it.copy(remainingToday = Int.MAX_VALUE) }
     }
 
     fun onDrawingFinished() {

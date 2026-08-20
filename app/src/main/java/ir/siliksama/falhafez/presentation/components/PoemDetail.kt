@@ -39,6 +39,7 @@ import ir.siliksama.falhafez.domain.model.FalCategory
 import ir.siliksama.falhafez.domain.model.Poem
 import ir.siliksama.falhafez.domain.model.Verse
 import ir.siliksama.falhafez.presentation.share.SharePoemButton
+import ir.siliksama.falhafez.presentation.components.ScrollableColumn
 
 /** Full-poem reader: beit meanings, study mode, copy — actions pinned at the bottom. */
 @Composable
@@ -95,11 +96,10 @@ fun PoemDetail(
             Spacer(Modifier.height(8.dp))
         }
 
-        Column(
+        ScrollableColumn(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState()),
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             poem.verses.forEach { verse ->

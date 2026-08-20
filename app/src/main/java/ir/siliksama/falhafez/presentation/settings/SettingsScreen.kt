@@ -77,10 +77,11 @@ import ir.siliksama.falhafez.core.util.openAppInBazaar
 import ir.siliksama.falhafez.domain.model.SupportTier
 import ir.siliksama.falhafez.domain.model.UpdateCheckResult
 import ir.siliksama.falhafez.presentation.components.ScreenHeader
+import ir.siliksama.falhafez.presentation.components.ScrollableColumn
 import ir.siliksama.falhafez.presentation.share.SocialNetwork
 
 private enum class SettingsTab(val faName: String) {
-    THEME("قالب"), DISPLAY("نمایش"), SOUND("صدا"), SUPPORT("حمایت مالی"), CHANNEL("کانال من"), APPS("برنامه‌ها"), GENERAL("عمومی")
+    THEME("قالب"), DISPLAY("نمایش"), SOUND("صدا"), SUPPORT("حمایت"), CHANNEL("کانال"), APPS("سایر"), GENERAL("عمومی")
 }
 
 private fun formatPrice(toman: Int): String =
@@ -179,24 +180,35 @@ fun SettingsScreen(onBack: () -> Unit) {
         Column(Modifier.fillMaxSize()) {
             ScreenHeader(title = "تنظیمات", onBack = onBack)
 
-            // tab bar — scrollable, one tap to any section
-            LazyRow(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // تب‌های جمع‌وجور — یک ردیف فشرده با عرض برابر، بدون اسکرول
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(FalPalette.NavySoft, RoundedCornerShape(14.dp))
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(SettingsTab.entries.toList()) { t ->
+                SettingsTab.entries.forEach { t ->
                     val index = SettingsTab.entries.indexOf(t)
-                    FilterChip(
-                        selected = tab == index,
-                        onClick = { tab = index },
-                        label = { Text(t.faName, style = FalText.caption) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = FalPalette.Gold,
-                            selectedLabelColor = Color(0xFF14100A),
-                            containerColor = FalPalette.NavySoft,
-                            labelColor = FalPalette.CreamMuted
+                    val selected = tab == index
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(11.dp))
+                            .background(if (selected) FalPalette.Gold else androidx.compose.ui.graphics.Color.Transparent)
+                            .clickable { tab = index }
+                            .padding(vertical = 7.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            t.faName,
+                            style = FalText.caption,
+                            color = if (selected) Color(0xFF14100A) else FalPalette.CreamMuted,
+                            maxLines = 1
                         )
-                    )
+                    }
                 }
             }
             Spacer(Modifier.height(10.dp))
@@ -214,8 +226,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                             }
                         }
                     )
-                    SettingsTab.DISPLAY -> Column(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
+                    SettingsTab.DISPLAY -> ScrollableColumn(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         CardBox {
@@ -261,8 +273,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                             }
                         }
                     }
-                    SettingsTab.SOUND -> Column(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
+                    SettingsTab.SOUND -> ScrollableColumn(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         CardBox { SettingSwitchRow("صداهای آیینی", "زنگِ گشودن دیوان و صدای دکمه‌ها", soundEnabled, viewModel::setSound) }
@@ -282,8 +294,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                         onSharePromo = { h, nm -> viewModel.shareChannelPromo(h, nm) }
                     )
                     SettingsTab.APPS -> AppsTab()
-                    SettingsTab.GENERAL -> Column(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
+                    SettingsTab.GENERAL -> ScrollableColumn(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         CardBox {
@@ -340,8 +352,8 @@ private fun SupportTab(
     purchasing: Boolean,
     onPurchase: (SupportTier) -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
+    ScrollableColumn(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         CardBox {
@@ -417,8 +429,8 @@ private fun ChannelTab(
     var handleText by remember { mutableStateOf(handle) }
     var nameText by remember { mutableStateOf(name) }
 
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
+    ScrollableColumn(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         CardBox {
@@ -525,8 +537,8 @@ private fun AppsTab() {
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
+    ScrollableColumn(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         CardBox {

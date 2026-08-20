@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import ir.siliksama.falhafez.R
 import ir.siliksama.falhafez.core.util.findActivity
+import ir.siliksama.falhafez.core.util.SupportStore
 import ir.siliksama.falhafez.data.ads.AdConfig
 import ir.tapsell.mediation.Tapsell
 import ir.tapsell.mediation.ad.AdStateListener
@@ -16,7 +17,7 @@ import ir.tapsell.mediation.ad.views.ntv.NativeAdViewContainer
 /** تبلیغ همسان تپسل — داخل فهرست دیوان، هم‌شکل با کارت‌های اپ. */
 @Composable
 fun NativeAdCard(modifier: Modifier = Modifier) {
-    if (!AdConfig.enabled) return
+    if (!AdConfig.enabled || SupportStore.tier.adsRemoved) return
     AndroidView(
         modifier = modifier,
         factory = { ctx ->

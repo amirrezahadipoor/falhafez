@@ -45,6 +45,7 @@ import ir.siliksama.falhafez.presentation.components.EmptyState
 import ir.siliksama.falhafez.presentation.components.GhostButton
 import ir.siliksama.falhafez.presentation.components.RitualBackground
 import ir.siliksama.falhafez.presentation.components.ScreenHeader
+import ir.siliksama.falhafez.presentation.components.ScrollableColumn
 
 @Composable
 fun StoriesScreen() {
@@ -129,11 +130,10 @@ private fun StoryDetail(story: Poem, spec: FalThemeSpec, onBack: () -> Unit) {
                 titleColor = spec.onBackground
             )
 
-            Column(
+            ScrollableColumn(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
+                    .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(text = prose, style = FalText.tafsir, color = readingColor(spec.onBackground), textAlign = TextAlign.Justify)

@@ -130,7 +130,6 @@ fun HomeScreen(
                         category = entry.category,
                         isFavorite = isFavorite,
                         cooldownActive = state.cooldownActive,
-                        remainingToday = state.remainingToday,
                         onToggleFavorite = viewModel::onToggleFavorite,
                         onDrawAgain = viewModel::draw,
                         onRewarded = if (activity != null) { { viewModel.requestSkipCooldown(activity) } } else null,

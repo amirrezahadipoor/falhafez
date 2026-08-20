@@ -77,38 +77,62 @@ object ShareImageRenderer {
         )
         y += 40f
 
-        // verse (cap at 6 beits for a clean card)
-        val maxBeits = 6
-        val lines = mutableListOf<String>()
-        poem.verses.take(maxBeits).forEach { b ->
-            lines += b.first
-            b.second?.let { lines += it }
-        }
-        if (poem.verses.size > maxBeits) lines += "…"
-        val verseText = lines.joinToString("\n")
-
-        val verseSize = if (lines.size <= 8) 46f else 40f
-        y = drawText(
-            canvas, verseText, verseSize, nastaliq, spec.onBackground.toArgb(),
-            textWidth, PAD, y, Layout.Alignment.ALIGN_NORMAL, 1.55f
-        )
-        y += 36f
-
-        drawDividerOrnament(canvas, y, spec.accent.toArgb())
-        y += 44f
-
-        y = drawText(
-            canvas, "تفسیر", 40f, vazirBold, spec.accent.toArgb(),
-            textWidth, PAD, y, Layout.Alignment.ALIGN_NORMAL, 1.0f
-        )
-        y += 16f
-
+        // --- متن کاملِ تعبیر (+ زاویهٔ موضوعی) را اندازه بگیریم ---
         val tafsirText = poem.tafsir + if (category != FalCategory.NONE) {
             val angle = CategoryAngles.text(category)
             if (angle != null) "\n\n$angle" else ""
         } else ""
+
+        val footerReserve = if (channel != null && channel.isSet) 205f else 135f
+        val supporterReserve = if (supporterBadge) 72f else 0f
+
+        var tafsirSize = 30f
+        var tafsirH = measureText(tafsirText, tafsirSize, vazir, textWidth, 1.5f)
+        val maxTafsirH = H * 0.42f
+        if (tafsirH > maxTafsirH) {
+            tafsirSize = 25f
+            tafsirH = measureText(tafsirText, tafsirSize, vazir, textWidth, 1.5f)
+        }
+
+        // --- چند بیت از شعر، به‌اندازه‌ای که در فضای باقی‌مانده جا شود ---
+        val dividerSpace = 56f
+        val tafsirLabelH = 58f
+        val headerBottom = y + 34f
+        val availableForBeits =
+            H - headerBottom - footerReserve - supporterReserve - dividerSpace - tafsirLabelH - tafsirH - 80f
+
+        val verseSize = 42f
+        val beitHeight = 2f * verseSize * 1.5f + 16f
+        val maxBeits = (availableForBeits / beitHeight).toInt().coerceIn(2, 5)
+
+        val chosen = poem.verses.take(maxBeits)
+        val lines = mutableListOf<String>()
+        chosen.forEach { b ->
+            lines += b.first
+            b.second?.let { lines += it }
+        }
+        if (poem.verses.size > chosen.size) lines += "…"
+        val verseText = lines.joinToString("\n")
+        val verseH = measureText(verseText, verseSize, nastaliq, textWidth, 1.5f)
+
+        y = headerBottom + ((availableForBeits - verseH) / 2f).coerceAtLeast(0f)
         y = drawText(
-            canvas, tafsirText, 31f, vazir, spec.onBackground.toArgb(),
+            canvas, verseText, verseSize, nastaliq, spec.onBackground.toArgb(),
+            textWidth, PAD, y, Layout.Alignment.ALIGN_NORMAL, 1.5f
+        )
+        y += 30f
+
+        drawDividerOrnament(canvas, y, spec.accent.toArgb())
+        y += 40f
+
+        y = drawText(
+            canvas, "تعبیر", 40f, vazirBold, spec.accent.toArgb(),
+            textWidth, PAD, y, Layout.Alignment.ALIGN_NORMAL, 1.0f
+        )
+        y += 14f
+
+        drawText(
+            canvas, tafsirText, tafsirSize, vazir, spec.onBackground.toArgb(),
             textWidth, PAD, y, Layout.Alignment.ALIGN_NORMAL, 1.5f
         )
 
@@ -170,6 +194,24 @@ object ShareImageRenderer {
             canvas, "برای فالِ روزانه، ما را دنبال کنید", 24f, vazir, spec.onBackgroundMuted.toArgb(),
             textWidth, PAD, y + 96f, Layout.Alignment.ALIGN_CENTER, 1.0f
         )
+    }
+
+    /** ارتفاع متن رندر‌شده را بدون کشیدن اندازه می‌گیرد. */
+    private fun measureText(
+        text: String, size: Float, typeface: Typeface, width: Int, lineSpacing: Float
+    ): Float {
+        val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.typeface = typeface
+            textSize = size
+        }
+        val layout = StaticLayout.Builder
+            .obtain(text, 0, text.length, paint, width)
+            .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+            .setTextDirection(TextDirectionHeuristics.RTL)
+            .setLineSpacing(0f, lineSpacing)
+            .setIncludePad(false)
+            .build()
+        return layout.height.toFloat()
     }
 
     private fun drawText(

@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import ir.siliksama.falhafez.core.util.findActivity
+import ir.siliksama.falhafez.core.util.SupportStore
 import ir.siliksama.falhafez.data.ads.AdConfig
 import ir.tapsell.mediation.Tapsell
 import ir.tapsell.mediation.ad.AdStateListener
@@ -18,7 +19,7 @@ import androidx.compose.foundation.layout.Box
 /** بنر استاندارد تپسل (320x50) — غیرمزاحم، فقط در صفحات آرام. */
 @Composable
 fun BannerAdView(modifier: Modifier = Modifier) {
-    if (!AdConfig.enabled) return
+    if (!AdConfig.enabled || SupportStore.tier.adsRemoved) return
     Box(modifier = modifier.fillMaxWidth().wrapContentHeight(), contentAlignment = Alignment.Center) {
         AndroidView(
             modifier = Modifier.fillMaxWidth(),

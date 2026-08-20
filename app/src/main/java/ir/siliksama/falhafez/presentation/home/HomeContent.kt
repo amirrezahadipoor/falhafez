@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -54,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -85,6 +87,7 @@ import ir.siliksama.falhafez.presentation.components.GoldButton
 import ir.siliksama.falhafez.presentation.components.OrnamentalDivider
 import ir.siliksama.falhafez.presentation.share.SharePoemButton
 import ir.siliksama.falhafez.presentation.share.SocialNetwork
+import ir.siliksama.falhafez.presentation.components.ScrollableColumn
 import kotlinx.coroutines.delay
 
 /* ------------------------------------------------------------------ */
@@ -135,9 +138,7 @@ fun NiyyatContent(
                 Text(text = "تعبیر هوشمند", style = FalText.caption, color = spec.onBackgroundMuted)
             }
             SupportHeart(spec = spec, onClick = onOpenSupport)
-            IconButton(onClick = onOpenSettings) {
-                Icon(Icons.Outlined.Settings, contentDescription = "تنظیمات", tint = spec.onBackgroundMuted)
-            }
+            RotatingGear(spec = spec, onClick = onOpenSettings)
         }
         OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.6f))
 
@@ -249,20 +250,12 @@ fun NiyyatContent(
         // ---- fixed bottom: CTA + daily fal + banner ----
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             BreathingRosette(tint = spec.accent, size = 130.dp)
-            if (state.remainingToday <= 0 && onRewardedDraw != null && !adsRemoved) {
-                GoldButton(text = "فال بیشتر — تماشای ویدئو", onClick = onRewardedDraw, glow = true)
-            } else {
-                GoldButton(
-                    text = when {
-                        state.busy -> "در حال گشودن دیوان…"
-                        state.remainingToday <= 0 -> "فالِ رایگانِ امروز تمام شد"
-                        else -> "فال بگیر"
-                    },
-                    onClick = onDraw,
-                    enabled = state.canDraw,
-                    glow = true
-                )
-            }
+            GoldButton(
+                text = if (state.busy) "در حال گشودن دیوان…" else "فال بگیر",
+                onClick = onDraw,
+                enabled = state.canDraw,
+                glow = true
+            )
         }
         Spacer(Modifier.height(8.dp))
 
@@ -323,14 +316,6 @@ fun NiyyatContent(
             }
         }
 
-        if (state.remainingToday in 1..2) {
-            Text(
-                "فالِ رایگانِ باقی‌ماندهٔ امروز: ${PersianText.number(state.remainingToday)}",
-                style = FalText.caption,
-                color = spec.onBackgroundMuted
-            )
-        }
-
         Spacer(Modifier.height(8.dp))
         BannerAdView()
     }
@@ -372,11 +357,10 @@ fun RevealContent(
         Spacer(Modifier.height(6.dp))
 
         // scrollable middle (only if the ghazal is longer than the screen)
-        Column(
+        ScrollableColumn(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState()),
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             poem.verses.forEachIndexed { index, verse ->
@@ -414,7 +398,6 @@ fun InterpretationContent(
     category: FalCategory,
     isFavorite: Boolean,
     cooldownActive: Boolean,
-    remainingToday: Int,
     onToggleFavorite: () -> Unit,
     onDrawAgain: () -> Unit,
     onRewarded: (() -> Unit)? = null,
@@ -440,11 +423,10 @@ fun InterpretationContent(
         }
         Spacer(Modifier.height(8.dp))
 
-        Column(
+        ScrollableColumn(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState()),
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
@@ -507,16 +489,8 @@ fun InterpretationContent(
                 text = "لحظه‌ای درنگ…", onClick = onDrawAgain, enabled = false,
                 modifier = Modifier.fillMaxWidth()
             )
-            remainingToday > 0 -> GoldButton(
+            else -> GoldButton(
                 text = "فال دوباره", onClick = onDrawAgain, glow = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            onRewarded != null && !adsRemoved -> GoldButton(
-                text = "فال بیشتر — تماشای ویدئو", onClick = onRewarded, glow = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            else -> GhostButton(
-                text = "فالِ رایگانِ امروز تمام شد", onClick = {}, textColor = spec.onBackgroundMuted,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -568,5 +542,31 @@ private fun SupportHeart(spec: FalThemeSpec, onClick: () -> Unit) {
             modifier = Modifier.size(24.dp).scale(scale)
         )
         Text("حمایت مالی", style = FalText.caption, color = spec.onBackgroundMuted)
+    }
+}
+
+
+/** چرخ‌دندهٔ تنظیمات — بزرگ‌تر و در حال چرخش آرام. */
+@Composable
+private fun RotatingGear(spec: FalThemeSpec, onClick: () -> Unit) {
+    val transition = rememberInfiniteTransition(label = "gear")
+    val angle by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(9000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "gear-angle"
+    )
+    IconButton(onClick = onClick) {
+        Icon(
+            imageVector = Icons.Outlined.Settings,
+            contentDescription = "تنظیمات",
+            tint = spec.onBackgroundMuted,
+            modifier = Modifier
+                .size(32.dp)
+                .rotate(angle)
+        )
     }
 }

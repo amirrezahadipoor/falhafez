@@ -46,6 +46,7 @@ import ir.siliksama.falhafez.domain.model.FalCategory
 import ir.siliksama.falhafez.domain.model.Poem
 import ir.siliksama.falhafez.presentation.components.GhostButton
 import ir.siliksama.falhafez.presentation.share.SharePoemButton
+import ir.siliksama.falhafez.presentation.components.ScrollableColumn
 import kotlinx.coroutines.delay
 
 /** فالِ امروز — deterministic daily fal, scroll only where the ghazal needs it. */
@@ -91,11 +92,10 @@ fun DailyFalContent(
         MoonStar(tint = spec.accent, size = 30.dp, modifier = Modifier.align(Alignment.CenterHorizontally))
 
         // scrollable middle
-        Column(
+        ScrollableColumn(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState()),
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             poem.verses.forEachIndexed { index, verse ->
