@@ -3,6 +3,7 @@ package com.amirrezahadipoor.falhafez.presentation.home
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.amirrezahadipoor.falhafez.core.sound.Sounds
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeId
 import com.amirrezahadipoor.falhafez.data.ads.AdManager
 import com.amirrezahadipoor.falhafez.domain.model.DrawEntry
@@ -118,6 +119,7 @@ class HomeViewModel @Inject constructor(
         if (s.busy || s.stage == DrawStage.DRAWING) return
         if (!bypassCooldown && s.cooldownActive) return
         _uiState.update { it.copy(busy = true, stage = DrawStage.DRAWING) }
+        Sounds.draw()
 
         val question = s.question.trim().ifBlank { null }
         val result = drawFal(question, s.category)
@@ -148,7 +150,10 @@ class HomeViewModel @Inject constructor(
         return c.timeInMillis
     }
 
-    fun onDrawingFinished() = _uiState.update { it.copy(stage = DrawStage.REVEAL) }
+    fun onDrawingFinished() {
+        Sounds.reveal()
+        _uiState.update { it.copy(stage = DrawStage.REVEAL) }
+    }
 
     fun onReadInterpretation() = _uiState.update { it.copy(stage = DrawStage.INTERPRETATION) }
 

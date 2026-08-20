@@ -26,7 +26,8 @@ class CorpusSeeder @Inject constructor(
         "corpus/hafez.json",
         "corpus/saadi.json",
         "corpus/rumi.json",
-        "corpus/khayyam.json"
+        "corpus/khayyam.json",
+        "corpus/stories.json"
     )
 
     suspend fun seedIfNeeded() = mutex.withLock {

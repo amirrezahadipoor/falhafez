@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.amirrezahadipoor.falhafez.core.designsystem.FalPalette
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
+import com.amirrezahadipoor.falhafez.core.sound.Sounds
 
 /**
  * Bespoke gold CTA with a moving shimmer sweep, press-scale spring and an
@@ -106,7 +107,8 @@ fun GoldButton(
                 indication = null,
                 enabled = enabled && !loading,
                 onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    if (Sounds.hapticsEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    Sounds.tap()
                     onClick()
                 }
             )
@@ -195,7 +197,8 @@ fun GhostButton(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    if (Sounds.hapticsEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    Sounds.tap()
                     onClick()
                 }
             )

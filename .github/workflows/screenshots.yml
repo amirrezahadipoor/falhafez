@@ -22,8 +22,8 @@ jobs:
       - name: Install emulator system deps
         run: sudo apt-get update -qq && sudo apt-get install -y -qq libpulse0
 
-      - name: Build debug APK
-        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+      - name: Build release APK
+        run: chmod +x gradlew && ./gradlew assembleRelease --no-daemon
 
       - name: Run on emulator and capture screenshots
         uses: reactivecircus/android-emulator-runner@v2
@@ -34,9 +34,9 @@ jobs:
           emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect -skin 1080x2280
           script: |
             adb shell wm size
-            adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb install -r app/build/outputs/apk/release/app-release.apk
             adb logcat -c
-            adb shell am start -n com.amirrezahadipoor.falhafez.debug/com.amirrezahadipoor.falhafez.MainActivity --ez fal_screenshot true
+            adb shell am start -n com.amirrezahadipoor.falhafez/com.amirrezahadipoor.falhafez.MainActivity --ez fal_screenshot true
             sleep 75
             adb exec-out screencap -p > 01-home.png
             adb shell input tap 540 1160

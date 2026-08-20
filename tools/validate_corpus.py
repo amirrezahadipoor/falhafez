@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json, sys
 total = 0
-for name in ["hafez", "khayyam", "saadi", "rumi"]:
+for name in ["hafez", "khayyam", "saadi", "rumi", "stories"]:
     p = f"app/src/main/assets/corpus/{name}.json"
     d = json.load(open(p, encoding="utf-8"))
     ids = [x["id"] for x in d]

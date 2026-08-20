@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -32,9 +33,11 @@ import com.amirrezahadipoor.falhafez.presentation.favorites.FavoritesScreen
 import com.amirrezahadipoor.falhafez.presentation.history.HistoryScreen
 import com.amirrezahadipoor.falhafez.presentation.home.HomeScreen
 import com.amirrezahadipoor.falhafez.presentation.library.LibraryScreen
+import com.amirrezahadipoor.falhafez.presentation.stories.StoriesScreen
 
 enum class MainTab(val faName: String, val icon: ImageVector) {
     FAL("فال", Icons.Outlined.AutoAwesome),
+    STORIES("داستان‌ها", Icons.Outlined.AutoStories),
     HISTORY("تاریخچه", Icons.Outlined.History),
     LIBRARY("دیوان", Icons.Outlined.MenuBook),
     FAVORITES("علاقه‌مندی‌ها", Icons.Outlined.FavoriteBorder)
@@ -84,9 +87,10 @@ fun MainScreen(onOpenSettings: () -> Unit) {
                     onOpenSettings = onOpenSettings,
                     onOpenPoem = { id ->
                         requestedPoemId = id
-                        selectedIndex = 2
+                        selectedIndex = 3
                     }
                 )
+                MainTab.STORIES -> StoriesScreen()
                 MainTab.HISTORY -> HistoryScreen()
                 MainTab.LIBRARY -> LibraryScreen(
                     requestedPoemId = requestedPoemId,

@@ -1,6 +1,7 @@
 package com.amirrezahadipoor.falhafez
 
 import android.app.Application
+import com.amirrezahadipoor.falhafez.core.sound.Sounds
 import com.amirrezahadipoor.falhafez.data.local.seed.CorpusSeeder
 import com.google.android.gms.ads.MobileAds
 import dagger.hilt.android.HiltAndroidApp
@@ -25,6 +26,7 @@ class FalHafezApp : Application() {
         // Ads are the only network-touching component. On Iranian devices without
         // Google Play Services this must fail silently — the app keeps working offline.
         runCatching { MobileAds.initialize(this) { } }
+        Sounds.init(this)
     }
 
     companion object {

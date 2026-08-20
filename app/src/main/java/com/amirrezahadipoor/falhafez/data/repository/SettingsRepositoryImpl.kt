@@ -16,6 +16,8 @@ class SettingsRepositoryImpl @Inject constructor(
     override val seenOnboarding: Flow<Boolean> = dataStore.seenOnboarding
     override val rewardedExtraDraws: Flow<Int> = dataStore.rewardedExtraDraws
     override val unlockedThemes: Flow<Set<String>> = dataStore.unlockedThemes
+    override val soundEnabled: Flow<Boolean> = dataStore.soundEnabled
+    override val hapticsEnabled: Flow<Boolean> = dataStore.hapticsEnabled
 
     override suspend fun setTheme(id: FalThemeId) {
         dataStore.setTheme(id)
@@ -39,5 +41,13 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun unlockTheme(id: FalThemeId) {
         dataStore.unlockTheme(id.id)
+    }
+
+    override suspend fun setSoundEnabled(enabled: Boolean) {
+        dataStore.setSoundEnabled(enabled)
+    }
+
+    override suspend fun setHapticsEnabled(enabled: Boolean) {
+        dataStore.setHapticsEnabled(enabled)
     }
 }

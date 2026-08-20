@@ -28,6 +28,8 @@ class SettingsDataStore @Inject constructor(
         val SEEN_ONBOARDING = booleanPreferencesKey("seen_onboarding")
         val REWARDED_DRAWS = intPreferencesKey("rewarded_extra_draws")
         val UNLOCKED_THEMES = stringSetPreferencesKey("unlocked_themes")
+        val SOUND = booleanPreferencesKey("sound_enabled")
+        val HAPTICS = booleanPreferencesKey("haptics_enabled")
     }
 
     val themeId: Flow<FalThemeId> =
@@ -47,6 +49,12 @@ class SettingsDataStore @Inject constructor(
 
     val unlockedThemes: Flow<Set<String>> =
         context.settingsDataStore.data.map { it[Keys.UNLOCKED_THEMES] ?: emptySet() }
+
+    val soundEnabled: Flow<Boolean> =
+        context.settingsDataStore.data.map { it[Keys.SOUND] ?: true }
+
+    val hapticsEnabled: Flow<Boolean> =
+        context.settingsDataStore.data.map { it[Keys.HAPTICS] ?: true }
 
     suspend fun setTheme(id: FalThemeId) =
         context.settingsDataStore.edit { it[Keys.THEME] = id.id }
@@ -71,4 +79,10 @@ class SettingsDataStore @Inject constructor(
             val current = prefs[Keys.UNLOCKED_THEMES] ?: emptySet()
             prefs[Keys.UNLOCKED_THEMES] = current + id
         }
+
+    suspend fun setSoundEnabled(enabled: Boolean) =
+        context.settingsDataStore.edit { it[Keys.SOUND] = enabled }
+
+    suspend fun setHapticsEnabled(enabled: Boolean) =
+        context.settingsDataStore.edit { it[Keys.HAPTICS] = enabled }
 }

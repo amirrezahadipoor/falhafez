@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -38,6 +39,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -62,6 +65,8 @@ fun SettingsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
     val unlockedThemes by viewModel.unlockedThemes.collectAsStateWithLifecycle()
+    val soundEnabled by viewModel.soundEnabled.collectAsStateWithLifecycle()
+    val hapticsEnabled by viewModel.hapticsEnabled.collectAsStateWithLifecycle()
     val version = remember {
         runCatching {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName
@@ -141,6 +146,30 @@ fun SettingsScreen(onBack: () -> Unit) {
                             "مقیاس: ${PersianText.digits(String.format("%.2f", fontSizeScale))}",
                             style = FalText.caption,
                             color = FalPalette.CreamMuted
+                        )
+                    }
+                }
+
+                item { SectionTitle("صدا و لمس") }
+                item {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .background(FalPalette.NavySoft, RoundedCornerShape(18.dp))
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        SettingSwitchRow(
+                            title = "صداهای آیینی",
+                            subtitle = "زنگِ گشودن دیوان و صدای دکمه‌ها",
+                            checked = soundEnabled,
+                            onCheckedChange = viewModel::setSound
+                        )
+                        SettingSwitchRow(
+                            title = "لرزش (هاپتیک)",
+                            subtitle = "بازخورد لمسی هنگام فال گرفتن",
+                            checked = hapticsEnabled,
+                            onCheckedChange = viewModel::setHaptics
                         )
                     }
                 }
@@ -270,6 +299,31 @@ private fun SectionTitle(text: String) {
 }
 
 @Composable
+private fun SettingSwitchRow(
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(title, style = FalText.body, color = FalPalette.Cream)
+            Text(subtitle, style = FalText.caption, color = FalPalette.CreamMuted)
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = FalPalette.Navy,
+                checkedTrackColor = FalPalette.Gold,
+                uncheckedThumbColor = FalPalette.CreamMuted,
+                uncheckedTrackColor = FalPalette.NavyLight
+            )
+        )
+    }
+}
+
+@Composable
 private fun ThemeRow(spec: FalThemeSpec, selected: Boolean, unlocked: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
@@ -285,18 +339,19 @@ private fun ThemeRow(spec: FalThemeSpec, selected: Boolean, unlocked: Boolean, o
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            listOf(spec.backgroundTop, spec.accent, spec.particle, spec.onBackground)
-                .forEach { color ->
-                    Box(
-                        modifier = Modifier
-                            .size(16.dp)
-                            .clip(CircleShape)
-                            .background(color)
-                    )
-                }
+        val art = spec.artworkRes
+        if (art != null) {
+            Image(
+                painter = painterResource(art),
+                contentDescription = spec.id.faName,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(width = 58.dp, height = 40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, spec.accent.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+            )
         }
-        Spacer(Modifier.width(14.dp))
+        Spacer(Modifier.width(12.dp))
         Text(
             text = spec.id.faName,
             style = FalText.body,

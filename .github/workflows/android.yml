@@ -31,17 +31,12 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
-
       - name: Build release APK
         run: ./gradlew assembleRelease --no-daemon --stacktrace
 
-      - name: Upload APKs
+      - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
-          name: falhafez-apks
-          path: |
-            app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/release/*.apk
+          name: falhafez-release-apk
+          path: app/build/outputs/apk/release/*.apk
           retention-days: 30

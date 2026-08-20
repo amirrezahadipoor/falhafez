@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.content.Intent
 import androidx.core.content.FileProvider
+import com.amirrezahadipoor.falhafez.core.sound.Sounds
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeId
 import com.amirrezahadipoor.falhafez.data.ads.AdManager
 import com.amirrezahadipoor.falhafez.domain.repository.DrawRepository
@@ -43,6 +44,12 @@ class SettingsViewModel @Inject constructor(
     val unlockedThemes: StateFlow<Set<String>> = settingsRepository.unlockedThemes
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
+    val soundEnabled: StateFlow<Boolean> = settingsRepository.soundEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val hapticsEnabled: StateFlow<Boolean> = settingsRepository.hapticsEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
     fun setTheme(id: FalThemeId) {
         viewModelScope.launch { settingsRepository.setTheme(id) }
     }
@@ -56,6 +63,16 @@ class SettingsViewModel @Inject constructor(
             settingsRepository.setNotificationsEnabled(enabled)
             ReminderScheduler.schedule(context, enabled)
         }
+    }
+
+    fun setSound(enabled: Boolean) {
+        Sounds.enabled = enabled
+        viewModelScope.launch { settingsRepository.setSoundEnabled(enabled) }
+    }
+
+    fun setHaptics(enabled: Boolean) {
+        Sounds.hapticsEnabled = enabled
+        viewModelScope.launch { settingsRepository.setHapticsEnabled(enabled) }
     }
 
     /** Rewarded unlock for premium themes (شب یلدا …). */

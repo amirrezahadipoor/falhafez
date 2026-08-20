@@ -109,7 +109,7 @@ fun LibraryScreen(
                     onOpen = viewModel::openPoem
                 )
                 currentPoet != null -> CollectionsList(
-                    collections = Collection.byPoet(currentPoet),
+                    collections = Collection.byPoet(currentPoet).filter { it != Collection.STORIES },
                     onOpen = viewModel::openCollection
                 )
                 else -> PoetsList(onOpen = viewModel::openPoet)

@@ -15,6 +15,8 @@ enum class Collection(val key: String, val faName: String, val poet: Poet) {
     HAFEZ_GHAZAL("ghazal", "غزلیات", Poet.HAFEZ),
     SAADI_GOLESTAN("golestan", "گلستان", Poet.SAADI),
     SAADI_BUSTAN("bustan", "بوستان", Poet.SAADI),
+    SAADI_GHAZAL("saadi-ghazal", "غزلیات", Poet.SAADI),
+    STORIES("stories", "داستان‌های آموزنده", Poet.SAADI),
     RUMI_MASNAVI("masnavi", "مثنوی معنوی", Poet.RUMI),
     RUMI_SHAMS("shams", "دیوان شمس", Poet.RUMI),
     KHAYYAM_RUBAI("rubaiyat", "رباعیات", Poet.KHAYYAM);

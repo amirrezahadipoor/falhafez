@@ -10,7 +10,11 @@ enum class FalThemeId(val id: String, val faName: String) {
     GARDEN("garden", "باغِ ستاره"),
     MINIMAL("minimal", "مینیمالِ مدرن"),
     NOWRUZ("nowruz", "نوروز"),
-    YALDA("yalda", "شبِ یلدا");
+    YALDA("yalda", "شبِ یلدا"),
+    DAWN("dawn", "سپیده‌دم"),
+    SEA("sea", "شبِ دریا"),
+    DESERT("desert", "کویر"),
+    MOONLIGHT("moonlight", "مهتاب");
 
     companion object {
         fun fromId(id: String?): FalThemeId = entries.firstOrNull { it.id == id } ?: TAZHIB
@@ -34,7 +38,10 @@ data class FalThemeSpec(
     val artworkAlpha: Float = 0.55f
 ) {
     companion object {
-        val All: List<FalThemeSpec> = listOf(tazhib(), candle(), garden(), minimal(), nowruz(), yalda())
+        val All: List<FalThemeSpec> = listOf(
+            tazhib(), candle(), garden(), minimal(), nowruz(), yalda(),
+            dawn(), sea(), desert(), moonlight()
+        )
 
         fun byId(id: FalThemeId): FalThemeSpec = All.first { it.id == id }
 
@@ -74,7 +81,6 @@ data class FalThemeSpec(
             border = Color(0xFFD8C9B0), artworkRes = R.drawable.theme_minimal, artworkAlpha = 0.80f
         )
 
-        /** نوروز — spring rebirth. Free seasonal theme. */
         fun nowruz() = FalThemeSpec(
             id = FalThemeId.NOWRUZ,
             backgroundTop = Color(0xFF0E2417), backgroundBottom = Color(0xFF0A1A10),
@@ -84,7 +90,6 @@ data class FalThemeSpec(
             border = Color(0xFF3E6B3A), artworkRes = R.drawable.theme_nowruz, artworkAlpha = 0.55f
         )
 
-        /** شبِ یلدا — premium, unlocked via rewarded video. */
         fun yalda() = FalThemeSpec(
             id = FalThemeId.YALDA,
             backgroundTop = Color(0xFF2A0F14), backgroundBottom = Color(0xFF140609),
@@ -92,6 +97,42 @@ data class FalThemeSpec(
             onBackground = Color(0xFFFBE9E4), onBackgroundMuted = Color(0xFFC79A9F),
             card = Color(0xFF33151B), particle = Color(0xFFF27E8E), particleSecondary = Color(0xFFE05263),
             border = Color(0xFF7A2A33), locked = true, artworkRes = R.drawable.theme_yalda, artworkAlpha = 0.60f
+        )
+
+        fun dawn() = FalThemeSpec(
+            id = FalThemeId.DAWN,
+            backgroundTop = Color(0xFF241725), backgroundBottom = Color(0xFF4A2A3A),
+            accent = Color(0xFFE8A0B4), accentSoft = Color(0xFFF2C6D0),
+            onBackground = Color(0xFFFBECEF), onBackgroundMuted = Color(0xFFC9A0AB),
+            card = Color(0xFF2C1C24), particle = Color(0xFFF5C8D2), particleSecondary = Color(0xFFE8A0B4),
+            border = Color(0xFF7A4A58), artworkRes = R.drawable.theme_dawn, artworkAlpha = 0.55f
+        )
+
+        fun sea() = FalThemeSpec(
+            id = FalThemeId.SEA,
+            backgroundTop = Color(0xFF06202B), backgroundBottom = Color(0xFF0A3640),
+            accent = Color(0xFF3FB8AF), accentSoft = Color(0xFF8FE0D8),
+            onBackground = Color(0xFFE8F6F4), onBackgroundMuted = Color(0xFF9EC2BE),
+            card = Color(0xFF0B2A33), particle = Color(0xFF9FE8E0), particleSecondary = Color(0xFF5FD4C8),
+            border = Color(0xFF1E5A5A), artworkRes = R.drawable.theme_sea, artworkAlpha = 0.55f
+        )
+
+        fun desert() = FalThemeSpec(
+            id = FalThemeId.DESERT,
+            backgroundTop = Color(0xFF1A1208), backgroundBottom = Color(0xFF0E0A05),
+            accent = Color(0xFFD9A24B), accentSoft = Color(0xFFF0C98A),
+            onBackground = Color(0xFFF6EAD5), onBackgroundMuted = Color(0xFFC0A47A),
+            card = Color(0xFF221708), particle = Color(0xFFF0C98A), particleSecondary = Color(0xFFD9A24B),
+            border = Color(0xFF7A5A2A), artworkRes = R.drawable.theme_desert, artworkAlpha = 0.55f
+        )
+
+        fun moonlight() = FalThemeSpec(
+            id = FalThemeId.MOONLIGHT,
+            backgroundTop = Color(0xFF0B1024), backgroundBottom = Color(0xFF131A3A),
+            accent = Color(0xFF9FB8E8), accentSoft = Color(0xFFC9D6F5),
+            onBackground = Color(0xFFE9EEFA), onBackgroundMuted = Color(0xFF9FA9C4),
+            card = Color(0xFF10162E), particle = Color(0xFFC9D6F5), particleSecondary = Color(0xFF9FB8E8),
+            border = Color(0xFF3A4A6B), artworkRes = R.drawable.theme_moonlight, artworkAlpha = 0.55f
         )
     }
 }

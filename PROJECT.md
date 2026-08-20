@@ -16,8 +16,12 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 10 — Retention & monetization | ✅ | beit-by-beit meaning (4,548 beits), deterministic daily fal (فالِ روز), home-screen widget, personal stats/streak (کارنامه), theme filter + study mode, rewarded cooldown-skip & premium-theme unlock (نوروز + یلدا), haptics, copy-text, JSON export |
 | 11 — CI/CD + store | ✅ | GitHub Actions builds **debug + release APK** (release 6.5 MB, R8), emulator screenshot workflow, Cafe Bazaar assets (icon 512, descriptions, checklist), Persian privacy policy on GitHub Pages |
 | 12 — Compile pass | ✅ | First real compile on GitHub runners — fixed 8 Kotlin/Room issues (FTS4 rowid, imports, smart casts, signing types); CI is **green** |
+| 13 — Full divans + stories + sound | ✅ | **Complete Saadi (1,158) + Rumi (4,246)** — 6,177 poems total; **100 instructive stories** from Golestan; 10 visual themes; synthesized ritual sounds (buttons/draw/reveal/ambient) + haptics toggles; release-only CI |
 
-## Corpus (complete, offline)
+## Corpus (complete, offline) — 6,177 poems
+> Saadi: غزلیات (637) + گلستان (291) + بوستان (230) · Rumi: مثنوی (972) + دیوان شمس (3,274) · Hafez 495 · Khayyam 178 · + 100 داستان آموزنده
+
+## Corpus (previous) — for reference
 | Poet | Collection | Count | Beits |
 |------|------------|-------|-------|
 | حافظ | غزلیات — **کامل** | 495 | 4,193 |
