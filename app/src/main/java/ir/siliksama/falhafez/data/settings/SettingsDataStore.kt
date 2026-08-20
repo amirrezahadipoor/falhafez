@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -35,6 +36,7 @@ class SettingsDataStore @Inject constructor(
         val CHANNEL_NETWORK = stringPreferencesKey("channel_network")
         val CHANNEL_HANDLE = stringPreferencesKey("channel_handle")
         val CHANNEL_NAME = stringPreferencesKey("channel_name")
+        val LAST_UPDATE_CHECK_DAY = longPreferencesKey("last_update_check_day")
     }
 
     val themeId: Flow<FalThemeId> =
@@ -75,6 +77,9 @@ class SettingsDataStore @Inject constructor(
 
     val channelName: Flow<String> =
         context.settingsDataStore.data.map { it[Keys.CHANNEL_NAME] ?: "" }
+
+    val lastUpdateCheckDay: Flow<Long> =
+        context.settingsDataStore.data.map { it[Keys.LAST_UPDATE_CHECK_DAY] ?: 0L }
 
     suspend fun setTheme(id: FalThemeId) =
         context.settingsDataStore.edit { it[Keys.THEME] = id.id }
@@ -118,4 +123,7 @@ class SettingsDataStore @Inject constructor(
             it[Keys.CHANNEL_HANDLE] = handle
             it[Keys.CHANNEL_NAME] = name
         }
+
+    suspend fun setLastUpdateCheckDay(day: Long) =
+        context.settingsDataStore.edit { it[Keys.LAST_UPDATE_CHECK_DAY] = day }
 }

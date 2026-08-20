@@ -11,11 +11,15 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material3.Icon
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -23,11 +27,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
+import ir.siliksama.falhafez.core.util.openAppInBazaar
 import ir.siliksama.falhafez.presentation.ads.BannerAdView
 import ir.siliksama.falhafez.presentation.favorites.FavoritesScreen
 import ir.siliksama.falhafez.presentation.history.HistoryScreen
@@ -45,9 +53,41 @@ enum class MainTab(val faName: String, val icon: ImageVector) {
 
 @Composable
 fun MainScreen(onOpenSettings: () -> Unit) {
+    val mainViewModel: MainViewModel = hiltViewModel()
+    val pendingUpdate by mainViewModel.pendingUpdate.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     var requestedPoemId by remember { mutableStateOf<Long?>(null) }
     val selected = MainTab.entries[selectedIndex]
+
+    pendingUpdate?.let { update ->
+        AlertDialog(
+            onDismissRequest = mainViewModel::dismissUpdate,
+            containerColor = FalPalette.NavySoft,
+            titleContentColor = FalPalette.GoldBright,
+            textContentColor = FalPalette.Cream,
+            title = { Text("نسخهٔ جدید موجود است", style = FalText.heading) },
+            text = {
+                Text(
+                    if (update.versionName.isNotBlank()) "نسخهٔ ${update.versionName} آماده است؛ بروزرسانی کنید."
+                    else "بروزرسانی جدیدی در کافه‌بازار موجود است.",
+                    style = FalText.bodyMuted
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    openAppInBazaar(context, "ir.siliksama.falhafez")
+                    mainViewModel.dismissUpdate()
+                }) { Text("بروزرسانی", style = FalText.button, color = FalPalette.Gold) }
+            },
+            dismissButton = {
+                TextButton(onClick = mainViewModel::dismissUpdate) {
+                    Text("بعداً", style = FalText.button, color = FalPalette.CreamMuted)
+                }
+            }
+        )
+    }
 
     Scaffold(
         containerColor = FalPalette.Navy,

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -37,6 +38,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
@@ -46,6 +48,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -70,7 +73,9 @@ import ir.siliksama.falhafez.core.designsystem.FalText
 import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.core.util.PersianText
 import ir.siliksama.falhafez.core.util.findActivity
+import ir.siliksama.falhafez.core.util.openAppInBazaar
 import ir.siliksama.falhafez.domain.model.SupportTier
+import ir.siliksama.falhafez.domain.model.UpdateCheckResult
 import ir.siliksama.falhafez.presentation.components.ScreenHeader
 import ir.siliksama.falhafez.presentation.share.SocialNetwork
 
@@ -95,6 +100,7 @@ fun SettingsScreen(onBack: () -> Unit) {
     val channelNetwork by viewModel.channelNetwork.collectAsStateWithLifecycle()
     val channelHandle by viewModel.channelHandle.collectAsStateWithLifecycle()
     val channelName by viewModel.channelName.collectAsStateWithLifecycle()
+    val updateResult by viewModel.updateResult.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
@@ -125,6 +131,49 @@ fun SettingsScreen(onBack: () -> Unit) {
     }
 
     var tab by rememberSaveable { mutableIntStateOf(0) }
+
+    LaunchedEffect(updateResult) {
+        when (val r = updateResult) {
+            is UpdateCheckResult.UpToDate -> {
+                Toast.makeText(context, "نسخهٔ شما به‌روز است ✓", Toast.LENGTH_SHORT).show()
+                viewModel.clearUpdateResult()
+            }
+            is UpdateCheckResult.Failed -> {
+                Toast.makeText(context, "بررسی نشد — اینترنت را چک کنید", Toast.LENGTH_SHORT).show()
+                viewModel.clearUpdateResult()
+            }
+            else -> Unit
+        }
+    }
+
+    val currentUpdate = updateResult as? UpdateCheckResult.Available
+    if (currentUpdate != null) {
+        AlertDialog(
+            onDismissRequest = viewModel::clearUpdateResult,
+            containerColor = FalPalette.NavySoft,
+            titleContentColor = FalPalette.GoldBright,
+            textContentColor = FalPalette.Cream,
+            title = { Text("نسخهٔ جدید موجود است", style = FalText.heading) },
+            text = {
+                Text(
+                    if (currentUpdate.versionName.isNotBlank()) "نسخهٔ ${currentUpdate.versionName} آماده است؛ بروزرسانی کنید."
+                    else "بروزرسانی جدیدی در کافه‌بازار موجود است.",
+                    style = FalText.bodyMuted
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    openAppInBazaar(context, "ir.siliksama.falhafez")
+                    viewModel.clearUpdateResult()
+                }) { Text("بروزرسانی", style = FalText.button, color = FalPalette.Gold) }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::clearUpdateResult) {
+                    Text("بعداً", style = FalText.button, color = FalPalette.CreamMuted)
+                }
+            }
+        )
+    }
 
     Box(Modifier.fillMaxSize().background(FalPalette.Navy)) {
         Column(Modifier.fillMaxSize()) {

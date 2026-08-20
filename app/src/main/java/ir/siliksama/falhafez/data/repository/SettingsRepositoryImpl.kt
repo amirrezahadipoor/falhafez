@@ -23,6 +23,7 @@ class SettingsRepositoryImpl @Inject constructor(
     override val channelNetwork: Flow<String> = dataStore.channelNetwork
     override val channelHandle: Flow<String> = dataStore.channelHandle
     override val channelName: Flow<String> = dataStore.channelName
+    override val lastUpdateCheckDay: Flow<Long> = dataStore.lastUpdateCheckDay
 
     override suspend fun setTheme(id: FalThemeId) {
         dataStore.setTheme(id)
@@ -66,5 +67,9 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setChannel(network: String, handle: String, name: String) {
         dataStore.setChannel(network, handle, name)
+    }
+
+    override suspend fun setLastUpdateCheckDay(day: Long) {
+        dataStore.setLastUpdateCheckDay(day)
     }
 }

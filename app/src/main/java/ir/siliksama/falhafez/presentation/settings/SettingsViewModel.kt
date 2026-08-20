@@ -11,8 +11,10 @@ import ir.siliksama.falhafez.core.theme.FalThemeId
 import ir.siliksama.falhafez.core.util.ChannelStore
 import ir.siliksama.falhafez.core.util.SupportStore
 import ir.siliksama.falhafez.data.payments.PaymentGateway
+import ir.siliksama.falhafez.data.updates.UpdateChecker
 import ir.siliksama.falhafez.domain.model.ChannelInfo
 import ir.siliksama.falhafez.domain.model.SupportTier
+import ir.siliksama.falhafez.domain.model.UpdateCheckResult
 import ir.siliksama.falhafez.domain.repository.DrawRepository
 import ir.siliksama.falhafez.domain.repository.FavoriteRepository
 import ir.siliksama.falhafez.domain.repository.SettingsRepository
@@ -77,6 +79,9 @@ class SettingsViewModel @Inject constructor(
 
     private val _purchasing = MutableStateFlow(false)
     val purchasing: StateFlow<Boolean> = _purchasing.asStateFlow()
+
+    private val _updateResult = MutableStateFlow<UpdateCheckResult?>(null)
+    val updateResult: StateFlow<UpdateCheckResult?> = _updateResult.asStateFlow()
 
     // ---- theme / display / sound ----
     fun setTheme(id: FalThemeId) {
@@ -167,6 +172,17 @@ class SettingsViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    // ---- بروزرسانی ----
+    fun checkForUpdate() {
+        viewModelScope.launch {
+            _updateResult.value = UpdateChecker.check()
+        }
+    }
+
+    fun clearUpdateResult() {
+        _updateResult.value = null
     }
 
     // ---- داده‌ها ----

@@ -17,6 +17,7 @@ interface SettingsRepository {
     val channelNetwork: Flow<String>
     val channelHandle: Flow<String>
     val channelName: Flow<String>
+    val lastUpdateCheckDay: Flow<Long>
 
     suspend fun setTheme(id: FalThemeId)
     suspend fun setFontSizeScale(scale: Float)
@@ -29,4 +30,5 @@ interface SettingsRepository {
     suspend fun setFontColor(key: String)
     suspend fun setSupportTier(key: String)
     suspend fun setChannel(network: String, handle: String, name: String)
+    suspend fun setLastUpdateCheckDay(day: Long)
 }
