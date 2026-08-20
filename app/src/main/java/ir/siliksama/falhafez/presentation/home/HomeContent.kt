@@ -109,6 +109,7 @@ fun NiyyatContent(
     adsRemoved: Boolean = false,
     onOpenSettings: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()

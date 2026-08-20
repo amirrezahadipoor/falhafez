@@ -155,6 +155,7 @@ object ShareImageRenderer {
 
         val vazir = ResourcesCompat.getFont(context, R.font.vazirmatn_regular) ?: Typeface.DEFAULT
         val vazirBold = ResourcesCompat.getFont(context, R.font.vazirmatn_bold) ?: Typeface.DEFAULT_BOLD
+        val textWidth = (W - 2 * PAD).toInt()
         val label = if (channel.name.isNotBlank()) channel.name else network.label
         drawText(
             canvas, label, 32f, vazirBold, spec.onBackground.toArgb(),
