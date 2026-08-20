@@ -26,4 +26,10 @@ class FalHafezApp : Application() {
         // Google Play Services this must fail silently — the app keeps working offline.
         runCatching { MobileAds.initialize(this) { } }
     }
+
+    companion object {
+        /** Test/screenshot hook: skips onboarding when launched with `--ez fal_screenshot true`. */
+        @Volatile
+        var skipOnboardingForScreenshot = false
+    }
 }

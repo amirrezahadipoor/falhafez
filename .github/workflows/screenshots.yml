@@ -36,22 +36,22 @@ jobs:
             adb shell wm size
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb logcat -c
-            adb shell am start -n com.amirrezahadipoor.falhafez.debug/com.amirrezahadipoor.falhafez.MainActivity
-            sleep 25
-            adb exec-out screencap -p > 01-onboarding.png
-            adb shell input tap 540 1560
-            sleep 5
-            adb exec-out screencap -p > 02-home.png
-            adb shell input tap 540 1100
-            sleep 16
-            adb exec-out screencap -p > 03-reveal.png
+            adb shell am start -n com.amirrezahadipoor.falhafez.debug/com.amirrezahadipoor.falhafez.MainActivity --ez fal_screenshot true
+            sleep 22
+            adb exec-out screencap -p > 01-home.png
+            adb shell input tap 540 1160
+            sleep 18
+            adb exec-out screencap -p > 02-reveal.png
             adb shell input tap 540 1500
-            sleep 7
-            adb exec-out screencap -p > 04-interpretation.png
+            sleep 8
+            adb exec-out screencap -p > 03-interpretation.png
+            adb logcat -d > logcat.txt
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
         with:
           name: store-screenshots
-          path: "*.png"
+          path: |
+            *.png
+            logcat.txt
           retention-days: 14

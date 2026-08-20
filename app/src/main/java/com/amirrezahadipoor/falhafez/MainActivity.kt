@@ -26,6 +26,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        FalHafezApp.skipOnboardingForScreenshot =
+            intent?.getBooleanExtra("fal_screenshot", false) == true
         setContent {
             val mainViewModel: MainViewModel = hiltViewModel()
             val fontScale by mainViewModel.fontSizeScale.collectAsStateWithLifecycle()

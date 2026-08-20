@@ -21,6 +21,7 @@ import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
 import com.amirrezahadipoor.falhafez.presentation.components.OrnamentalDivider
 import com.amirrezahadipoor.falhafez.presentation.components.RitualBackground
 import androidx.compose.material3.Text
+import com.amirrezahadipoor.falhafez.FalHafezApp
 
 @Composable
 fun SplashScreen(onFinished: (seenOnboarding: Boolean) -> Unit) {
@@ -28,7 +29,7 @@ fun SplashScreen(onFinished: (seenOnboarding: Boolean) -> Unit) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.ready) {
-        if (state.ready) onFinished(state.seenOnboarding)
+        if (state.ready) onFinished(state.seenOnboarding || FalHafezApp.skipOnboardingForScreenshot)
     }
 
     RitualBackground(spec = FalThemeSpec.tazhib(), showParticles = true) {
