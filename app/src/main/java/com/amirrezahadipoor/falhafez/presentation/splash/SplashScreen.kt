@@ -1,6 +1,7 @@
 package com.amirrezahadipoor.falhafez.presentation.splash
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -14,6 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.amirrezahadipoor.falhafez.core.designsystem.FalPalette
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
+import com.amirrezahadipoor.falhafez.core.designsystem.RotatingStar
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
 import com.amirrezahadipoor.falhafez.presentation.components.OrnamentalDivider
 import com.amirrezahadipoor.falhafez.presentation.components.RitualBackground
@@ -34,12 +36,15 @@ fun SplashScreen(onFinished: (seenOnboarding: Boolean) -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "فال حافظ", style = FalText.display, color = FalPalette.GoldBright)
+            Box(contentAlignment = Alignment.Center) {
+                RotatingStar(tint = FalPalette.Gold.copy(alpha = 0.55f), size = 150.dp)
+                Text(text = "فال حافظ", style = FalText.display, color = FalPalette.GoldBright)
+            }
             Spacer(Modifier.height(12.dp))
             OrnamentalDivider(color = FalPalette.Gold, modifier = Modifier.fillMaxWidth(0.5f))
             Spacer(Modifier.height(28.dp))
             Text(
-                text = "در حال آماده‌سازی دیوان…",
+                text = "دیوان در حال گشوده شدن است…",
                 style = FalText.bodyMuted,
                 color = FalPalette.CreamMuted
             )

@@ -1,12 +1,19 @@
 package com.amirrezahadipoor.falhafez.presentation.components
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,47 +39,129 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.amirrezahadipoor.falhafez.core.designsystem.FalPalette
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
 
-/** Bespoke gold CTA button. */
+/**
+ * Bespoke gold CTA with a moving shimmer sweep, press-scale spring and an
+ * optional breathing inner glow — the "heavy polish" button.
+ */
 @Composable
 fun GoldButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    loading: Boolean = false
+    loading: Boolean = false,
+    glow: Boolean = false
 ) {
-    val alpha by animateFloatAsState(if (enabled && !loading) 1f else 0.55f, label = "goldbtn")
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.94f else 1f,
+        animationSpec = spring(dampingRatio = 0.55f, stiffness = 500f),
+        label = "gold-press"
+    )
+    val transition = rememberInfiniteTransition(label = "gold")
+    val shimmerT by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "gold-shimmer"
+    )
+    val glowAlpha by transition.animateFloat(
+        initialValue = 0.10f,
+        targetValue = 0.30f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "gold-glow"
+    )
+    val contentAlpha by animateFloatAsState(
+        if (enabled && !loading) 1f else 0.55f,
+        label = "gold-alpha"
+    )
+
+    val shape = RoundedCornerShape(28.dp)
+
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(28.dp))
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clip(shape)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled && !loading,
+                onClick = onClick
+            )
             .background(
                 Brush.horizontalGradient(
                     listOf(FalPalette.GoldDeep, FalPalette.Gold, FalPalette.GoldBright)
-                ).let { brush -> brush },
-                alpha = alpha
+                ),
+                alpha = contentAlpha
             )
-            .clickable(enabled = enabled && !loading, onClick = onClick)
-            .padding(horizontal = 40.dp, vertical = 15.dp),
-        contentAlignment = Alignment.Center
     ) {
-        if (loading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(22.dp),
-                strokeWidth = 2.dp,
-                color = FalPalette.Navy
-            )
-        } else {
-            Text(text = text, style = FalText.button, color = FalPalette.Navy)
+        if (glow && enabled && !loading) {
+            Canvas(Modifier.matchParentSize()) {
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            FalPalette.GoldBright.copy(alpha = glowAlpha),
+                            Color.Transparent
+                        ),
+                        center = Offset(size.width / 2f, size.height / 2f),
+                        radius = size.width * 0.85f
+                    ),
+                    radius = size.width * 0.85f,
+                    center = Offset(size.width / 2f, size.height / 2f)
+                )
+            }
+        }
+        if (enabled && !loading) {
+            Canvas(Modifier.matchParentSize()) {
+                val w = size.width
+                val x = shimmerT * (w + 360f) - 180f
+                drawRect(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.White.copy(alpha = 0.32f),
+                            Color.Transparent
+                        ),
+                        start = Offset(x - 90f, 0f),
+                        end = Offset(x + 90f, size.height)
+                    )
+                )
+            }
+        }
+        Box(
+            modifier = Modifier.padding(horizontal = 40.dp, vertical = 15.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(22.dp),
+                    strokeWidth = 2.dp,
+                    color = FalPalette.Navy
+                )
+            } else {
+                Text(text = text, style = FalText.button, color = FalPalette.Navy)
+            }
         }
     }
 }
 
-/** Soft outlined secondary button. */
+/** Soft outlined secondary button with press-scale feedback. */
 @Composable
 fun GhostButton(
     text: String,
@@ -81,11 +170,25 @@ fun GhostButton(
     borderColor: Color = FalPalette.GoldDeep,
     textColor: Color = FalPalette.Cream
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.95f else 1f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = 500f),
+        label = "ghost-press"
+    )
     Box(
         modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .clip(RoundedCornerShape(28.dp))
-            .background(Color.Transparent)
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
             .padding(horizontal = 28.dp, vertical = 13.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -141,11 +244,10 @@ fun ScreenHeader(
             .fillMaxWidth()
             .statusBarsPadding()
             .padding(horizontal = 20.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        verticalAlignment = Alignment.CenterVertically
     ) {
         if (onBack != null) {
-            IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterVertically)) {
+            IconButton(onClick = onBack) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "بازگشت",
@@ -154,7 +256,12 @@ fun ScreenHeader(
             }
             Spacer(Modifier.size(4.dp))
         }
-        Text(text = title, style = FalText.title, color = titleColor)
+        Text(
+            text = title,
+            style = FalText.title,
+            color = titleColor,
+            modifier = Modifier.weight(1f, fill = false)
+        )
     }
 }
 
@@ -169,11 +276,15 @@ fun EmptyState(
 ) {
     Column(
         modifier = modifier.padding(horizontal = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (icon != null) {
-            Icon(imageVector = icon, contentDescription = null, tint = color.copy(alpha = 0.6f), modifier = Modifier.size(56.dp))
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color.copy(alpha = 0.6f),
+                modifier = Modifier.size(56.dp)
+            )
             Spacer(Modifier.height(16.dp))
         }
         Text(text = title, style = FalText.heading, color = color)

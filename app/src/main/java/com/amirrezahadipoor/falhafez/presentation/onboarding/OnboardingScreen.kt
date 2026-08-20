@@ -1,6 +1,7 @@
 package com.amirrezahadipoor.falhafez.presentation.onboarding
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.amirrezahadipoor.falhafez.core.designsystem.FalPalette
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
+import com.amirrezahadipoor.falhafez.core.designsystem.RotatingStar
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
 import com.amirrezahadipoor.falhafez.presentation.components.GoldButton
 import com.amirrezahadipoor.falhafez.presentation.components.OrnamentalDivider
@@ -37,7 +39,10 @@ fun OnboardingScreen(onDone: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "فال حافظ", style = FalText.display, color = spec.accentSoft)
+            Box(contentAlignment = Alignment.Center) {
+                RotatingStar(tint = spec.accent.copy(alpha = 0.6f), size = 140.dp)
+                Text(text = "فال حافظ", style = FalText.display, color = spec.accentSoft)
+            }
             Spacer(Modifier.height(12.dp))
             OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.5f))
             Spacer(Modifier.height(36.dp))

@@ -10,6 +10,8 @@ A Persian-language **native Android** app for the centuries-old Iranian traditio
 - **Native Kotlin + Jetpack Compose (Material 3)**, MVVM + Unidirectional Data Flow, Clean Architecture (data / domain / presentation), Room, Hilt.
 - **Full RTL + Persian typography** (Vazirmatn for reading, Nastaliq-style display face for verses).
 - A genuine **draw ritual**: نیّت → animated "opening of the Divan" → line-by-line verse reveal → interpretation reveal.
+- **Share-as-image** with direct buttons to Telegram, WhatsApp, Rubika, Bale, Instagram, Eitaa and Soroush.
+- **Heavy visual polish**: animated shimmer/gold buttons, rotating khatam star, breathing floral rosette and tazhib corner motifs.
 - 4+ **visual themes** (تذهیب manuscript, candlelight, starlit garden, modern minimal).
 - History, favorites, full searchable Divan browser, **share-as-image**, daily reminder, settings, onboarding.
 - **Monetization** behind an `AdManager` abstraction (Tapsell + AdMob mediation), placed so ads never interrupt the ritual.

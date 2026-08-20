@@ -46,7 +46,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.amirrezahadipoor.falhafez.core.designsystem.BreathingRosette
+import com.amirrezahadipoor.falhafez.core.designsystem.CornerOrnaments
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
+import com.amirrezahadipoor.falhafez.core.designsystem.LaurelDivider
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
 import com.amirrezahadipoor.falhafez.core.util.PersianText
 import com.amirrezahadipoor.falhafez.domain.model.FalCategory
@@ -115,7 +118,7 @@ fun NiyyatContent(
         Text("دل به نیّت بسپار", style = FalText.heading, color = spec.onBackground)
         Spacer(Modifier.height(8.dp))
         Text(
-            "در دل خود نیّتی کن، آرام نفس بکش، و سپس فال بگیر.",
+            "چند نفس آرام بکش؛ در دل خود نیّتی کن، و وقتی آماده شدی، دیوان را بگشا.",
             style = FalText.bodyMuted,
             color = spec.onBackgroundMuted,
             textAlign = TextAlign.Center
@@ -175,18 +178,26 @@ fun NiyyatContent(
 
         Spacer(Modifier.height(22.dp))
 
-        if (state.remainingToday <= 0 && onRewardedDraw != null) {
-            GoldButton(text = "فال بیشتر — تماشای ویدئو", onClick = onRewardedDraw)
-        } else {
-            GoldButton(
-                text = when {
-                    state.busy -> "در حال گشودن دیوان…"
-                    state.remainingToday <= 0 -> "فالِ رایگانِ امروز تمام شد"
-                    else -> "فال بگیر"
-                },
-                onClick = onDraw,
-                enabled = state.canDraw
-            )
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            BreathingRosette(tint = spec.accent)
+            if (state.remainingToday <= 0 && onRewardedDraw != null) {
+                GoldButton(
+                    text = "فال بیشتر — تماشای ویدئو",
+                    onClick = onRewardedDraw,
+                    glow = true
+                )
+            } else {
+                GoldButton(
+                    text = when {
+                        state.busy -> "در حال گشودن دیوان…"
+                        state.remainingToday <= 0 -> "فالِ رایگانِ امروز تمام شد"
+                        else -> "فال بگیر"
+                    },
+                    onClick = onDraw,
+                    enabled = state.canDraw,
+                    glow = true
+                )
+            }
         }
 
         if (state.remainingToday in 1..2) {
@@ -254,9 +265,9 @@ fun RevealContent(
         AnimatedVisibility(visible = allRevealed > 0, enter = fadeIn(tween(600))) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(Modifier.height(6.dp))
-                OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.7f))
+                LaurelDivider(tint = spec.accent, modifier = Modifier.fillMaxWidth(0.7f))
                 Spacer(Modifier.height(22.dp))
-                GoldButton(text = "خواندنِ تفسیر", onClick = onReadInterpretation)
+                GoldButton(text = "تفسیرِ فال را بخوان", onClick = onReadInterpretation, glow = true)
                 Spacer(Modifier.height(24.dp))
             }
         }
@@ -291,6 +302,12 @@ fun InterpretationContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("تفسیرِ فال", style = FalText.heading, color = spec.accent)
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "گویی دانایی، فالِ تو را می‌خواند…",
+            style = FalText.caption,
+            color = spec.onBackgroundMuted
+        )
         Spacer(Modifier.height(14.dp))
 
         Box(
@@ -298,9 +315,16 @@ fun InterpretationContent(
                 .fillMaxWidth()
                 .background(spec.card.copy(alpha = 0.85f), RoundedCornerShape(22.dp))
                 .border(1.dp, spec.border.copy(alpha = 0.6f), RoundedCornerShape(22.dp))
-                .padding(20.dp)
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CornerOrnaments(
+                modifier = Modifier.matchParentSize(),
+                tint = spec.accent,
+                size = 44.dp
+            )
+            Column(
+                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
                     text = poem.tafsir,
                     style = FalText.tafsir,

@@ -12,6 +12,7 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 6 — Monetization | ✅ | `AdManager` abstraction + AdMob + offline frequency cap + Tapsell mediation guide |
 | 7 — Polish | ✅ | inset/transition/perf fixes, accessibility + QA checklist |
 | 8 — Full corpus | ✅ | **Complete Divan-e Hafez (495 ghazals) + complete Ruba'iyat of Khayyam (178)**, expanded Saadi/Rumi |
+| 9 — Social share + polish | ✅ | Direct share to Telegram/WhatsApp/Rubika/Bale/Instagram/Eitaa/Soroush + gallery save; animated shimmer buttons, SVG-style ornaments; humanized, poet-aware interpretations |
 
 ## Corpus (complete, offline)
 | Poet | Collection | Count | Beits |
@@ -29,6 +30,16 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
   generated prose (warm, varied, non-horoscope tone) for the rest, so every poem has one.
 - Artwork: original, AI-generated for this app (no copyrighted/museum/historical-manuscript imagery).
 - Fonts: **Vazirmatn** + **Noto Nastaliq Urdu** (both OFL).
+
+## Social share (Phase 9)
+- Share sheet with **direct buttons** to Telegram, WhatsApp, **Rubika**, **Bale**, Instagram, Eitaa and Soroush
+  (targeted intents by package name, graceful fallback to the generic chooser) + save-to-gallery + "more…".
+- Share image is rendered once (off the main thread) as a 1080×1350 PNG.
+
+## Visual polish (Phase 9)
+- Animated gold CTA (shimmer sweep + press-scale spring + breathing glow), ghost buttons with press feedback.
+- Original vector ornaments (khatam 8-point star, tazhib corner motif, floral rosette, laurel divider):
+  rotating star on splash/onboarding, breathing rosette behind the draw CTA, corner flourishes on cards.
 
 ## Notes / flags
 - **Build**: Android Studio Jellyfish+ / JDK 17 (this sandbox has no Android SDK, so APK
