@@ -14,6 +14,7 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 8 — Full corpus | ✅ | **Complete Divan-e Hafez (495 ghazals) + complete Ruba'iyat of Khayyam (178)**, expanded Saadi/Rumi |
 | 9 — Social share + polish | ✅ | Direct share to Telegram/WhatsApp/Rubika/Bale/Instagram/Eitaa/Soroush + gallery save; animated shimmer buttons, SVG-style ornaments; humanized, poet-aware interpretations |
 | 10 — Retention & monetization | ✅ | beit-by-beit meaning (4,548 beits), deterministic daily fal (فالِ روز), home-screen widget, personal stats/streak (کارنامه), theme filter + study mode, rewarded cooldown-skip & premium-theme unlock (نوروز + یلدا), haptics, copy-text, JSON export |
+| 11 — CI/CD + store | ✅ | GitHub Actions builds **debug + release APK** (release 6.5 MB, R8), emulator screenshot workflow, Cafe Bazaar assets (icon 512, descriptions, checklist), Persian privacy policy on GitHub Pages |
 
 ## Corpus (complete, offline)
 | Poet | Collection | Count | Beits |
@@ -54,6 +55,20 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 - Rewarded video: extra draws beyond the daily limit, **skip the repeat cooldown**, and **unlock the premium یلدا theme**.
 - Banner (niyyat/History/Library), frequency-capped interstitial (every 4th draw, on return home), one native unit in the Library list.
 - New free theme نوروز keeps the visual freshness that drives shares.
+
+## CI / CD (Phase 11)
+
+- `.github/workflows/android.yml` — every push to `main` builds `assembleDebug` + `assembleRelease`
+  (JDK 17 + Android SDK on GitHub runners, Gradle caching, corpus validation) and uploads the
+  artifact **falhafez-apks** (release APK ≈ 6.5 MB).
+- `.github/workflows/screenshots.yml` — manual dispatch; boots an API-33 emulator, installs the app
+  and captures real store screenshots.
+- Release signing: env vars `KEYSTORE_PATH/KEYSTORE_PASSWORD/KEY_ALIAS/KEY_PASSWORD` (GitHub Secrets);
+  falls back to the debug key when absent.
+
+## Cafe Bazaar
+- `store/cafebazaar/` — icon 512, short/long description, release checklist.
+- Privacy policy (Persian): https://amirrezahadipoor.github.io/falhafez/privacy.html (GitHub Pages).
 
 ## Notes / flags
 - **Build**: Android Studio Jellyfish+ / JDK 17 (this sandbox has no Android SDK, so APK

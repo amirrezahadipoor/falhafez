@@ -1,5 +1,7 @@
 # فال حافظ — Fal-e Hafez (دیوان و فال حافظ)
 
+[![Android CI](https://github.com/amirrezahadipoor/falhafez/actions/workflows/android.yml/badge.svg)](https://github.com/amirrezahadipoor/falhafez/actions/workflows/android.yml)
+
 A Persian-language **native Android** app for the centuries-old Iranian tradition of *fal-e Hafez*: you make a silent wish (نیّت), draw a random poem from the Divan of Hafez, and receive the verse together with a warm modern-Persian interpretation of what it means for your wish. The **complete Divan-e Hafez (495 ghazals)** and **complete Ruba'iyat of Khayyam (178)** ship offline, plus selected verses from **Saadi** and **Rumi (Molana)**.
 
 > ✅ **All seven phases complete** (see [PROJECT.md](PROJECT.md) and [docs/QA_AND_ACCESSIBILITY.md](docs/QA_AND_ACCESSIBILITY.md)).

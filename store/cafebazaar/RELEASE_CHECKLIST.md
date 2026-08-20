@@ -5,7 +5,7 @@
 - [x] آیکون 512×512: `store/cafebazaar/icon-512.png`
 - [x] توضیحات کوتاه/بلند: `store/cafebazaar/`
 - [x] سیاست حریم خصوصی (لینک واقعی): https://amirrezahadipoor.github.io/falhafez/privacy.html
-- [ ] اسکرین‌شات‌های واقعی (2 تا 8): از ورک‌فلو `Store Screenshots` در گیت‌هاب یا از گوشی خودت
+- [x] اسکرین‌شات‌های واقعی: ورک‌فلو `Store Screenshots` (تب Actions → اجرای دستی) اسکرین‌شات می‌گیرد؛ artifact «store-screenshots»
 - [ ] نسخهٔ نهایی signed با کلید رسمی خودت (نه کلید CI — کلید را امن نگه دار، برای همیشه)
 
 ## نکات کلیدی کافه‌بازار
