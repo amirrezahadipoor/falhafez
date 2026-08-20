@@ -41,6 +41,9 @@ interface PoemDao {
     @Query("SELECT COUNT(*) FROM poems")
     suspend fun count(): Int
 
+    @Query("SELECT id FROM poems ORDER BY id LIMIT 1 OFFSET :offset")
+    suspend fun getPoemIdAt(offset: Int): Long?
+
     @Query("SELECT COUNT(*) FROM poems")
     fun observeCount(): Flow<Int>
 

@@ -6,6 +6,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,11 +47,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.amirrezahadipoor.falhafez.core.designsystem.BreathingRing
 import com.amirrezahadipoor.falhafez.core.designsystem.BreathingRosette
 import com.amirrezahadipoor.falhafez.core.designsystem.CornerOrnaments
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
 import com.amirrezahadipoor.falhafez.core.designsystem.LaurelDivider
+import com.amirrezahadipoor.falhafez.core.designsystem.MoonStar
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
+import com.amirrezahadipoor.falhafez.core.util.Jalali
 import com.amirrezahadipoor.falhafez.core.util.PersianText
 import com.amirrezahadipoor.falhafez.domain.model.FalCategory
 import com.amirrezahadipoor.falhafez.domain.model.Poem
@@ -89,6 +93,7 @@ fun NiyyatContent(
     onCategorySelect: (FalCategory) -> Unit,
     onDraw: () -> Unit,
     onRewardedDraw: (() -> Unit)? = null,
+    onDailyFal: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
     Column(
@@ -115,7 +120,15 @@ fun NiyyatContent(
         OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.6f))
         Spacer(Modifier.height(18.dp))
 
-        Text("دل به نیّت بسپار", style = FalText.heading, color = spec.onBackground)
+        Box(contentAlignment = Alignment.Center) {
+            BreathingRing(tint = spec.accent, size = 110.dp)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("دل به نیّت بسپار", style = FalText.heading, color = spec.onBackground)
+                Spacer(Modifier.height(4.dp))
+                Text("نفس بکش…", style = FalText.caption, color = spec.onBackgroundMuted)
+            }
+        }
+        Spacer(Modifier.height(4.dp))
         Spacer(Modifier.height(8.dp))
         Text(
             "چند نفس آرام بکش؛ در دل خود نیّتی کن، و وقتی آماده شدی، دیوان را بگشا.",
@@ -204,6 +217,31 @@ fun NiyyatContent(
             Spacer(Modifier.height(10.dp))
             Text(
                 "فالِ رایگانِ باقی‌ماندهٔ امروز: ${PersianText.number(state.remainingToday)}",
+                style = FalText.caption,
+                color = spec.onBackgroundMuted
+            )
+        }
+
+        Spacer(Modifier.height(18.dp))
+
+        // فالِ روز — deterministic, shared ritual
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(spec.card.copy(alpha = 0.5f), RoundedCornerShape(18.dp))
+                .border(1.dp, spec.border.copy(alpha = 0.5f), RoundedCornerShape(18.dp))
+                .clickable(onClick = onDailyFal)
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                MoonStar(tint = spec.accent, size = 34.dp)
+                Spacer(Modifier.size(10.dp))
+                Text("فالِ امروز", style = FalText.heading, color = spec.onBackground)
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                Jalali.shortDate(System.currentTimeMillis()),
                 style = FalText.caption,
                 color = spec.onBackgroundMuted
             )
@@ -375,7 +413,11 @@ fun InterpretationContent(
 
         Spacer(Modifier.height(6.dp))
 
-        if (cooldownActive) {
+        if (cooldownActive && onRewarded != null) {
+            Text("دلت می‌خواهد دوباره فال بگیری؟", style = FalText.caption, color = spec.onBackgroundMuted)
+            Spacer(Modifier.height(12.dp))
+            GoldButton(text = "فال فوری — تماشای ویدئو", onClick = onRewarded, glow = true)
+        } else if (cooldownActive) {
             Text("لحظه‌ای درنگ…", style = FalText.caption, color = spec.onBackgroundMuted)
             Spacer(Modifier.height(12.dp))
             GoldButton(text = "فال دوباره", onClick = onDrawAgain, enabled = false)

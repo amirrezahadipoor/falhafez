@@ -39,7 +39,8 @@ data class VerseEntity(
     val poemId: Long,
     val position: Int,
     val first: String,
-    val second: String?
+    val second: String?,
+    val meaning: String? = null
 )
 
 /**

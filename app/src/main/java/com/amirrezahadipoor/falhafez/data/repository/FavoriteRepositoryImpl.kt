@@ -50,6 +50,8 @@ class FavoriteRepositoryImpl @Inject constructor(
         themeTag = poem.themeTag,
         tafsir = poem.tafsir,
         verses = verses.sortedBy { it.position }
-            .map { Verse(position = it.position, first = it.first, second = it.second) }
+            .map {
+                Verse(position = it.position, first = it.first, second = it.second, meaning = it.meaning)
+            }
     )
 }

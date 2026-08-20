@@ -13,6 +13,7 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 7 — Polish | ✅ | inset/transition/perf fixes, accessibility + QA checklist |
 | 8 — Full corpus | ✅ | **Complete Divan-e Hafez (495 ghazals) + complete Ruba'iyat of Khayyam (178)**, expanded Saadi/Rumi |
 | 9 — Social share + polish | ✅ | Direct share to Telegram/WhatsApp/Rubika/Bale/Instagram/Eitaa/Soroush + gallery save; animated shimmer buttons, SVG-style ornaments; humanized, poet-aware interpretations |
+| 10 — Retention & monetization | ✅ | beit-by-beit meaning (4,548 beits), deterministic daily fal (فالِ روز), home-screen widget, personal stats/streak (کارنامه), theme filter + study mode, rewarded cooldown-skip & premium-theme unlock (نوروز + یلدا), haptics, copy-text, JSON export |
 
 ## Corpus (complete, offline)
 | Poet | Collection | Count | Beits |
@@ -40,6 +41,19 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 - Animated gold CTA (shimmer sweep + press-scale spring + breathing glow), ghost buttons with press feedback.
 - Original vector ornaments (khatam 8-point star, tazhib corner motif, floral rosette, laurel divider):
   rotating star on splash/onboarding, breathing rosette behind the draw CTA, corner flourishes on cards.
+
+## Retention & monetization strategy (Phase 10)
+
+**Habit / return loops (all offline):**
+- **فالِ روز** — a deterministic fal shared by every user on the same day → daily return + "فال امروزت چی اومد؟" word-of-mouth.
+- **بیتِ امروز widget** — the day's verse sits on the home screen, one tap back into the app.
+- **کارنامهٔ شخصی** — draws, streak (زنجیره), favourite poet/theme, busiest hour → investment in one's own data.
+- **Beit-by-beit meaning** for the full Divan — the paywalled feature of competitors, free & offline here.
+
+**Monetization (never interrupting the ritual):**
+- Rewarded video: extra draws beyond the daily limit, **skip the repeat cooldown**, and **unlock the premium یلدا theme**.
+- Banner (niyyat/History/Library), frequency-capped interstitial (every 4th draw, on return home), one native unit in the Library list.
+- New free theme نوروز keeps the visual freshness that drives shares.
 
 ## Notes / flags
 - **Build**: Android Studio Jellyfish+ / JDK 17 (this sandbox has no Android SDK, so APK

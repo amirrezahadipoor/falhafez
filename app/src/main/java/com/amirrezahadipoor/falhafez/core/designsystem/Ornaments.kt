@@ -3,6 +3,7 @@ package com.amirrezahadipoor.falhafez.core.designsystem
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -89,6 +90,85 @@ fun BreathingRosette(
                 scaleX = scale
                 scaleY = scale
             }
+    )
+}
+
+/**
+ * Mystical breathing ring — a soft circle that expands and fades, inviting the
+ * user to breathe slowly before making their wish (نیّت).
+ */
+@Composable
+fun BreathingRing(
+    modifier: Modifier = Modifier,
+    size: Dp = 120.dp,
+    tint: Color = FalPalette.Gold,
+    durationMillis: Int = 3800
+) {
+    val transition = rememberInfiniteTransition(label = "breath")
+    val scale by transition.animateFloat(
+        initialValue = 0.55f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "breath-scale"
+    )
+    val alpha by transition.animateFloat(
+        initialValue = 0.55f,
+        targetValue = 0.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "breath-alpha"
+    )
+    Box(
+        modifier = modifier.size(size),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(Modifier.matchParentSize()) {
+            val cx = size.width / 2f
+            val cy = size.height / 2f
+            val radius = size.minDimension / 2f * scale
+            drawCircle(color = tint.copy(alpha = alpha), radius = radius, center = Offset(cx, cy))
+            drawCircle(
+                color = tint.copy(alpha = alpha * 0.7f),
+                radius = radius,
+                center = Offset(cx, cy),
+                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx())
+            )
+        }
+    }
+}
+
+/** Crescent-moon-and-star icon (mystical night motif). */
+@Composable
+fun MoonStar(
+    modifier: Modifier = Modifier,
+    size: Dp = 46.dp,
+    tint: Color = FalPalette.Gold
+) {
+    Icon(
+        painter = painterResource(R.drawable.ic_moon_star),
+        contentDescription = null,
+        tint = tint,
+        modifier = modifier.size(size)
+    )
+}
+
+/** Boteh (paisley) ornament. */
+@Composable
+fun Boteh(
+    modifier: Modifier = Modifier,
+    size: Dp = 40.dp,
+    tint: Color = FalPalette.Gold
+) {
+    Icon(
+        painter = painterResource(R.drawable.ic_boteh),
+        contentDescription = null,
+        tint = tint,
+        modifier = modifier.size(size)
     )
 }
 

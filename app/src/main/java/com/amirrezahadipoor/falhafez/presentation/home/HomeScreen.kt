@@ -31,6 +31,17 @@ fun HomeScreen(
     val activity = remember(context) { context.findActivity() }
 
     RitualBackground(spec = spec) {
+        state.dailyFal?.let { dailyPoem ->
+            DailyFalContent(
+                spec = spec,
+                poem = dailyPoem,
+                isFavorite = isFavorite,
+                onToggleFavorite = viewModel::onToggleFavorite,
+                onBack = viewModel::closeDailyFal
+            )
+            return@RitualBackground
+        }
+
         AnimatedContent(
             targetState = state.stage,
             transitionSpec = {
@@ -47,6 +58,7 @@ fun HomeScreen(
                     onCategorySelect = viewModel::onCategorySelect,
                     onDraw = viewModel::draw,
                     onRewardedDraw = if (activity != null) { { viewModel.requestExtraDraw(activity) } } else null,
+                    onDailyFal = viewModel::openDailyFal,
                     onOpenSettings = onOpenSettings
                 )
 
@@ -67,6 +79,7 @@ fun HomeScreen(
                     onCategorySelect = viewModel::onCategorySelect,
                     onDraw = viewModel::draw,
                     onRewardedDraw = null,
+                    onDailyFal = viewModel::openDailyFal,
                     onOpenSettings = onOpenSettings
                 )
 
@@ -80,7 +93,7 @@ fun HomeScreen(
                         remainingToday = state.remainingToday,
                         onToggleFavorite = viewModel::onToggleFavorite,
                         onDrawAgain = viewModel::draw,
-                        onRewarded = if (activity != null) { { viewModel.requestExtraDraw(activity) } } else null,
+                        onRewarded = if (activity != null) { { viewModel.requestSkipCooldown(activity) } } else null,
                         onOpenPoem = { onOpenPoem(entry.poem.id) },
                         onDismiss = if (activity != null) { { viewModel.dismissAndMaybeAd(activity) } } else viewModel::dismissOnly
                     )
@@ -90,6 +103,7 @@ fun HomeScreen(
                     onCategorySelect = viewModel::onCategorySelect,
                     onDraw = viewModel::draw,
                     onRewardedDraw = null,
+                    onDailyFal = viewModel::openDailyFal,
                     onOpenSettings = onOpenSettings
                 )
             }

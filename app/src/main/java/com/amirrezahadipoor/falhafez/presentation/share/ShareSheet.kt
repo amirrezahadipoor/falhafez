@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.SaveAlt
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.amirrezahadipoor.falhafez.core.designsystem.FalPalette
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
+import com.amirrezahadipoor.falhafez.core.util.Clipboard
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
 import com.amirrezahadipoor.falhafez.domain.model.FalCategory
 import com.amirrezahadipoor.falhafez.domain.model.Poem
@@ -118,25 +120,37 @@ fun ShareSheet(
                     }
                     Spacer(Modifier.height(22.dp))
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        SecondaryShareAction(
-                            label = if (saved) "ذخیره شد ✓" else "ذخیره در گالری",
-                            icon = Icons.Outlined.SaveAlt,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            val f = file ?: return@SecondaryShareAction
-                            scope.launch(Dispatchers.IO) {
-                                val ok = ShareManager.saveToGallery(context, f)
-                                saved = ok
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            SecondaryShareAction(
+                                label = if (saved) "ذخیره شد ✓" else "ذخیره در گالری",
+                                icon = Icons.Outlined.SaveAlt,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                val f = file ?: return@SecondaryShareAction
+                                scope.launch(Dispatchers.IO) {
+                                    val ok = ShareManager.saveToGallery(context, f)
+                                    saved = ok
+                                }
+                            }
+                            SecondaryShareAction(
+                                label = "بیشتر…",
+                                icon = Icons.Outlined.Share,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                val f = file ?: return@SecondaryShareAction
+                                scope.launch { ShareManager.shareFileGeneric(context, f) }
                             }
                         }
                         SecondaryShareAction(
-                            label = "بیشتر…",
-                            icon = Icons.Outlined.Share,
-                            modifier = Modifier.weight(1f)
+                            label = "کپی متنِ شعر و تفسیر",
+                            icon = Icons.Outlined.ContentCopy,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            val f = file ?: return@SecondaryShareAction
-                            scope.launch { ShareManager.shareFileGeneric(context, f) }
+                            Clipboard.copy(
+                                context, "فال",
+                                poem.verses.joinToString("\n") { it.fullText } + "\n\n" + poem.tafsir
+                            )
                         }
                     }
                 }

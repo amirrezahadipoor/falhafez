@@ -1,0 +1,164 @@
+package com.amirrezahadipoor.falhafez.presentation.home
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.amirrezahadipoor.falhafez.core.designsystem.CornerOrnaments
+import com.amirrezahadipoor.falhafez.core.designsystem.FalText
+import com.amirrezahadipoor.falhafez.core.designsystem.LaurelDivider
+import com.amirrezahadipoor.falhafez.core.designsystem.MoonStar
+import com.amirrezahadipoor.falhafez.core.designsystem.RotatingStar
+import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
+import com.amirrezahadipoor.falhafez.core.util.Jalali
+import com.amirrezahadipoor.falhafez.domain.model.FalCategory
+import com.amirrezahadipoor.falhafez.domain.model.Poem
+import com.amirrezahadipoor.falhafez.presentation.components.GhostButton
+import com.amirrezahadipoor.falhafez.presentation.share.SharePoemButton
+import kotlinx.coroutines.delay
+
+/** فالِ امروز — the deterministic daily fal, shared by everyone on the same day. */
+@Composable
+fun DailyFalContent(
+    spec: FalThemeSpec,
+    poem: Poem,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
+    onBack: () -> Unit
+) {
+    var visibleCount by remember(poem.id) { mutableIntStateOf(0) }
+    var allRevealed by remember(poem.id) { mutableIntStateOf(0) }
+
+    LaunchedEffect(poem.id) {
+        for (i in 1..poem.verses.size) {
+            visibleCount = i
+            delay(420L)
+        }
+        allRevealed = 1
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .statusBarsPadding()
+            .padding(horizontal = 24.dp, vertical = 18.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            RotatingStar(tint = spec.accent.copy(alpha = 0.4f), size = 100.dp)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("فالِ امروز", style = FalText.heading, color = spec.accentSoft)
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    Jalali.shortDate(System.currentTimeMillis()),
+                    style = FalText.caption,
+                    color = spec.onBackgroundMuted
+                )
+            }
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "این فال، امروز برای همه یکی است؛ شاید هم‌فالِ هم باشیم.",
+            style = FalText.caption,
+            color = spec.onBackgroundMuted,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(12.dp))
+        MoonStar(tint = spec.accent, size = 40.dp)
+        Spacer(Modifier.height(10.dp))
+
+        poem.verses.forEachIndexed { index, verse ->
+            AnimatedVisibility(
+                visible = index < visibleCount,
+                enter = fadeIn(tween(650)) + slideInVertically(tween(650)) { it / 3 }
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(verse.first, style = FalText.verse, color = spec.onBackground)
+                    if (verse.isCouplet) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(verse.second!!, style = FalText.verse, color = spec.onBackground)
+                    }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+        }
+
+        AnimatedVisibility(visible = allRevealed > 0, enter = fadeIn(tween(600))) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                LaurelDivider(tint = spec.accent, modifier = Modifier.fillMaxWidth(0.7f))
+                Spacer(Modifier.height(18.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(spec.card.copy(alpha = 0.85f), RoundedCornerShape(22.dp))
+                        .border(1.dp, spec.border.copy(alpha = 0.6f), RoundedCornerShape(22.dp))
+                ) {
+                    CornerOrnaments(modifier = Modifier.matchParentSize(), tint = spec.accent, size = 40.dp)
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("تفسیر", style = FalText.heading, color = spec.accent)
+                        Spacer(Modifier.height(10.dp))
+                        Text(poem.tafsir, style = FalText.tafsir, color = spec.onBackground)
+                    }
+                }
+                Spacer(Modifier.height(22.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onToggleFavorite) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = "علاقه‌مندی",
+                            tint = if (isFavorite) spec.accent else spec.onBackgroundMuted
+                        )
+                    }
+                    SharePoemButton(
+                        poem = poem,
+                        category = FalCategory.NONE,
+                        spec = spec,
+                        tint = spec.onBackgroundMuted
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                GhostButton(text = "بازگشت", onClick = onBack, textColor = spec.onBackgroundMuted)
+                Spacer(Modifier.height(20.dp))
+            }
+        }
+    }
+}

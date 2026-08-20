@@ -11,6 +11,8 @@ A Persian-language **native Android** app for the centuries-old Iranian traditio
 - **Full RTL + Persian typography** (Vazirmatn for reading, Nastaliq-style display face for verses).
 - A genuine **draw ritual**: نیّت → animated "opening of the Divan" → line-by-line verse reveal → interpretation reveal.
 - **Share-as-image** with direct buttons to Telegram, WhatsApp, Rubika, Bale, Instagram, Eitaa and Soroush.
+- **Beit-by-beit meaning** for the full Divan (free & offline) + a deterministic **daily fal** (فالِ روز) + home-screen widget.
+- **Personal stats & streaks** (کارنامه), theme filters, study mode, haptic ritual feedback, and 6 visual themes (incl. نوروز & premium یلدا).
 - **Heavy visual polish**: animated shimmer/gold buttons, rotating khatam star, breathing floral rosette and tazhib corner motifs.
 - 4+ **visual themes** (تذهیب manuscript, candlelight, starlit garden, modern minimal).
 - History, favorites, full searchable Divan browser, **share-as-image**, daily reminder, settings, onboarding.

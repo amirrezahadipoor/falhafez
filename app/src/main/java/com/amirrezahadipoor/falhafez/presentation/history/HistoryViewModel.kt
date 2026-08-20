@@ -34,6 +34,13 @@ class HistoryViewModel @Inject constructor(
     private val _selectedId = MutableStateFlow<Long?>(null)
     val selectedId: StateFlow<Long?> = _selectedId.asStateFlow()
 
+    private val _showStats = MutableStateFlow(false)
+    val showStats: StateFlow<Boolean> = _showStats.asStateFlow()
+
+    fun toggleStats() {
+        _showStats.value = !_showStats.value
+    }
+
     fun open(id: Long) {
         _selectedId.value = id
         favorite.select(id)

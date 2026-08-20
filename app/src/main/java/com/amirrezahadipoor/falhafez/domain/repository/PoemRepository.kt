@@ -11,6 +11,8 @@ interface PoemRepository {
     suspend fun getPoemsByCollection(collection: Collection): List<Poem>
     suspend fun search(query: String): List<Poem>
     suspend fun getRandomPoem(excludeIds: List<Long> = emptyList()): Poem?
+    /** Deterministic pick (used by فالِ روز — same poem for everyone on a given day). */
+    suspend fun getPoemAt(index: Int): Poem?
     suspend fun count(): Int
     fun observeCount(): Flow<Int>
 }

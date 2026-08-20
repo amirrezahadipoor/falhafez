@@ -9,10 +9,12 @@ interface SettingsRepository {
     val notificationsEnabled: Flow<Boolean>
     val seenOnboarding: Flow<Boolean>
     val rewardedExtraDraws: Flow<Int>
+    val unlockedThemes: Flow<Set<String>>
 
     suspend fun setTheme(id: FalThemeId)
     suspend fun setFontSizeScale(scale: Float)
     suspend fun setNotificationsEnabled(enabled: Boolean)
     suspend fun setSeenOnboarding(seen: Boolean)
     suspend fun addRewardedDraw(count: Int)
+    suspend fun unlockTheme(id: FalThemeId)
 }

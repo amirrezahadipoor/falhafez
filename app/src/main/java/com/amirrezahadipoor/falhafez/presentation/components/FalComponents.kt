@@ -41,6 +41,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.amirrezahadipoor.falhafez.core.designsystem.FalPalette
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
@@ -59,6 +61,7 @@ fun GoldButton(
     glow: Boolean = false
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = LocalHapticFeedback.current
     val pressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (pressed) 0.94f else 1f,
@@ -102,7 +105,10 @@ fun GoldButton(
                 interactionSource = interactionSource,
                 indication = null,
                 enabled = enabled && !loading,
-                onClick = onClick
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onClick()
+                }
             )
             .background(
                 Brush.horizontalGradient(
@@ -171,6 +177,7 @@ fun GhostButton(
     textColor: Color = FalPalette.Cream
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = LocalHapticFeedback.current
     val pressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (pressed) 0.95f else 1f,
@@ -187,7 +194,10 @@ fun GhostButton(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onClick()
+                }
             )
             .padding(horizontal = 28.dp, vertical = 13.dp),
         contentAlignment = Alignment.Center

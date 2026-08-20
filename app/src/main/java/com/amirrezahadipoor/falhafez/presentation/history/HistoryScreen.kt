@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,6 +48,7 @@ fun HistoryScreen() {
     val isFavorite by viewModel.favorite.isSelectedFavorite.collectAsStateWithLifecycle()
     val spec = FalThemeSpec.byId(themeId)
 
+    val showStats by viewModel.showStats.collectAsStateWithLifecycle()
     val selectedDraw = selectedId?.let { id -> history.firstOrNull { it.id == id } }
 
     if (selectedDraw != null) {
@@ -62,7 +67,24 @@ fun HistoryScreen() {
 
     Box(Modifier.fillMaxSize().background(FalPalette.Navy)) {
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader(title = "تاریخچه")
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) { ScreenHeader(title = "تاریخچه") }
+                IconButton(onClick = viewModel::toggleStats) {
+                    Icon(
+                        imageVector = Icons.Outlined.Insights,
+                        contentDescription = "کارنامهٔ من",
+                        tint = if (showStats) FalPalette.GoldBright else FalPalette.CreamMuted
+                    )
+                }
+            }
+            if (showStats) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                ) {
+                    StatsView(history = history)
+                }
+                return@Column
+            }
             if (history.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     EmptyState(

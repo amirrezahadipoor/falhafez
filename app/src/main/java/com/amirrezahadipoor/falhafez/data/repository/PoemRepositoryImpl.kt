@@ -37,6 +37,11 @@ class PoemRepositoryImpl @Inject constructor(
         return getPoem(chosen)
     }
 
+    override suspend fun getPoemAt(index: Int): Poem? {
+        val id = poemDao.getPoemIdAt(index) ?: return null
+        return getPoem(id)
+    }
+
     override suspend fun count(): Int = poemDao.count()
 
     override fun observeCount(): Flow<Int> = poemDao.observeCount()
@@ -60,7 +65,9 @@ class PoemRepositoryImpl @Inject constructor(
         number = number,
         themeTag = themeTag,
         tafsir = tafsir,
-        verses = verses.map { Verse(position = it.position, first = it.first, second = it.second) }
+        verses = verses.map {
+            Verse(position = it.position, first = it.first, second = it.second, meaning = it.meaning)
+        }
     )
 
     private fun PoemWithVerses.toDomain(): Poem =

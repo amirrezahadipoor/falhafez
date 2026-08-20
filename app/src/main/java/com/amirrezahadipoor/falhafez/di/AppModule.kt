@@ -29,6 +29,7 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): FalDatabase =
         Room.databaseBuilder(context, FalDatabase::class.java, "falhafez.db")
+            .addMigrations(FalDatabase.MIGRATION_1_2)
             .build()
 
     @Provides

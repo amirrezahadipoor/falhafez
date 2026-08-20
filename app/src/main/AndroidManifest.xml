@@ -33,6 +33,18 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="@string/ad_app_id" />
 
+        <!-- بیتِ امروز home-screen widget (offline). -->
+        <receiver
+            android:name=".presentation.widget.DailyFalWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/fal_widget_info" />
+        </receiver>
+
         <!-- Exposes cached share-images to other apps (Instagram/Telegram/WhatsApp). -->
         <provider
             android:name="androidx.core.content.FileProvider"

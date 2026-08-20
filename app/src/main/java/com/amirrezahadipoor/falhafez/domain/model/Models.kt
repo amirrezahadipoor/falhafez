@@ -41,7 +41,8 @@ enum class FalCategory(val key: String, val faName: String) {
 data class Verse(
     val position: Int,
     val first: String,
-    val second: String?
+    val second: String?,
+    val meaning: String? = null
 ) {
     val isCouplet: Boolean get() = !second.isNullOrBlank()
     val fullText: String get() = if (isCouplet) "$first؛ $second" else first

@@ -49,6 +49,7 @@ import com.amirrezahadipoor.falhafez.core.designsystem.FalPalette
 import com.amirrezahadipoor.falhafez.core.designsystem.FalText
 import com.amirrezahadipoor.falhafez.core.theme.FalThemeSpec
 import com.amirrezahadipoor.falhafez.core.util.PersianText
+import com.amirrezahadipoor.falhafez.core.util.findActivity
 import com.amirrezahadipoor.falhafez.presentation.components.ScreenHeader
 
 @Composable
@@ -59,6 +60,8 @@ fun SettingsScreen(onBack: () -> Unit) {
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
+    val activity = remember(context) { context.findActivity() }
+    val unlockedThemes by viewModel.unlockedThemes.collectAsStateWithLifecycle()
     val version = remember {
         runCatching {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName
@@ -95,7 +98,19 @@ fun SettingsScreen(onBack: () -> Unit) {
                 item { SectionTitle("قالبِ فال") }
                 items(FalThemeSpec.All.size) { index ->
                     val spec = FalThemeSpec.All[index]
-                    ThemeRow(spec = spec, selected = spec.id == themeId, onClick = { viewModel.setTheme(spec.id) })
+                    val unlocked = !spec.locked || spec.id.id in unlockedThemes
+                    ThemeRow(
+                        spec = spec,
+                        selected = spec.id == themeId,
+                        unlocked = unlocked,
+                        onClick = {
+                            when {
+                                !spec.locked -> viewModel.setTheme(spec.id)
+                                unlocked -> viewModel.setTheme(spec.id)
+                                activity != null -> viewModel.requestUnlockTheme(activity, spec.id)
+                            }
+                        }
+                    )
                 }
 
                 item { SectionTitle("اندازهٔ قلم") }
@@ -157,6 +172,31 @@ fun SettingsScreen(onBack: () -> Unit) {
                                 uncheckedTrackColor = FalPalette.NavyLight
                             )
                         )
+                    }
+                }
+
+                item { SectionTitle("داده‌ها") }
+                item {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .background(FalPalette.NavySoft, RoundedCornerShape(18.dp))
+                            .padding(16.dp)
+                    ) {
+                        Text("پشتیبان‌گیری از تاریخچه و علاقه‌مندی‌ها", style = FalText.body, color = FalPalette.Cream)
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            "یک فایل JSON از فال‌هایت می‌سازد و برایت می‌فرستد.",
+                            style = FalText.caption,
+                            color = FalPalette.CreamMuted
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        TextButton(
+                            onClick = viewModel::exportData,
+                            modifier = Modifier.background(FalPalette.NavyLight, RoundedCornerShape(12.dp))
+                        ) {
+                            Text("خروجی گرفتن", style = FalText.button, color = FalPalette.Gold)
+                        }
                     }
                 }
 
@@ -230,7 +270,7 @@ private fun SectionTitle(text: String) {
 }
 
 @Composable
-private fun ThemeRow(spec: FalThemeSpec, selected: Boolean, onClick: () -> Unit) {
+private fun ThemeRow(spec: FalThemeSpec, selected: Boolean, unlocked: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -263,8 +303,8 @@ private fun ThemeRow(spec: FalThemeSpec, selected: Boolean, onClick: () -> Unit)
             color = FalPalette.Cream,
             modifier = Modifier.weight(1f)
         )
-        if (spec.locked) {
-            Text(text = "قفل", style = FalText.caption, color = FalPalette.CreamMuted)
+        if (spec.locked && !unlocked) {
+            Text(text = "قفل — با ویدئو باز می‌شود", style = FalText.caption, color = FalPalette.Gold)
         } else if (selected) {
             Icon(Icons.Filled.Check, contentDescription = "انتخاب‌شده", tint = spec.accent)
         }

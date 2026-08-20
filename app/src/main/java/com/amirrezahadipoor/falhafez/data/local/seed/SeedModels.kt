@@ -8,7 +8,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SeedVerse(
     val first: String,
-    val second: String? = null
+    val second: String? = null,
+    val meaning: String? = null
 )
 
 @Serializable
@@ -31,7 +32,10 @@ data class SeedPoem(
     )
 
     fun toVerses(): List<VerseEntity> = verses.mapIndexed { index, verse ->
-        VerseEntity(poemId = id, position = index + 1, first = verse.first, second = verse.second)
+        VerseEntity(
+            poemId = id, position = index + 1,
+            first = verse.first, second = verse.second, meaning = verse.meaning
+        )
     }
 
     fun toFts(): PoemFtsEntity = PoemFtsEntity(

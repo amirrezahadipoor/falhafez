@@ -7,9 +7,11 @@ import com.amirrezahadipoor.falhafez.core.theme.FalThemeId
 import com.amirrezahadipoor.falhafez.data.ads.AdManager
 import com.amirrezahadipoor.falhafez.domain.model.DrawEntry
 import com.amirrezahadipoor.falhafez.domain.model.FalCategory
+import com.amirrezahadipoor.falhafez.domain.model.Poem
 import com.amirrezahadipoor.falhafez.domain.repository.DrawRepository
 import com.amirrezahadipoor.falhafez.domain.repository.FavoriteRepository
 import com.amirrezahadipoor.falhafez.domain.repository.SettingsRepository
+import com.amirrezahadipoor.falhafez.domain.usecase.DailyFalUseCase
 import com.amirrezahadipoor.falhafez.domain.usecase.DrawFalUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,10 +31,7 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
-/** Free draws allowed per day (offline policy — a rewarded-ad hook extends this). */
 private const val DAILY_FREE_LIMIT = 10
-
-/** Soft cooldown between consecutive draws to protect the ritual feeling. */
 private const val COOLDOWN_MS = 8_000L
 
 enum class DrawStage { NIYYAT, DRAWING, REVEAL, INTERPRETATION }
@@ -42,6 +41,7 @@ data class HomeUiState(
     val category: FalCategory = FalCategory.NONE,
     val stage: DrawStage = DrawStage.NIYYAT,
     val lastDraw: DrawEntry? = null,
+    val dailyFal: Poem? = null,
     val cooldownActive: Boolean = false,
     val remainingToday: Int = DAILY_FREE_LIMIT,
     val busy: Boolean = false
@@ -54,6 +54,7 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val drawFal: DrawFalUseCase,
+    private val dailyFal: DailyFalUseCase,
     private val drawRepository: DrawRepository,
     private val favoriteRepository: FavoriteRepository,
     private val settingsRepository: SettingsRepository,
@@ -63,11 +64,13 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    /** The poem whose favorite state we're showing (last draw or the daily fal). */
+    private val favoriteTargetId = MutableStateFlow<Long?>(null)
+
     val themeId: StateFlow<FalThemeId> = settingsRepository.themeId
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FalThemeId.TAZHIB)
 
-    val isFavorite: StateFlow<Boolean> = _uiState
-        .map { it.lastDraw?.poem?.id }
+    val isFavorite: StateFlow<Boolean> = favoriteTargetId
         .distinctUntilChanged()
         .flatMapLatest { id ->
             if (id == null) flowOf(false) else favoriteRepository.observeIsFavorite(id)
@@ -90,18 +93,25 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch { performDraw(bypassCooldown = false) }
     }
 
-    /** Rewarded hook — shows a rewarded video; grants an extra draw on completion. */
+    /** Rewarded hook — grants an extra free draw beyond the daily limit. */
     fun requestExtraDraw(activity: Activity) {
         viewModelScope.launch {
-            adManager.showRewarded(activity) { grantExtraDraw() }
+            adManager.showRewarded(activity) {
+                viewModelScope.launch {
+                    settingsRepository.addRewardedDraw(1)
+                    recomputeRemaining()
+                    performDraw(bypassCooldown = true)
+                }
+            }
         }
     }
 
-    private fun grantExtraDraw() {
+    /** Rewarded hook — skips the 8s repeat cooldown and draws immediately. */
+    fun requestSkipCooldown(activity: Activity) {
         viewModelScope.launch {
-            settingsRepository.addRewardedDraw(1)
-            recomputeRemaining()
-            performDraw(bypassCooldown = true)
+            adManager.showRewarded(activity) {
+                viewModelScope.launch { performDraw(bypassCooldown = true) }
+            }
         }
     }
 
@@ -113,7 +123,8 @@ class HomeViewModel @Inject constructor(
 
         val question = s.question.trim().ifBlank { null }
         val result = drawFal(question, s.category)
-        _uiState.update { it.copy(lastDraw = result, cooldownActive = true, busy = false) }
+        favoriteTargetId.value = result?.poem?.id
+        _uiState.update { it.copy(lastDraw = result, dailyFal = null, cooldownActive = true, busy = false) }
         recomputeRemaining()
         adManager.onDrawCompleted()
 
@@ -143,19 +154,35 @@ class HomeViewModel @Inject constructor(
 
     fun onReadInterpretation() = _uiState.update { it.copy(stage = DrawStage.INTERPRETATION) }
 
+    /** فالِ روز — deterministic, shared by everyone on the same day. */
+    fun openDailyFal() {
+        viewModelScope.launch {
+            val poem = dailyFal.today()
+            if (poem != null) {
+                favoriteTargetId.value = poem.id
+                _uiState.update { it.copy(dailyFal = poem) }
+            }
+        }
+    }
+
+    fun closeDailyFal() {
+        _uiState.update { it.copy(dailyFal = null) }
+        favoriteTargetId.value = _uiState.value.lastDraw?.poem?.id
+    }
+
     fun onToggleFavorite() {
-        val poemId = _uiState.value.lastDraw?.poem?.id ?: return
+        val poemId = favoriteTargetId.value ?: return
         viewModelScope.launch { favoriteRepository.toggle(poemId) }
     }
 
-    /** Returns to the niyyat screen; shows a frequency-capped interstitial (never during ritual). */
     fun dismissAndMaybeAd(activity: Activity) {
         _uiState.update { it.copy(stage = DrawStage.NIYYAT, lastDraw = null) }
+        favoriteTargetId.value = null
         viewModelScope.launch { adManager.showInterstitial(activity) }
     }
 
-    /** Plain dismiss (no ad) — used when no Activity is available. */
     fun dismissOnly() {
         _uiState.update { it.copy(stage = DrawStage.NIYYAT, lastDraw = null) }
+        favoriteTargetId.value = null
     }
 }

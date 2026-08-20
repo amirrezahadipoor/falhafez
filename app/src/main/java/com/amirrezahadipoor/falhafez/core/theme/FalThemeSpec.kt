@@ -8,18 +8,15 @@ enum class FalThemeId(val id: String, val faName: String) {
     TAZHIB("tazhib", "تذهیب"),
     CANDLE("candle", "شبِ شمع"),
     GARDEN("garden", "باغِ ستاره"),
-    MINIMAL("minimal", "مینیمالِ مدرن");
+    MINIMAL("minimal", "مینیمالِ مدرن"),
+    NOWRUZ("nowruz", "نوروز"),
+    YALDA("yalda", "شبِ یلدا");
 
     companion object {
         fun fromId(id: String?): FalThemeId = entries.firstOrNull { it.id == id } ?: TAZHIB
     }
 }
 
-/**
- * A ritual visual theme: background gradient + original generated artwork, accents,
- * particles and border tones for the entire draw flow. Data-driven so new themes can
- * be added without touching UI code.
- */
 data class FalThemeSpec(
     val id: FalThemeId,
     val backgroundTop: Color,
@@ -37,76 +34,64 @@ data class FalThemeSpec(
     val artworkAlpha: Float = 0.55f
 ) {
     companion object {
-        val All: List<FalThemeSpec> = listOf(tazhib(), candle(), garden(), minimal())
+        val All: List<FalThemeSpec> = listOf(tazhib(), candle(), garden(), minimal(), nowruz(), yalda())
 
         fun byId(id: FalThemeId): FalThemeSpec = All.first { it.id == id }
 
-        /** تذهیب — Classic manuscript: deep navy & gold illumination. */
         fun tazhib() = FalThemeSpec(
             id = FalThemeId.TAZHIB,
-            backgroundTop = Color(0xFF0B1120),
-            backgroundBottom = Color(0xFF101A33),
-            accent = Color(0xFFC9A24B),
-            accentSoft = Color(0xFFE7C878),
-            onBackground = Color(0xFFF3E9D2),
-            onBackgroundMuted = Color(0xFFB9A98C),
-            card = Color(0xFF131B2E),
-            particle = Color(0xFFE7C878),
-            particleSecondary = Color(0xFFC9A24B),
-            border = Color(0xFF8A6D2F),
-            artworkRes = R.drawable.theme_tazhib,
-            artworkAlpha = 0.60f
+            backgroundTop = Color(0xFF0B1120), backgroundBottom = Color(0xFF101A33),
+            accent = Color(0xFFC9A24B), accentSoft = Color(0xFFE7C878),
+            onBackground = Color(0xFFF3E9D2), onBackgroundMuted = Color(0xFFB9A98C),
+            card = Color(0xFF131B2E), particle = Color(0xFFE7C878), particleSecondary = Color(0xFFC9A24B),
+            border = Color(0xFF8A6D2F), artworkRes = R.drawable.theme_tazhib, artworkAlpha = 0.60f
         )
 
-        /** شبِ شمع — Candlelight night: warm amber on near-black. */
         fun candle() = FalThemeSpec(
             id = FalThemeId.CANDLE,
-            backgroundTop = Color(0xFF1A0F08),
-            backgroundBottom = Color(0xFF0A0503),
-            accent = Color(0xFFE8A33D),
-            accentSoft = Color(0xFFF5C87A),
-            onBackground = Color(0xFFF6E7CF),
-            onBackgroundMuted = Color(0xFFB99B72),
-            card = Color(0xFF241407),
-            particle = Color(0xFFE8A33D),
-            particleSecondary = Color(0xFFF5C87A),
-            border = Color(0xFF7A4E1F),
-            artworkRes = R.drawable.theme_candle,
-            artworkAlpha = 0.60f
+            backgroundTop = Color(0xFF1A0F08), backgroundBottom = Color(0xFF0A0503),
+            accent = Color(0xFFE8A33D), accentSoft = Color(0xFFF5C87A),
+            onBackground = Color(0xFFF6E7CF), onBackgroundMuted = Color(0xFFB99B72),
+            card = Color(0xFF241407), particle = Color(0xFFE8A33D), particleSecondary = Color(0xFFF5C87A),
+            border = Color(0xFF7A4E1F), artworkRes = R.drawable.theme_candle, artworkAlpha = 0.60f
         )
 
-        /** باغِ ستاره — Starlit garden: deep indigo night, fireflies, teal/violet. */
         fun garden() = FalThemeSpec(
             id = FalThemeId.GARDEN,
-            backgroundTop = Color(0xFF0B1030),
-            backgroundBottom = Color(0xFF1A1140),
-            accent = Color(0xFF6FD3C7),
-            accentSoft = Color(0xFFA8E6DE),
-            onBackground = Color(0xFFE9F2F5),
-            onBackgroundMuted = Color(0xFF9BB0BF),
-            card = Color(0xFF121838),
-            particle = Color(0xFFBFE8FF),
-            particleSecondary = Color(0xFF6FD3C7),
-            border = Color(0xFF35506B),
-            artworkRes = R.drawable.theme_garden,
-            artworkAlpha = 0.60f
+            backgroundTop = Color(0xFF0B1030), backgroundBottom = Color(0xFF1A1140),
+            accent = Color(0xFF6FD3C7), accentSoft = Color(0xFFA8E6DE),
+            onBackground = Color(0xFFE9F2F5), onBackgroundMuted = Color(0xFF9BB0BF),
+            card = Color(0xFF121838), particle = Color(0xFFBFE8FF), particleSecondary = Color(0xFF6FD3C7),
+            border = Color(0xFF35506B), artworkRes = R.drawable.theme_garden, artworkAlpha = 0.60f
         )
 
-        /** مینیمالِ مدرن — Modern minimal: calm cream & terracotta. */
         fun minimal() = FalThemeSpec(
             id = FalThemeId.MINIMAL,
-            backgroundTop = Color(0xFFF7EFE4),
-            backgroundBottom = Color(0xFFEFE4D3),
-            accent = Color(0xFFB65C3A),
-            accentSoft = Color(0xFFD98A5F),
-            onBackground = Color(0xFF2B2118),
-            onBackgroundMuted = Color(0xFF6E5C4A),
-            card = Color(0xFFFFFFFF),
-            particle = Color(0xFFD9C6A5),
-            particleSecondary = Color(0xFFC4AC85),
-            border = Color(0xFFD8C9B0),
-            artworkRes = R.drawable.theme_minimal,
-            artworkAlpha = 0.80f
+            backgroundTop = Color(0xFFF7EFE4), backgroundBottom = Color(0xFFEFE4D3),
+            accent = Color(0xFFB65C3A), accentSoft = Color(0xFFD98A5F),
+            onBackground = Color(0xFF2B2118), onBackgroundMuted = Color(0xFF6E5C4A),
+            card = Color(0xFFFFFFFF), particle = Color(0xFFD9C6A5), particleSecondary = Color(0xFFC4AC85),
+            border = Color(0xFFD8C9B0), artworkRes = R.drawable.theme_minimal, artworkAlpha = 0.80f
+        )
+
+        /** نوروز — spring rebirth. Free seasonal theme. */
+        fun nowruz() = FalThemeSpec(
+            id = FalThemeId.NOWRUZ,
+            backgroundTop = Color(0xFF0E2417), backgroundBottom = Color(0xFF0A1A10),
+            accent = Color(0xFF7AC74F), accentSoft = Color(0xFFC6E9A6),
+            onBackground = Color(0xFFF2F7EC), onBackgroundMuted = Color(0xFFA9C4A0),
+            card = Color(0xFF12291B), particle = Color(0xFFA8E063), particleSecondary = Color(0xFF7AC74F),
+            border = Color(0xFF3E6B3A), artworkRes = R.drawable.theme_nowruz, artworkAlpha = 0.55f
+        )
+
+        /** شبِ یلدا — premium, unlocked via rewarded video. */
+        fun yalda() = FalThemeSpec(
+            id = FalThemeId.YALDA,
+            backgroundTop = Color(0xFF2A0F14), backgroundBottom = Color(0xFF140609),
+            accent = Color(0xFFE05263), accentSoft = Color(0xFFF18A97),
+            onBackground = Color(0xFFFBE9E4), onBackgroundMuted = Color(0xFFC79A9F),
+            card = Color(0xFF33151B), particle = Color(0xFFF27E8E), particleSecondary = Color(0xFFE05263),
+            border = Color(0xFF7A2A33), locked = true, artworkRes = R.drawable.theme_yalda, artworkAlpha = 0.60f
         )
     }
 }
