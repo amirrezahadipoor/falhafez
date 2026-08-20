@@ -63,4 +63,13 @@ object AppModule {
     @Singleton
     fun provideSettingsRepository(store: ir.siliksama.falhafez.data.settings.SettingsDataStore): SettingsRepository =
         SettingsRepositoryImpl(store)
+
+    @Provides
+    @Singleton
+    fun provideSupportRepository(settingsRepository: SettingsRepository): SupportRepository =
+        SupportRepositoryImpl(settingsRepository)
+
+    @Provides
+    @Singleton
+    fun providePaymentGateway(): PaymentGateway = BazaarPaymentGateway()
 }
