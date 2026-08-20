@@ -81,7 +81,7 @@ fun DailyFalContent(
             }
         }
         Text(
-            "این فال، امروز برای همه یکی است؛ شاید هم‌فالِ هم باشیم.",
+            "این فال، امروز برای همه یکی است؛ شاید فالِ امروزِ من و تو یکی باشد.",
             style = FalText.caption,
             color = spec.onBackgroundMuted,
             textAlign = TextAlign.Center,
