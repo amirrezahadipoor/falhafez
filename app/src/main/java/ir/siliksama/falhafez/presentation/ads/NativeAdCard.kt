@@ -9,6 +9,7 @@ import ir.siliksama.falhafez.core.util.findActivity
 import ir.siliksama.falhafez.data.ads.AdConfig
 import ir.tapsell.mediation.Tapsell
 import ir.tapsell.mediation.ad.AdStateListener
+import ir.tapsell.mediation.ad.show.AdShowCompletionState
 import ir.tapsell.mediation.ad.request.RequestResultListener
 import ir.tapsell.mediation.ad.views.ntv.NativeAdViewContainer
 
@@ -29,6 +30,7 @@ fun NativeAdCard(modifier: Modifier = Modifier) {
                             Tapsell.showNativeAd(adId, container, act, object : AdStateListener.Native {
                                 override fun onAdImpression() {}
                                 override fun onAdClicked() {}
+                                override fun onAdClosed(completionState: AdShowCompletionState) {}
                                 override fun onAdFailed(message: String) {}
                             })
                         }
