@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import ir.siliksama.falhafez.core.sound.Sounds
 import ir.siliksama.falhafez.core.theme.FalThemeId
 import ir.siliksama.falhafez.data.ads.AdManager
+import ir.siliksama.falhafez.data.payments.PaymentGateway
 import ir.siliksama.falhafez.domain.model.DrawEntry
 import ir.siliksama.falhafez.domain.model.FalCategory
 import ir.siliksama.falhafez.domain.model.ChannelInfo
@@ -52,7 +53,8 @@ data class HomeUiState(
     val dailyFal: Poem? = null,
     val cooldownActive: Boolean = false,
     val remainingToday: Int = DAILY_FREE_LIMIT,
-    val busy: Boolean = false
+    val busy: Boolean = false,
+    val supportOpen: Boolean = false
 ) {
     val canDraw: Boolean
         get() = !busy && !cooldownActive && remainingToday > 0 && stage != DrawStage.DRAWING
@@ -68,7 +70,8 @@ class HomeViewModel @Inject constructor(
     private val favoriteRepository: FavoriteRepository,
     private val settingsRepository: SettingsRepository,
     private val supportRepository: SupportRepository,
-    private val adManager: AdManager
+    private val adManager: AdManager,
+    private val paymentGateway: PaymentGateway
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -103,6 +106,9 @@ class HomeViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     private var counts: Map<Poet, Int> = emptyMap()
+
+    private val _purchasing = MutableStateFlow(false)
+    val purchasing: StateFlow<Boolean> = _purchasing.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -209,6 +215,30 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onReadInterpretation() = _uiState.update { it.copy(stage = DrawStage.INTERPRETATION) }
+
+    fun openSupport() = _uiState.update { it.copy(supportOpen = true) }
+
+    fun closeSupport() {
+        _purchasing.value = false
+        _uiState.update { it.copy(supportOpen = false) }
+    }
+
+    /** خرید حمایت مالی (Poolakey/کافه‌بازار) — تبلیغات را برای همیشه حذف می‌کند. */
+    fun purchase(activity: Activity, tier: SupportTier) {
+        if (_purchasing.value) return
+        _purchasing.value = true
+        val started = paymentGateway.purchase(activity, tier) {
+            viewModelScope.launch {
+                supportRepository.setTier(tier)
+                if (tier == SupportTier.PLUS || tier == SupportTier.GOLD) {
+                    settingsRepository.unlockTheme(FalThemeId.YALDA)
+                }
+                recomputeRemaining()
+                _purchasing.value = false
+            }
+        }
+        if (!started) _purchasing.value = false
+    }
 
     /** فالِ روز — deterministic, shared by everyone on the same day. */
     fun openDailyFal() {

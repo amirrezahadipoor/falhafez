@@ -129,7 +129,7 @@ class SettingsViewModel @Inject constructor(
     fun purchase(activity: Activity, tier: SupportTier) {
         if (_purchasing.value) return
         _purchasing.value = true
-        paymentGateway.purchase(activity, tier) {
+        val started = paymentGateway.purchase(activity, tier) {
             viewModelScope.launch {
                 supportRepository.setTier(tier)
                 // امتیاز سطح ویژه: قفلِ قالبِ یلدا برای PLUS و GOLD باز می‌شود
@@ -139,7 +139,7 @@ class SettingsViewModel @Inject constructor(
                 _purchasing.value = false
             }
         }
-        viewModelScope.launch { _purchasing.value = false }
+        if (!started) _purchasing.value = false
     }
 
     // ---- کانال اجتماعی ----

@@ -15,8 +15,8 @@ android {
         applicationId = "ir.siliksama.falhafez"
         minSdk = 23
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 1
+        versionName = "1.0.0"
 
         // کلید اپلیکیشن تپسل — توسط SDK از مانیفست خوانده می‌شود (auto-init).
         addManifestPlaceholders(mapOf("TapsellMediationAppKey" to "tcgrrdhdhqmccrmqjeobdfsppktsqfhdqpijdkrfmkstiersqilbhfojrjblshbosqdkrb"))
@@ -110,6 +110,9 @@ dependencies {
     // تپسل — شبکهٔ اصلی تبلیغات (Mediation SDK، نسخهٔ پایدار از Maven Central)
     implementation(libs.tapsell)
     implementation(libs.tapsell.legacy.adapter)
+
+    // Poolakey — پرداخت درون‌برنامه‌ای کافه‌بازار
+    implementation(libs.poolakey)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)

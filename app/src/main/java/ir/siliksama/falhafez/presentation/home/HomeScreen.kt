@@ -1,6 +1,9 @@
 package ir.siliksama.falhafez.presentation.home
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -12,9 +15,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ir.siliksama.falhafez.core.designsystem.FalPalette
+import ir.siliksama.falhafez.core.designsystem.FalText
 import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.core.util.findActivity
 import ir.siliksama.falhafez.presentation.components.RitualBackground
+import ir.siliksama.falhafez.presentation.components.SupportPanel
 
 @Composable
 fun HomeScreen(
@@ -28,12 +34,35 @@ fun HomeScreen(
     val supportTier by viewModel.supportTier.collectAsStateWithLifecycle()
     val channel by viewModel.channel.collectAsStateWithLifecycle()
     val adsRemoved by viewModel.adsRemoved.collectAsStateWithLifecycle()
+    val purchasing by viewModel.purchasing.collectAsStateWithLifecycle()
     val spec = FalThemeSpec.byId(themeId)
 
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
 
     RitualBackground(spec = spec) {
+        if (state.supportOpen) {
+            AlertDialog(
+                onDismissRequest = viewModel::closeSupport,
+                containerColor = FalPalette.NavySoft,
+                titleContentColor = FalPalette.GoldBright,
+                textContentColor = FalPalette.Cream,
+                title = { Text("حمایت مالی", style = FalText.heading) },
+                text = {
+                    SupportPanel(
+                        currentTier = supportTier,
+                        purchasing = purchasing,
+                        onPurchase = { tier -> activity?.let { viewModel.purchase(it, tier) } }
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = viewModel::closeSupport) {
+                        Text("بستن", style = FalText.button, color = FalPalette.CreamMuted)
+                    }
+                }
+            )
+        }
+
         state.dailyFal?.let { dailyPoem ->
             DailyFalContent(
                 spec = spec,
@@ -65,6 +94,7 @@ fun HomeScreen(
                     onDailyFal = viewModel::openDailyFal,
                     channel = channel,
                     adsRemoved = adsRemoved,
+                    onOpenSupport = viewModel::openSupport,
                     onOpenSettings = onOpenSettings
                 )
 
@@ -89,6 +119,7 @@ fun HomeScreen(
                     onDailyFal = viewModel::openDailyFal,
                     channel = channel,
                     adsRemoved = adsRemoved,
+                    onOpenSupport = viewModel::openSupport,
                     onOpenSettings = onOpenSettings
                 )
 
@@ -118,6 +149,7 @@ fun HomeScreen(
                     onDailyFal = viewModel::openDailyFal,
                     channel = channel,
                     adsRemoved = adsRemoved,
+                    onOpenSupport = viewModel::openSupport,
                     onOpenSettings = onOpenSettings
                 )
             }

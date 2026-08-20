@@ -3,6 +3,11 @@ package ir.siliksama.falhafez.presentation.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,7 +30,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Settings
@@ -46,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.layout.ContentScale
@@ -60,6 +68,7 @@ import ir.siliksama.falhafez.core.designsystem.FalText
 import ir.siliksama.falhafez.core.designsystem.LaurelDivider
 import ir.siliksama.falhafez.core.designsystem.MoonStar
 import ir.siliksama.falhafez.core.designsystem.readingColor
+import ir.siliksama.falhafez.core.sound.Sounds
 import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.core.util.Jalali
 import ir.siliksama.falhafez.core.util.PersianText
@@ -107,6 +116,7 @@ fun NiyyatContent(
     onDailyFal: () -> Unit,
     channel: ChannelInfo? = null,
     adsRemoved: Boolean = false,
+    onOpenSupport: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -123,6 +133,7 @@ fun NiyyatContent(
                 Text(text = "فال حافظ", style = FalText.displaySmall, color = spec.accentSoft)
                 Text(text = "تعبیر هوشمند", style = FalText.caption, color = spec.onBackgroundMuted)
             }
+            SupportHeart(spec = spec, onClick = onOpenSupport)
             IconButton(onClick = onOpenSettings) {
                 Icon(Icons.Outlined.Settings, contentDescription = "تنظیمات", tint = spec.onBackgroundMuted)
             }
@@ -522,5 +533,39 @@ private fun VerseView(verse: Verse, color: Color) {
             Spacer(Modifier.height(3.dp))
             Text(text = verse.second!!, style = FalText.verse, color = color)
         }
+    }
+}
+
+
+/** قلبِ تپندهٔ «حمایت مالی» — بالای صفحهٔ اصلی. */
+@Composable
+private fun SupportHeart(spec: FalThemeSpec, onClick: () -> Unit) {
+    val transition = rememberInfiniteTransition(label = "heart")
+    val scale by transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.32f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(460, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "heart-scale"
+    )
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clip(RoundedCornerShape(14.dp))
+            .clickable {
+                Sounds.tap()
+                onClick()
+            }
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Favorite,
+            contentDescription = "حمایت مالی",
+            tint = androidx.compose.ui.graphics.Color(0xFFE05263),
+            modifier = Modifier.size(24.dp).scale(scale)
+        )
+        Text("حمایت مالی", style = FalText.caption, color = spec.onBackgroundMuted)
     }
 }
