@@ -1,6 +1,7 @@
 package com.amirrezahadipoor.falhafez.data.local.seed
 
 import android.content.Context
+import android.util.Log
 import com.amirrezahadipoor.falhafez.data.local.PoemDao
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.sync.Mutex
@@ -38,9 +39,13 @@ class CorpusSeeder @Inject constructor(
                 poems += json.decodeFromString<List<SeedPoem>>(text)
             }
         }
-        if (poems.isEmpty()) return@withLock
+        if (poems.isEmpty()) {
+            Log.w("FalHafez", "Corpus seeding: no poems loaded from assets")
+            return@withLock
+        }
         poemDao.insertPoems(poems.map { it.toEntity() })
         poemDao.insertVerses(poems.flatMap { it.toVerses() })
         poemDao.insertFts(poems.map { it.toFts() })
+        Log.i("FalHafez", "Corpus seeded: ${poems.size} poems")
     }
 }

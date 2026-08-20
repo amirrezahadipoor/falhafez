@@ -28,19 +28,26 @@ jobs:
           api-level: 33
           arch: x86_64
           disable-animations: true
+          emulator-options: -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect -skin 1080x2280
           script: |
+            adb shell wm size
             adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb logcat -c
             adb shell am start -n com.amirrezahadipoor.falhafez.debug/com.amirrezahadipoor.falhafez.MainActivity
-            sleep 10
+            for i in $(seq 1 30); do
+              adb logcat -d 2>/dev/null | grep -q "Corpus seeded" && break
+              sleep 2
+            done
+            sleep 2
             adb exec-out screencap -p > 01-splash.png
-            adb shell input tap 540 2000
+            adb shell input tap 540 1700
             sleep 4
             adb exec-out screencap -p > 02-onboarding.png
-            adb shell input tap 540 1800
-            sleep 6
+            adb shell input tap 540 1700
+            sleep 4
             adb exec-out screencap -p > 03-home.png
-            adb shell input tap 540 1900
-            sleep 8
+            adb shell input tap 540 1500
+            sleep 14
             adb exec-out screencap -p > 04-draw.png
 
       - name: Upload screenshots
