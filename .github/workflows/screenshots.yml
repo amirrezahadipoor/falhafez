@@ -48,3 +48,10 @@ jobs:
             adb shell input tap 540 1500
             sleep 7
             adb exec-out screencap -p > 04-interpretation.png
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-screenshots
+          path: "*.png"
+          retention-days: 14
