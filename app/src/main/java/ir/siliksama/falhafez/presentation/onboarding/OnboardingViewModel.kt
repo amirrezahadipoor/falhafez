@@ -1,0 +1,17 @@
+package ir.siliksama.falhafez.presentation.onboarding
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import ir.siliksama.falhafez.domain.repository.SettingsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class OnboardingViewModel @Inject constructor(
+    private val settingsRepository: SettingsRepository
+) : ViewModel() {
+    fun finish() {
+        viewModelScope.launch { settingsRepository.setSeenOnboarding(true) }
+    }
+}

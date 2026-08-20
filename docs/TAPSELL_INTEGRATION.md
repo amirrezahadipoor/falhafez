@@ -1,9 +1,8 @@
-# Tapsell integration guide (mediation with AdMob)
+# Tapsell integration guide (network اصلی — AdMob حذف شده)
 
-The app monetizes behind the `AdManager` abstraction (`data/ads/AdManager.kt`), so the
-ad network can be swapped or mediated **without touching any UI code**. The buildable
-reference implementation is `AdMobAdManager`; Tapsell is added as the primary network
-for the Iranian market as follows.
+The app monetizes behind the `AdManager` abstraction (`data/ads/AdManager.kt`).
+**Google AdMob کاملاً حذف شده** و شبکهٔ اصلی **تپسل** است — پیاده‌سازی فعلی
+`TapsellAdManager` (در `data/ads/`) تا وقتی کلید در `AdConfig` گذاشته نشود، خاموش است.
 
 ## 1. Add the Tapsell SDK dependency
 

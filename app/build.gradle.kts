@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "ir.falhafez.tabir"
+    namespace = "ir.siliksama.falhafez"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "ir.falhafez.tabir"
+        applicationId = "ir.siliksama.falhafez"
         minSdk = 23
         targetSdk = 35
         versionCode = 1
@@ -103,7 +103,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.lottie.compose)
-    implementation(libs.play.services.ads)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)

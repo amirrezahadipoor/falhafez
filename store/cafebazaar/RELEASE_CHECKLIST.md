@@ -1,7 +1,11 @@
 # چک‌لیست انتشار در کافه‌بازار
 
+## جدید: حمایت مالی (In-App)
+- سه سطح حمایت (۱۰۰/۳۰۰/۴۹۰ هزار تومان) → حذف دائمی تبلیغات + امکانات.
+- برای پرداخت واقعی، SKUهای بازار را بساز و `BazaarPaymentGateway` را وصل کن (docs/SUPPORT_PAYMENTS.md).
+
 ## پیش از ثبت نسخهٔ نهایی
-- [x] package name یکتا: `ir.falhafez.tabir`
+- [x] package name یکتا: `ir.siliksama.falhafez`
 - [x] آیکون 512×512: `store/cafebazaar/icon-512.png`
 - [x] توضیحات کوتاه/بلند: `store/cafebazaar/`
 - [x] سیاست حریم خصوصی (لینک واقعی): https://amirrezahadipoor.github.io/falhafez/privacy.html

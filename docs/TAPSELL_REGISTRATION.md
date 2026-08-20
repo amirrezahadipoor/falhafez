@@ -16,7 +16,7 @@
 
 ```
 نام اپلیکیشن  : فال حافظ | تعبیر هوشمند
-Package name  : ir.falhafez.tabir
+Package name  : ir.siliksama.falhafez
 پلتفرم        : اندروید (min SDK 23 — target 35)
 زبان          : فارسی
 دسته‌بندی     : سرگرمی / ادبیات

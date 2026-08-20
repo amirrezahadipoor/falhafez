@@ -4,7 +4,6 @@
     <!-- Offline-first: only ads and optional update checks use the network. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -29,11 +28,10 @@
             </intent-filter>
         </activity>
 
-        <!-- Placeholder AdMob application id — replace with your own before release. -->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="@string/ad_app_id" />
-
+        <!-- تپسل: کلید اپ را از پنل tapsell.ir بگیرید و اینجا بگذارید -->
+        <!--
+        <meta-data android:name="TAPSELL_APP_KEY" android:value="YOUR_TAPSELL_APP_KEY" />
+        -->
         <!-- بیتِ امروز home-screen widget (offline). -->
         <receiver
             android:name=".presentation.widget.DailyFalWidgetProvider"
