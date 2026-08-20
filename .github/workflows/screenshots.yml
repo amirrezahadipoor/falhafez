@@ -1,0 +1,51 @@
+name: Store Screenshots
+
+on:
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build debug APK
+        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+
+      - name: Run on emulator and capture screenshots
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          disable-animations: true
+          script: |
+            adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -n com.amirrezahadipoor.falhafez.debug/com.amirrezahadipoor.falhafez.MainActivity
+            sleep 10
+            adb exec-out screencap -p > 01-splash.png
+            adb shell input tap 540 2000
+            sleep 4
+            adb exec-out screencap -p > 02-onboarding.png
+            adb shell input tap 540 1800
+            sleep 6
+            adb exec-out screencap -p > 03-home.png
+            adb shell input tap 540 1900
+            sleep 8
+            adb exec-out screencap -p > 04-draw.png
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-screenshots
+          path: "*.png"
+          retention-days: 14

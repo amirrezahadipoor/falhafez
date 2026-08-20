@@ -22,7 +22,8 @@ class FalHafezApp : Application() {
         super.onCreate()
         // Seed the bundled poem corpus on first launch (fully offline).
         appScope.launch { corpusSeeder.seedIfNeeded() }
-        // Ads are the only network-touching component; everything else stays offline.
-        MobileAds.initialize(this) { }
+        // Ads are the only network-touching component. On Iranian devices without
+        // Google Play Services this must fail silently — the app keeps working offline.
+        runCatching { MobileAds.initialize(this) { } }
     }
 }

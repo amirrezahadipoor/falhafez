@@ -101,3 +101,35 @@ abstract fun bindAdManager(impl: MediatingAdManager): AdManager
 | Interstitial| after dismissing a fal result     | every 4th draw (offline cap)        |
 | Rewarded    | extra draws beyond daily limit    | also theme unlocks / cooldown skip  |
 | Native      | Library list (after 4th item)     | labeled "حمایت‌شده" (sponsored)     |
+
+---
+
+## نکتهٔ مهم برای بازار ایران (کافه‌بازار)
+
+AdMob به **Google Play Services** وابسته است که روی بیشتر گوشی‌های ایرانی نصب نیست؛
+بنابراین برای درآمد واقعی در ایران، **Tapsell باید شبکهٔ اصلی باشد**. اپلیکیشن طوری طراحی
+شده که نبودِ Play Services هیچ خطایی ایجاد نکند (`FalHafezApp` → `runCatching`) و تبلیغات
+به‌سادگی نمایش داده نشود تا وقتی Tapsell وصل شود.
+
+الگوی مدیتیشن (اول Tapsell، بعد AdMob):
+
+```kotlin
+@Singleton
+class MediatingAdManager @Inject constructor(
+    private val tapsell: TapsellAdManager,   // شبکهٔ اصلی (ایران)
+    private val admob: AdMobAdManager        // پشتیبان (جایی که Play Services هست)
+) : AdManager {
+    override val enabled = true
+    override suspend fun isNetworkAvailable() = tapsell.isNetworkAvailable()
+    override suspend fun showInterstitial(activity: Activity) =
+        tapsell.showInterstitial(activity) || admob.showInterstitial(activity)
+    override suspend fun showRewarded(activity: Activity, onReward: () -> Unit) =
+        tapsell.showRewarded(activity, onReward) || admob.showRewarded(activity, onReward)
+    override suspend fun onDrawCompleted() { tapsell.onDrawCompleted(); admob.onDrawCompleted() }
+}
+```
+
+سپس در `di/AdModule.kt` فقط بایندینگ را عوض کنید:
+```kotlin
+@Binds @Singleton abstract fun bindAdManager(impl: MediatingAdManager): AdManager
+```
