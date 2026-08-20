@@ -121,7 +121,7 @@ fun NiyyatContent(
         Spacer(Modifier.height(18.dp))
 
         Box(contentAlignment = Alignment.Center) {
-            BreathingRing(tint = spec.accent, size = 110.dp)
+            BreathingRing(tint = spec.accent, ringSize = 110.dp)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("دل به نیّت بسپار", style = FalText.heading, color = spec.onBackground)
                 Spacer(Modifier.height(4.dp))

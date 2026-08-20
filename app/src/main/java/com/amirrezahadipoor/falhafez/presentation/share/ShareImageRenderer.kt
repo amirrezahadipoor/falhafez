@@ -28,7 +28,7 @@ object ShareImageRenderer {
 
     private const val W = 1080
     private const val H = 1350
-    private const val PAD = 120
+    private const val PAD = 120f
 
     fun render(context: Context, poem: Poem, category: FalCategory, spec: FalThemeSpec): Bitmap {
         val bitmap = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888)
@@ -49,7 +49,7 @@ object ShareImageRenderer {
 
         drawOrnamentFrame(canvas, spec.accent.toArgb())
 
-        val textWidth = W - 2 * PAD
+        val textWidth = (W - 2 * PAD).toInt()
         var y = 150f
 
         y = drawText(
