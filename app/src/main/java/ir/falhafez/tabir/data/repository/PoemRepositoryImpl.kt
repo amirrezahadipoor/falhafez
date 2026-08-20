@@ -1,0 +1,84 @@
+package ir.falhafez.tabir.data.repository
+
+import ir.falhafez.tabir.data.local.PoemDao
+import ir.falhafez.tabir.data.local.PoemWithVerses
+import ir.falhafez.tabir.domain.model.Collection
+import ir.falhafez.tabir.domain.model.Poem
+import ir.falhafez.tabir.domain.model.Poet
+import ir.falhafez.tabir.domain.model.Verse
+import ir.falhafez.tabir.domain.repository.PoemRepository
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+
+class PoemRepositoryImpl @Inject constructor(
+    private val poemDao: PoemDao
+) : PoemRepository {
+
+    override suspend fun getPoem(id: Long): Poem? =
+        poemDao.getPoemWithVerses(id)?.toDomain()
+
+    override suspend fun getPoemsByPoet(poet: Poet): List<Poem> =
+        poemDao.getByPoet(poet.key).mapWithVerses()
+
+    override suspend fun getPoemsByCollection(collection: Collection): List<Poem> =
+        poemDao.getByCollection(collection.key).mapWithVerses()
+
+    override suspend fun search(query: String): List<Poem> {
+        val safe = query.trim().replace("\"", "").replace("*", "")
+        if (safe.isBlank()) return emptyList()
+        val matchQuery = safe.split(Regex("\\s+")).joinToString(" ") { "$it*" }
+        return poemDao.search(matchQuery).mapWithVerses()
+    }
+
+    override suspend fun getRandomPoem(excludeIds: List<Long>, poet: Poet?): Poem? {
+        // null poet = draw from every collection; otherwise only that poet's divan.
+        val candidates = if (poet == null) {
+            poemDao.getCandidateIds(excludeIds)
+        } else {
+            poemDao.getCandidateIdsForPoet(poet.key, excludeIds)
+        }
+        val pool = if (candidates.isNotEmpty()) candidates else {
+            if (poet == null) poemDao.getAllPoemIds() else poemDao.getPoemIdsForPoet(poet.key)
+        }
+        val chosen = pool.randomOrNull() ?: return null
+        return getPoem(chosen)
+    }
+
+    override suspend fun getPoemAt(poet: Poet, index: Int): Poem? {
+        val id = poemDao.getPoemIdAtForPoet(poet.key, index) ?: return null
+        return getPoem(id)
+    }
+
+    override suspend fun countForPoet(poet: Poet): Int = poemDao.countForPoet(poet.key)
+
+    override suspend fun count(): Int = poemDao.count()
+
+    override fun observeCount(): Flow<Int> = poemDao.observeCount()
+
+    private suspend fun List<ir.falhafez.tabir.data.local.PoemEntity>.mapWithVerses(): List<Poem> {
+        if (isEmpty()) return emptyList()
+        val verses = poemDao.getVersesForIds(map { it.id })
+        val grouped = verses.groupBy { it.poemId }
+        return map { entity ->
+            val vs = grouped[entity.id].orEmpty().sortedBy { it.position }
+            entity.toDomain(vs)
+        }
+    }
+
+    private fun ir.falhafez.tabir.data.local.PoemEntity.toDomain(
+        verses: List<ir.falhafez.tabir.data.local.VerseEntity>
+    ): Poem = Poem(
+        id = id,
+        poet = Poet.fromKey(poet),
+        collection = Collection.fromKey(collection) ?: Collection.HAFEZ_GHAZAL,
+        number = number,
+        themeTag = themeTag,
+        tafsir = tafsir,
+        verses = verses.map {
+            Verse(position = it.position, first = it.first, second = it.second, meaning = it.meaning)
+        }
+    )
+
+    private fun PoemWithVerses.toDomain(): Poem =
+        poem.toDomain(verses.sortedBy { it.position })
+}

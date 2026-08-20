@@ -1,0 +1,18 @@
+📋 اطلاعات ثبت اپلیکیشن در تپسل (کپی آماده)
+
+نام اپلیکیشن: فال حافظ | تعبیر هوشمند
+Package name: ir.falhafez.tabir
+پلتفرم: اندروید
+min SDK: 23
+target SDK: 35
+زبان: فارسی
+دسته‌بندی: سرگرمی / ادبیات
+نوع حساب: حقیقی (کد ملی + موبایل + شبا) یا حقوقی (شناسه ملی شرکت)
+
+پس از ثبت، از پنل دریافت کن:
+- Tapsell App Key
+- zoneId بنر / ویدئوی پاداشی / بین‌صفحه‌ای / نیتیو
+
+جای این مقادیر:
+- Tapsell App Key  → AndroidManifest.xml (meta-data TAPSELL_APP_KEY)
+- zoneIdها        → app/.../data/ads/AdConfig.kt

@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.amirrezahadipoor.falhafez"
+    namespace = "ir.falhafez.tabir"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.amirrezahadipoor.falhafez"
+        applicationId = "ir.falhafez.tabir"
         minSdk = 23
         targetSdk = 35
         versionCode = 1

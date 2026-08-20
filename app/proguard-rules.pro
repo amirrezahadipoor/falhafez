@@ -1,13 +1,13 @@
 # kotlinx.serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.**
--keepclassmembers class com.amirrezahadipoor.falhafez.** {
+-keepclassmembers class ir.falhafez.tabir.** {
     *** Companion;
 }
--keepclasseswithmembers class com.amirrezahadipoor.falhafez.** {
+-keepclasseswithmembers class ir.falhafez.tabir.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
--keep,includedescriptorclasses class com.amirrezahadipoor.falhafez.**$$serializer { *; }
+-keep,includedescriptorclasses class ir.falhafez.tabir.**$$serializer { *; }
 
 # Room
 -keep class * extends androidx.room.RoomDatabase { *; }

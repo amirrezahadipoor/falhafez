@@ -1,4 +1,4 @@
-# Project status — نیّت (دیوان و فالِ حافظ)
+# Project status — فال حافظ | تعبیر هوشمند (Fal-e Hafez)
 
 Built in phases per the master prompt. Each phase is committed separately on `main`.
 
@@ -18,7 +18,8 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 12 — Compile pass | ✅ | First real compile on GitHub runners — fixed 8 Kotlin/Room issues (FTS4 rowid, imports, smart casts, signing types); CI is **green** |
 | 13 — Full divans + stories + sound | ✅ | **Complete Saadi (1,158) + Rumi (4,246)** — 6,177 poems total; **100 instructive stories** from Golestan; 10 visual themes; synthesized ritual sounds (buttons/draw/reveal/ambient) + haptics toggles; release-only CI |
 | 14 — Scroll-free layout | ✅ | Whole-app redesign to minimize scrolling: single-screen niyyat ritual, pinned bottom action bars, 2-column grids, dense history, tabbed settings |
-| 15 — Polish + release | ✅ | Fal-source selector (حافظ/سعدی/مولانا/خیام/همه) with live poem counts; font size + font COLOR presets; complete Rumi rubaiyat (1,994) + Saadi minor collections — **8,368 poems**; brand «نیّت»; generated release keystore + random secrets; CI signs release when secrets present |
+| 15 — Polish + release | ✅ | Fal-source selector (حافظ/سعدی/مولانا/خیام/همه) with live poem counts; font size + font COLOR presets; complete Rumi rubaiyat (1,994) + Saadi minor collections — **8,368 poems**; generated release keystore + random secrets; CI signs release when secrets present |
+| 16 — Branding + Bazaar | ✅ | App name «فال حافظ | تعبیر هوشمند»; unique package `ir.falhafez.tabir`; Tapsell registration guide + ready-to-copy info sheet |
 
 ## Corpus (complete, offline) — 8,368 poems
 > Hafez 495 · Khayyam 178 · Saadi 1,355 (غزلیات 637 + گلستان 291 + بوستان 230 + رباعیات 146 + قطعات 20 + ملحقات 31) · Rumi 6,240 (مثنوی 972 + شمس 3,274 + رباعیات 1,994) · + 100 داستان آموزنده
@@ -86,7 +87,7 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 
 ## Structure
 ```
-app/src/main/java/com/amirrezahadipoor/falhafez/
+app/src/main/java/ir/falhafez/tabir/
 ├── core/          # design system, typography, RTL/Jalali utils, theme data
 ├── data/          # Room entities/DAOs, repositories, settings, ads (AdManager)
 ├── domain/        # models, repository contracts, use-cases

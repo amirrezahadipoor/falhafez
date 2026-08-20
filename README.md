@@ -1,4 +1,4 @@
-# نیّت — دیوان و فالِ حافظ (Fal-e Hafez)
+# فال حافظ | تعبیر هوشمند (Fal-e Hafez)
 
 [![Android CI](https://github.com/amirrezahadipoor/falhafez/actions/workflows/android.yml/badge.svg)](https://github.com/amirrezahadipoor/falhafez/actions/workflows/android.yml)
 
@@ -35,7 +35,7 @@ Source code: see LICENSE when present. Poem texts are public-domain classical Pe
 ## Structure
 
 ```
-app/src/main/java/com/amirrezahadipoor/falhafez/
+app/src/main/java/ir/falhafez/tabir/
 ├── core/          # design system, typography, RTL utils, theme data
 ├── data/          # Room entities/DAOs, repositories, asset seeding
 ├── domain/        # models, repository contracts, use-cases

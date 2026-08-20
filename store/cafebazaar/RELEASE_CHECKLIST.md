@@ -1,7 +1,7 @@
 # چک‌لیست انتشار در کافه‌بازار
 
 ## پیش از ثبت نسخهٔ نهایی
-- [x] package name یکتا: `com.amirrezahadipoor.falhafez`
+- [x] package name یکتا: `ir.falhafez.tabir`
 - [x] آیکون 512×512: `store/cafebazaar/icon-512.png`
 - [x] توضیحات کوتاه/بلند: `store/cafebazaar/`
 - [x] سیاست حریم خصوصی (لینک واقعی): https://amirrezahadipoor.github.io/falhafez/privacy.html
