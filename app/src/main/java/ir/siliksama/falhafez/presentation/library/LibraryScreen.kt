@@ -45,11 +45,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
 import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.domain.model.Collection
@@ -106,31 +106,39 @@ fun LibraryScreen(
         return
     }
 
-    Box(Modifier.fillMaxSize().background(FalPalette.Navy)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(spec.backgroundTop, spec.backgroundBottom)))
+    ) {
         Column(Modifier.fillMaxSize()) {
             ScreenHeader(
                 title = headerTitle(state),
-                onBack = if (state.poet != null) viewModel::back else null
+                onBack = if (state.poet != null) viewModel::back else null,
+                titleColor = spec.onBackground
             )
             SearchField(
                 query = state.query,
-                onQueryChange = viewModel::onQueryChange
+                onQueryChange = viewModel::onQueryChange,
+                spec = spec
             )
             val currentPoet = state.poet
             val currentCollection = state.collection
             when {
-                state.query.isNotBlank() -> SearchResults(results = results, readIds = readIds, onOpen = viewModel::openPoem)
+                state.query.isNotBlank() -> SearchResults(results = results, readIds = readIds, onOpen = viewModel::openPoem, spec = spec)
                 currentCollection != null -> PoemsList(
                     poems = state.poems,
                     loading = state.loading,
                     readIds = readIds,
-                    onOpen = viewModel::openPoem
+                    onOpen = viewModel::openPoem,
+                    spec = spec
                 )
                 currentPoet != null -> CollectionsList(
                     collections = Collection.byPoet(currentPoet).filter { it != Collection.STORIES },
-                    onOpen = viewModel::openCollection
+                    onOpen = viewModel::openCollection,
+                    spec = spec
                 )
-                else -> PoetsList(onOpen = viewModel::openPoet)
+                else -> PoetsList(onOpen = viewModel::openPoet, spec = spec)
             }
         }
     }
@@ -143,39 +151,39 @@ private fun headerTitle(state: LibraryUiState): String = when {
 }
 
 @Composable
-private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
+private fun SearchField(query: String, onQueryChange: (String) -> Unit, spec: FalThemeSpec) {
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 4.dp),
-        placeholder = { Text("جستجو در اشعار…", style = FalText.bodyMuted) },
+        placeholder = { Text("جستجو در اشعار…", style = FalText.bodyMuted, color = spec.onBackgroundMuted) },
         textStyle = FalText.body,
         singleLine = true,
-        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = "جستجو", tint = FalPalette.CreamMuted) },
+        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = "جستجو", tint = spec.onBackgroundMuted) },
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Outlined.Clear, contentDescription = "پاک کردن", tint = FalPalette.CreamMuted)
+                    Icon(Icons.Outlined.Clear, contentDescription = "پاک کردن", tint = spec.onBackgroundMuted)
                 }
             }
         },
         shape = RoundedCornerShape(16.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = FalPalette.Gold,
-            unfocusedBorderColor = FalPalette.GoldDeep.copy(alpha = 0.5f),
-            focusedTextColor = FalPalette.Cream,
-            unfocusedTextColor = FalPalette.Cream,
-            cursorColor = FalPalette.Gold,
-            focusedContainerColor = FalPalette.NavySoft,
-            unfocusedContainerColor = FalPalette.NavySoft
+            focusedBorderColor = spec.accent,
+            unfocusedBorderColor = spec.border.copy(alpha = 0.6f),
+            focusedTextColor = spec.onBackground,
+            unfocusedTextColor = spec.onBackground,
+            cursorColor = spec.accent,
+            focusedContainerColor = spec.card,
+            unfocusedContainerColor = spec.card
         )
     )
 }
 
 @Composable
-private fun PoetsList(onOpen: (Poet) -> Unit) {
+private fun PoetsList(onOpen: (Poet) -> Unit, spec: FalThemeSpec) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
@@ -186,17 +194,17 @@ private fun PoetsList(onOpen: (Poet) -> Unit) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(FalPalette.NavySoft, RoundedCornerShape(18.dp))
-                    .border(1.dp, FalPalette.GoldDeep.copy(alpha = 0.4f), RoundedCornerShape(18.dp))
+                    .background(spec.card, RoundedCornerShape(18.dp))
+                    .border(1.dp, spec.border.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
                     .clickable { onOpen(poet) }
                     .padding(18.dp)
             ) {
-                Text(poet.faName, style = FalText.heading, color = FalPalette.GoldBright)
+                Text(poet.faName, style = FalText.heading, color = spec.accentSoft)
                 Spacer(Modifier.height(4.dp))
                 Text(
                     Collection.byPoet(poet).joinToString("، ") { it.faName },
                     style = FalText.caption,
-                    color = FalPalette.CreamMuted,
+                    color = spec.onBackgroundMuted,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -206,7 +214,7 @@ private fun PoetsList(onOpen: (Poet) -> Unit) {
 }
 
 @Composable
-private fun CollectionsList(collections: List<Collection>, onOpen: (Collection) -> Unit) {
+private fun CollectionsList(collections: List<Collection>, onOpen: (Collection) -> Unit, spec: FalThemeSpec) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
@@ -217,15 +225,15 @@ private fun CollectionsList(collections: List<Collection>, onOpen: (Collection) 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(FalPalette.NavySoft, RoundedCornerShape(18.dp))
-                    .border(1.dp, FalPalette.GoldDeep.copy(alpha = 0.4f), RoundedCornerShape(18.dp))
+                    .background(spec.card, RoundedCornerShape(18.dp))
+                    .border(1.dp, spec.border.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
                     .clickable { onOpen(collection) }
                     .padding(18.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Outlined.MenuBook, contentDescription = null, tint = FalPalette.Gold, modifier = Modifier.size(22.dp))
+                Icon(Icons.Outlined.MenuBook, contentDescription = null, tint = spec.accent, modifier = Modifier.size(22.dp))
                 Spacer(Modifier.size(12.dp))
-                Text(collection.faName, style = FalText.body, color = FalPalette.Cream)
+                Text(collection.faName, style = FalText.body, color = spec.onBackground)
             }
         }
     }
@@ -239,10 +247,10 @@ private val THEME_FA = mapOf(
 )
 
 @Composable
-private fun PoemsList(poems: List<ir.siliksama.falhafez.domain.model.Poem>, loading: Boolean, readIds: Set<Long>, onOpen: (ir.siliksama.falhafez.domain.model.Poem) -> Unit) {
+private fun PoemsList(poems: List<ir.siliksama.falhafez.domain.model.Poem>, loading: Boolean, readIds: Set<Long>, onOpen: (ir.siliksama.falhafez.domain.model.Poem) -> Unit, spec: FalThemeSpec) {
     if (loading) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = FalPalette.Gold)
+            CircularProgressIndicator(color = spec.accent)
         }
         return
     }
@@ -251,7 +259,8 @@ private fun PoemsList(poems: List<ir.siliksama.falhafez.domain.model.Poem>, load
             EmptyState(
                 icon = Icons.Outlined.MenuBook,
                 title = "در این بخش شعری نیست",
-                subtitle = "به‌زودی افزوده می‌شود."
+                subtitle = "به‌زودی افزوده می‌شود.",
+                color = spec.onBackgroundMuted
             )
         }
         return
@@ -278,10 +287,10 @@ private fun PoemsList(poems: List<ir.siliksama.falhafez.domain.model.Poem>, load
                             onClick = { selectedTag = null },
                             label = { Text("همه", style = FalText.caption) },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = FalPalette.Gold,
+                                selectedContainerColor = spec.accent,
                                 selectedLabelColor = androidx.compose.ui.graphics.Color(0xFF14100A),
-                                containerColor = FalPalette.NavySoft,
-                                labelColor = FalPalette.CreamMuted
+                                containerColor = spec.card,
+                                labelColor = spec.onBackgroundMuted
                             )
                         )
                     }
@@ -291,10 +300,10 @@ private fun PoemsList(poems: List<ir.siliksama.falhafez.domain.model.Poem>, load
                             onClick = { selectedTag = if (selectedTag == tag) null else tag },
                             label = { Text(THEME_FA[tag] ?: tag, style = FalText.caption) },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = FalPalette.Gold,
+                                selectedContainerColor = spec.accent,
                                 selectedLabelColor = androidx.compose.ui.graphics.Color(0xFF14100A),
-                                containerColor = FalPalette.NavySoft,
-                                labelColor = FalPalette.CreamMuted
+                                containerColor = spec.card,
+                                labelColor = spec.onBackgroundMuted
                             )
                         )
                     }
@@ -303,7 +312,7 @@ private fun PoemsList(poems: List<ir.siliksama.falhafez.domain.model.Poem>, load
         }
         items(filtered.size) { index ->
             val poem = filtered[index]
-            PoemCard(poem = poem, onClick = { onOpen(poem) }, isRead = poem.id in readIds)
+            PoemCard(poem = poem, spec = spec, onClick = { onOpen(poem) }, isRead = poem.id in readIds)
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
             NativeAdCard()
@@ -312,13 +321,14 @@ private fun PoemsList(poems: List<ir.siliksama.falhafez.domain.model.Poem>, load
 }
 
 @Composable
-private fun SearchResults(results: List<ir.siliksama.falhafez.domain.model.Poem>, readIds: Set<Long>, onOpen: (ir.siliksama.falhafez.domain.model.Poem) -> Unit) {
+private fun SearchResults(results: List<ir.siliksama.falhafez.domain.model.Poem>, readIds: Set<Long>, onOpen: (ir.siliksama.falhafez.domain.model.Poem) -> Unit, spec: FalThemeSpec) {
     if (results.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             EmptyState(
                 icon = Icons.Outlined.Search,
                 title = "نتیجه‌ای یافت نشد",
-                subtitle = "واژهٔ دیگری را امتحان کنید."
+                subtitle = "واژهٔ دیگری را امتحان کنید.",
+                color = spec.onBackgroundMuted
             )
         }
         return
@@ -331,7 +341,7 @@ private fun SearchResults(results: List<ir.siliksama.falhafez.domain.model.Poem>
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(results) { poem ->
-            PoemCard(poem = poem, onClick = { onOpen(poem) }, isRead = poem.id in readIds)
+            PoemCard(poem = poem, spec = spec, onClick = { onOpen(poem) }, isRead = poem.id in readIds)
         }
     }
 }

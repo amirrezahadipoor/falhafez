@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.siliksama.falhafez.core.designsystem.FalFontColors
 import ir.siliksama.falhafez.core.sound.Sounds
+import ir.siliksama.falhafez.core.theme.FalThemeId
 import ir.siliksama.falhafez.core.util.ChannelStore
 import ir.siliksama.falhafez.core.util.DayNumber
 import ir.siliksama.falhafez.core.util.SupportStore
@@ -37,6 +38,10 @@ class MainViewModel @Inject constructor(
     /** Global reading-font scale, applied across the whole app (sp-based). */
     val fontSizeScale: StateFlow<Float> = settingsRepository.fontSizeScale
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1f)
+
+    /** قالبِ فعال — برای هماهنگیِ پوستهٔ کلِ اپ (تب‌ها، نوار پایین و…). */
+    val themeId: StateFlow<FalThemeId> = settingsRepository.themeId
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FalThemeId.TAZHIB)
 
     /** User's chosen reading-font color (null = follow the active theme). */
     val fontColor: StateFlow<Color?> = settingsRepository.fontColor

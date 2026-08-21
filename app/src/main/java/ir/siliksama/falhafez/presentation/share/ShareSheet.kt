@@ -39,7 +39,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
 import ir.siliksama.falhafez.core.util.Clipboard
 import ir.siliksama.falhafez.core.theme.FalThemeSpec
@@ -75,8 +74,8 @@ fun ShareSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = FalPalette.Navy,
-        contentColor = FalPalette.Cream
+        containerColor = spec.backgroundTop,
+        contentColor = spec.onBackground
     ) {
         Column(
             modifier = Modifier
@@ -84,12 +83,12 @@ fun ShareSheet(
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 36.dp)
         ) {
-            Text("اشتراک‌گذاری فال", style = FalText.heading, color = FalPalette.GoldBright)
+            Text("اشتراک‌گذاری فال", style = FalText.heading, color = spec.accentSoft)
             Spacer(Modifier.height(4.dp))
             Text(
                 "تصویرِ فال را به پیام‌رسانِ دلخواهت بفرست.",
                 style = FalText.caption,
-                color = FalPalette.CreamMuted
+                color = spec.onBackgroundMuted
             )
             Spacer(Modifier.height(20.dp))
 
@@ -97,14 +96,14 @@ fun ShareSheet(
                 error -> Text(
                     "در ساختِ تصویر مشکلی پیش آمد.",
                     style = FalText.bodyMuted,
-                    color = FalPalette.CreamMuted
+                    color = spec.onBackgroundMuted
                 )
                 file == null -> Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    CircularProgressIndicator(color = FalPalette.Gold, modifier = Modifier.size(22.dp))
-                    Text("در حال آماده‌سازی تصویر…", style = FalText.bodyMuted, color = FalPalette.CreamMuted)
+                    CircularProgressIndicator(color = spec.accent, modifier = Modifier.size(22.dp))
+                    Text("در حال آماده‌سازی تصویر…", style = FalText.bodyMuted, color = spec.onBackgroundMuted)
                 }
                 else -> {
                     FlowRow(
@@ -114,7 +113,7 @@ fun ShareSheet(
                     ) {
                         SocialNetwork.entries.forEach { network ->
                             val f = file
-                            NetworkButton(network = network) {
+                            NetworkButton(network = network, spec = spec) {
                                 if (f != null) {
                                     scope.launch { ShareManager.shareFileToApp(context, f, network) }
                                 }
@@ -128,6 +127,7 @@ fun ShareSheet(
                             SecondaryShareAction(
                                 label = if (saved) "ذخیره شد ✓" else "ذخیره در گالری",
                                 icon = Icons.Outlined.SaveAlt,
+                                spec = spec,
                                 modifier = Modifier.weight(1f)
                             ) {
                                 val f = file ?: return@SecondaryShareAction
@@ -139,6 +139,7 @@ fun ShareSheet(
                             SecondaryShareAction(
                                 label = "بیشتر…",
                                 icon = Icons.Outlined.Share,
+                                spec = spec,
                                 modifier = Modifier.weight(1f)
                             ) {
                                 val f = file ?: return@SecondaryShareAction
@@ -148,6 +149,7 @@ fun ShareSheet(
                         SecondaryShareAction(
                             label = "کپی متنِ شعر و تفسیر",
                             icon = Icons.Outlined.ContentCopy,
+                            spec = spec,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Clipboard.copy(
@@ -163,7 +165,7 @@ fun ShareSheet(
 }
 
 @Composable
-private fun NetworkButton(network: SocialNetwork, onClick: () -> Unit) {
+private fun NetworkButton(network: SocialNetwork, spec: FalThemeSpec, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -185,7 +187,7 @@ private fun NetworkButton(network: SocialNetwork, onClick: () -> Unit) {
             )
         }
         Spacer(Modifier.height(6.dp))
-        Text(network.label, style = FalText.caption, color = FalPalette.Cream)
+        Text(network.label, style = FalText.caption, color = spec.onBackground)
     }
 }
 
@@ -193,20 +195,21 @@ private fun NetworkButton(network: SocialNetwork, onClick: () -> Unit) {
 private fun SecondaryShareAction(
     label: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    spec: FalThemeSpec,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Row(
         modifier = modifier
             .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
-            .background(FalPalette.NavySoft)
+            .background(spec.card)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 13.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null, tint = FalPalette.Gold, modifier = Modifier.size(18.dp))
+        Icon(icon, contentDescription = null, tint = spec.accent, modifier = Modifier.size(18.dp))
         Spacer(Modifier.size(8.dp))
-        Text(label, style = FalText.button, color = FalPalette.Gold)
+        Text(label, style = FalText.button, color = spec.accent)
     }
 }

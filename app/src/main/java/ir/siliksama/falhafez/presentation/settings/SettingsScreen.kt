@@ -60,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -70,7 +71,6 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ir.siliksama.falhafez.core.designsystem.FalFontColors
-import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
 import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.core.util.PersianText
@@ -105,6 +105,7 @@ fun SettingsScreen(onBack: () -> Unit) {
     val channelName by viewModel.channelName.collectAsStateWithLifecycle()
     val updateResult by viewModel.updateResult.collectAsStateWithLifecycle()
     val showSupport by viewModel.showSupport.collectAsStateWithLifecycle()
+    val spec = FalThemeSpec.byId(themeId)
 
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
@@ -161,9 +162,9 @@ fun SettingsScreen(onBack: () -> Unit) {
     if (currentUpdate != null) {
         AlertDialog(
             onDismissRequest = viewModel::clearUpdateResult,
-            containerColor = FalPalette.NavySoft,
-            titleContentColor = FalPalette.GoldBright,
-            textContentColor = FalPalette.Cream,
+            containerColor = spec.card,
+            titleContentColor = spec.accentSoft,
+            textContentColor = spec.onBackground,
             title = { Text("نسخهٔ جدید موجود است", style = FalText.heading) },
             text = {
                 Text(
@@ -176,19 +177,23 @@ fun SettingsScreen(onBack: () -> Unit) {
                 TextButton(onClick = {
                     openAppInBazaar(context, "ir.siliksama.falhafez")
                     viewModel.clearUpdateResult()
-                }) { Text("بروزرسانی", style = FalText.button, color = FalPalette.Gold) }
+                }) { Text("بروزرسانی", style = FalText.button, color = spec.accent) }
             },
             dismissButton = {
                 TextButton(onClick = viewModel::clearUpdateResult) {
-                    Text("بعداً", style = FalText.button, color = FalPalette.CreamMuted)
+                    Text("بعداً", style = FalText.button, color = spec.onBackgroundMuted)
                 }
             }
         )
     }
 
-    Box(Modifier.fillMaxSize().background(FalPalette.Navy)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(spec.backgroundTop, spec.backgroundBottom)))
+    ) {
         Column(Modifier.fillMaxSize().navigationBarsPadding()) {
-            ScreenHeader(title = "تنظیمات", onBack = onBack)
+            ScreenHeader(title = "تنظیمات", onBack = onBack, titleColor = spec.onBackground)
 
             // تب‌های جمع‌وجور — یک ردیف فشرده با عرض برابر، بدون اسکرول
             Row(
@@ -196,7 +201,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp)
                     .clip(RoundedCornerShape(14.dp))
-                    .background(FalPalette.NavySoft, RoundedCornerShape(14.dp))
+                    .background(spec.card, RoundedCornerShape(14.dp))
                     .padding(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -207,7 +212,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(11.dp))
-                            .background(if (selected) FalPalette.Gold else androidx.compose.ui.graphics.Color.Transparent)
+                            .background(if (selected) spec.accent else androidx.compose.ui.graphics.Color.Transparent)
                             .clickable { tab = index }
                             .padding(vertical = 7.dp),
                         contentAlignment = Alignment.Center
@@ -215,7 +220,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                         Text(
                             t.faName,
                             style = FalText.caption,
-                            color = if (selected) Color(0xFF14100A) else FalPalette.CreamMuted,
+                            color = if (selected) Color(0xFF14100A) else spec.onBackgroundMuted,
                             maxLines = 1
                         )
                     }
@@ -228,11 +233,12 @@ fun SettingsScreen(onBack: () -> Unit) {
                     SettingsTab.THEME -> ThemeGrid(
                         selectedId = themeId,
                         isSubscriber = supportTier.adsRemoved,
-                        onSelect = { spec ->
-                            if (spec.subscriberOnly && !supportTier.adsRemoved) {
+                        appSpec = spec,
+                        onSelect = { picked ->
+                            if (picked.subscriberOnly && !supportTier.adsRemoved) {
                                 viewModel.openSupport()
                             } else {
-                                viewModel.setTheme(spec.id)
+                                viewModel.setTheme(picked.id)
                             }
                         }
                     )
@@ -240,30 +246,30 @@ fun SettingsScreen(onBack: () -> Unit) {
                         modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        CardBox {
-                            Text("اندازهٔ قلم", style = FalText.heading, color = FalPalette.GoldBright)
+                        CardBox(spec = spec) {
+                            Text("اندازهٔ قلم", style = FalText.heading, color = spec.accentSoft)
                             Spacer(Modifier.height(8.dp))
-                            Text("نمونه: غزلِ حافظ با قلمِ خوانا", style = FalText.body, color = FalPalette.Cream)
+                            Text("نمونه: غزلِ حافظ با قلمِ خوانا", style = FalText.body, color = spec.onBackground)
                             Spacer(Modifier.height(12.dp))
                             Slider(
                                 value = fontSizeScale,
                                 onValueChange = viewModel::setFontSizeScale,
                                 valueRange = 0.85f..1.4f,
                                 colors = SliderDefaults.colors(
-                                    thumbColor = FalPalette.Gold,
-                                    activeTrackColor = FalPalette.Gold,
-                                    inactiveTrackColor = FalPalette.NavyLight
+                                    thumbColor = spec.accent,
+                                    activeTrackColor = spec.accent,
+                                    inactiveTrackColor = spec.border
                                 )
                             )
                             Text(
                                 "مقیاس: ${PersianText.digits(String.format(Locale.US, "%.2f", fontSizeScale))}",
-                                style = FalText.caption, color = FalPalette.CreamMuted
+                                style = FalText.caption, color = spec.onBackgroundMuted
                             )
                         }
-                        CardBox {
-                            Text("رنگِ قلم", style = FalText.heading, color = FalPalette.GoldBright)
+                        CardBox(spec = spec) {
+                            Text("رنگِ قلم", style = FalText.heading, color = spec.accentSoft)
                             Spacer(Modifier.height(4.dp))
-                            Text("رنگِ ابیات و تفسیر — یا دنبالهٔ قالب", style = FalText.caption, color = FalPalette.CreamMuted)
+                            Text("رنگِ ابیات و تفسیر — یا دنبالهٔ قالب", style = FalText.caption, color = spec.onBackgroundMuted)
                             Spacer(Modifier.height(10.dp))
                             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 val keys = listOf("theme", "cream", "white", "gold", "emerald", "azure")
@@ -273,10 +279,10 @@ fun SettingsScreen(onBack: () -> Unit) {
                                         onClick = { viewModel.setFontColor(key) },
                                         label = { Text(FalFontColors.label(key), style = FalText.caption) },
                                         colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = FalPalette.Gold,
+                                            selectedContainerColor = spec.accent,
                                             selectedLabelColor = Color(0xFF14100A),
-                                            containerColor = FalPalette.NavyLight,
-                                            labelColor = FalPalette.Cream
+                                            containerColor = spec.card,
+                                            labelColor = spec.onBackground
                                         )
                                     )
                                 }
@@ -287,43 +293,45 @@ fun SettingsScreen(onBack: () -> Unit) {
                         modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        CardBox { SettingSwitchRow("صداهای آیینی", "زنگِ گشودن دیوان و صدای دکمه‌ها", soundEnabled, viewModel::setSound) }
-                        CardBox { SettingSwitchRow("لرزش (هاپتیک)", "بازخورد لمسی هنگام فال گرفتن", hapticsEnabled, viewModel::setHaptics) }
-                        CardBox { SettingSwitchRow("یادآوری فال روزانه", "هر روز ساعت ۸ صبح، بدون اینترنت", notificationsEnabled, ::onNotificationsToggle) }
+                        CardBox(spec = spec) { SettingSwitchRow(spec = spec, title = "صداهای آیینی", subtitle = "زنگِ گشودن دیوان و صدای دکمه‌ها", checked = soundEnabled, onCheckedChange = viewModel::setSound) }
+                        CardBox(spec = spec) { SettingSwitchRow(spec = spec, title = "لرزش (هاپتیک)", subtitle = "بازخورد لمسی هنگام فال گرفتن", checked = hapticsEnabled, onCheckedChange = viewModel::setHaptics) }
+                        CardBox(spec = spec) { SettingSwitchRow(spec = spec, title = "یادآوری فال روزانه", subtitle = "هر روز ساعت ۸ صبح، بدون اینترنت", checked = notificationsEnabled, onCheckedChange = ::onNotificationsToggle) }
                     }
                     SettingsTab.SUPPORT -> SupportTab(
                         currentTier = supportTier,
                         purchasing = purchasing,
-                        onPurchase = { tier -> activity?.let { viewModel.purchase(it, tier) } }
+                        onPurchase = { tier -> activity?.let { viewModel.purchase(it, tier) } },
+                        spec = spec
                     )
                     SettingsTab.CHANNEL -> ChannelTab(
                         network = channelNetwork,
                         handle = channelHandle,
                         name = channelName,
+                        spec = spec,
                         onSave = { n, h, nm -> viewModel.setChannel(n, h, nm) },
                         onSharePromo = { h, nm -> viewModel.shareChannelPromo(h, nm) }
                     )
-                    SettingsTab.APPS -> AppsTab()
+                    SettingsTab.APPS -> AppsTab(spec = spec)
                     SettingsTab.GENERAL -> ScrollableColumn(
                         modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        CardBox {
-                            Text("پشتیبان‌گیری از تاریخچه و علاقه‌مندی‌ها", style = FalText.body, color = FalPalette.Cream)
+                        CardBox(spec = spec) {
+                            Text("پشتیبان‌گیری از تاریخچه و علاقه‌مندی‌ها", style = FalText.body, color = spec.onBackground)
                             Spacer(Modifier.height(4.dp))
-                            Text("یک فایل JSON از فال‌هایت می‌سازد.", style = FalText.caption, color = FalPalette.CreamMuted)
+                            Text("یک فایل JSON از فال‌هایت می‌سازد.", style = FalText.caption, color = spec.onBackgroundMuted)
                             Spacer(Modifier.height(8.dp))
                             TextButton(
                                 onClick = viewModel::exportData,
-                                modifier = Modifier.background(FalPalette.NavyLight, RoundedCornerShape(12.dp))
-                            ) { Text("خروجی گرفتن", style = FalText.button, color = FalPalette.Gold) }
+                                modifier = Modifier.background(spec.card, RoundedCornerShape(12.dp))
+                            ) { Text("خروجی گرفتن", style = FalText.button, color = spec.accent) }
                         }
-                        CardBox {
-                            Text("فال حافظ | تعبیر هوشمند — نسخهٔ ${PersianText.digits(version)}", style = FalText.body, color = FalPalette.Cream)
+                        CardBox(spec = spec) {
+                            Text("فال حافظ | تعبیر هوشمند — نسخهٔ ${PersianText.digits(version)}", style = FalText.body, color = spec.onBackground)
                             Spacer(Modifier.height(4.dp))
                             Text(
                                 "متن اشعار از گنجور (مالکیت عمومی). قلم‌ها: وزیرمتن و نستعلیق اردو (OFL). تصویرسازی‌ها: اختصاصی.",
-                                style = FalText.caption, color = FalPalette.CreamMuted
+                                style = FalText.caption, color = spec.onBackgroundMuted
                             )
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -332,8 +340,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                                     val uri = Uri.parse("market://details?id=${context.packageName}")
                                     runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, uri)) }
                                 },
-                                modifier = Modifier.weight(1f).background(FalPalette.NavySoft, RoundedCornerShape(14.dp))
-                            ) { Text("امتیاز دادن", style = FalText.button, color = FalPalette.Gold) }
+                                modifier = Modifier.weight(1f).background(spec.card, RoundedCornerShape(14.dp))
+                            ) { Text("امتیاز دادن", style = FalText.button, color = spec.accent) }
                             TextButton(
                                 onClick = {
                                     val intent = Intent(Intent.ACTION_SEND).apply {
@@ -342,8 +350,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                                     }
                                     context.startActivity(Intent.createChooser(intent, "اشتراک‌گذاری اپلیکیشن").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                                 },
-                                modifier = Modifier.weight(1f).background(FalPalette.NavySoft, RoundedCornerShape(14.dp))
-                            ) { Text("معرفی", style = FalText.button, color = FalPalette.Gold) }
+                                modifier = Modifier.weight(1f).background(spec.card, RoundedCornerShape(14.dp))
+                            ) { Text("معرفی", style = FalText.button, color = spec.accent) }
                         }
                     }
                 }
@@ -360,26 +368,27 @@ fun SettingsScreen(onBack: () -> Unit) {
 private fun SupportTab(
     currentTier: SupportTier,
     purchasing: Boolean,
-    onPurchase: (SupportTier) -> Unit
+    onPurchase: (SupportTier) -> Unit,
+    spec: FalThemeSpec
 ) {
     ScrollableColumn(
         modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        CardBox {
-            Text("حمایتِ مالی = حذف تبلیغات + فالِ نامحدود", style = FalText.heading, color = FalPalette.GoldBright)
+        CardBox(spec = spec) {
+            Text("حمایتِ مالی = حذف تبلیغات + فالِ نامحدود", style = FalText.heading, color = spec.accentSoft)
             Spacer(Modifier.height(6.dp))
             Text(
                 "با یک‌بار حمایت، تبلیغات برای همیشه حذف می‌شود و فال برایتان نامحدود می‌ماند.",
-                style = FalText.bodyMuted, color = FalPalette.CreamMuted
+                style = FalText.bodyMuted, color = spec.onBackgroundMuted
             )
         }
 
         if (currentTier != SupportTier.NONE) {
-            CardBox {
-                Text("وضعیتِ شما: ${currentTier.faName} ✓", style = FalText.heading, color = FalPalette.Gold)
+            CardBox(spec = spec) {
+                Text("وضعیتِ شما: ${currentTier.faName} ✓", style = FalText.heading, color = spec.accent)
                 Spacer(Modifier.height(4.dp))
-                Text("تبلیغات حذف شده است. سپاس از حمایت شما ♥", style = FalText.bodyMuted, color = FalPalette.CreamMuted)
+                Text("تبلیغات حذف شده است. سپاس از حمایت شما ♥", style = FalText.bodyMuted, color = spec.onBackgroundMuted)
             }
         }
 
@@ -388,23 +397,23 @@ private fun SupportTab(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(if (active) FalPalette.NavyLight else FalPalette.NavySoft, RoundedCornerShape(18.dp))
-                    .border(1.5.dp, if (active) FalPalette.Gold else FalPalette.GoldDeep.copy(alpha = 0.4f), RoundedCornerShape(18.dp))
+                    .background(if (active) spec.card else spec.card, RoundedCornerShape(18.dp))
+                    .border(1.5.dp, if (active) spec.accent else spec.border.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(tier.faName, style = FalText.heading, color = FalPalette.GoldBright, modifier = Modifier.weight(1f))
-                    Text("${formatPrice(tier.priceToman)} تومان", style = FalText.heading, color = FalPalette.Cream)
+                    Text(tier.faName, style = FalText.heading, color = spec.accentSoft, modifier = Modifier.weight(1f))
+                    Text("${formatPrice(tier.priceToman)} تومان", style = FalText.heading, color = spec.onBackground)
                 }
-                Text(tier.perks, style = FalText.bodyMuted, color = FalPalette.CreamMuted)
+                Text(tier.perks, style = FalText.bodyMuted, color = spec.onBackgroundMuted)
                 TextButton(
                     onClick = { if (!active) onPurchase(tier) },
                     enabled = !active && !purchasing,
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            if (active) FalPalette.GoldDeep.copy(alpha = 0.35f) else FalPalette.Gold,
+                            if (active) spec.accent.copy(alpha = 0.30f) else spec.accent,
                             RoundedCornerShape(14.dp)
                         )
                 ) {
@@ -415,7 +424,7 @@ private fun SupportTab(
                             else -> "حمایت و حذفِ تبلیغات"
                         },
                         style = FalText.button,
-                        color = if (active) FalPalette.Cream else Color(0xFF14100A)
+                        color = if (active) spec.onBackground else Color(0xFF14100A)
                     )
                 }
             }
@@ -432,6 +441,7 @@ private fun ChannelTab(
     network: String,
     handle: String,
     name: String,
+    spec: FalThemeSpec,
     onSave: (String, String, String) -> Unit,
     onSharePromo: (String, String) -> Unit
 ) {
@@ -443,17 +453,17 @@ private fun ChannelTab(
         modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        CardBox {
-            Text("کانال یا صفحهٔ اجتماعیِ شما", style = FalText.heading, color = FalPalette.GoldBright)
+        CardBox(spec = spec) {
+            Text("کانال یا صفحهٔ اجتماعیِ شما", style = FalText.heading, color = spec.accentSoft)
             Spacer(Modifier.height(6.dp))
             Text(
                 "با «حمایتِ ویژه» یا «حمایتِ همیشگی»، نام و کانالِ شما روی فالِ اشتراکی نقش می‌بندد — تبلیغِ شما در هر فال.",
-                style = FalText.bodyMuted, color = FalPalette.CreamMuted
+                style = FalText.bodyMuted, color = spec.onBackgroundMuted
             )
         }
 
-        CardBox {
-            Text("انتخاب شبکه", style = FalText.body, color = FalPalette.Cream)
+        CardBox(spec = spec) {
+            Text("انتخاب شبکه", style = FalText.body, color = spec.onBackground)
             Spacer(Modifier.height(10.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(SocialNetwork.entries.toList()) { networkEnum ->
@@ -462,8 +472,8 @@ private fun ChannelTab(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .clip(RoundedCornerShape(14.dp))
-                            .background(if (selected) FalPalette.NavyLight else Color.Transparent)
-                            .border(1.dp, if (selected) FalPalette.Gold else FalPalette.GoldDeep.copy(alpha = 0.3f), RoundedCornerShape(14.dp))
+                            .background(if (selected) spec.card else Color.Transparent)
+                            .border(1.dp, if (selected) spec.accent else spec.border.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
                             .clickable { selectedNetwork = networkEnum.key }
                             .padding(8.dp)
                     ) {
@@ -474,13 +484,13 @@ private fun ChannelTab(
                             modifier = Modifier.size(40.dp)
                         )
                         Spacer(Modifier.height(4.dp))
-                        Text(networkEnum.label, style = FalText.caption, color = FalPalette.CreamMuted)
+                        Text(networkEnum.label, style = FalText.caption, color = spec.onBackgroundMuted)
                     }
                 }
             }
         }
 
-        CardBox {
+        CardBox(spec = spec) {
             OutlinedTextField(
                 value = nameText,
                 onValueChange = { nameText = it },
@@ -489,13 +499,13 @@ private fun ChannelTab(
                 textStyle = FalText.body,
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = FalPalette.Gold,
-                    unfocusedBorderColor = FalPalette.GoldDeep.copy(alpha = 0.5f),
-                    focusedTextColor = FalPalette.Cream,
-                    unfocusedTextColor = FalPalette.Cream,
-                    cursorColor = FalPalette.Gold,
-                    focusedContainerColor = FalPalette.NavySoft,
-                    unfocusedContainerColor = FalPalette.NavySoft
+                    focusedBorderColor = spec.accent,
+                    unfocusedBorderColor = spec.border.copy(alpha = 0.6f),
+                    focusedTextColor = spec.onBackground,
+                    unfocusedTextColor = spec.onBackground,
+                    cursorColor = spec.accent,
+                    focusedContainerColor = spec.card,
+                    unfocusedContainerColor = spec.card
                 )
             )
             Spacer(Modifier.height(10.dp))
@@ -507,25 +517,25 @@ private fun ChannelTab(
                 textStyle = FalText.body,
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = FalPalette.Gold,
-                    unfocusedBorderColor = FalPalette.GoldDeep.copy(alpha = 0.5f),
-                    focusedTextColor = FalPalette.Cream,
-                    unfocusedTextColor = FalPalette.Cream,
-                    cursorColor = FalPalette.Gold,
-                    focusedContainerColor = FalPalette.NavySoft,
-                    unfocusedContainerColor = FalPalette.NavySoft
+                    focusedBorderColor = spec.accent,
+                    unfocusedBorderColor = spec.border.copy(alpha = 0.6f),
+                    focusedTextColor = spec.onBackground,
+                    unfocusedTextColor = spec.onBackground,
+                    cursorColor = spec.accent,
+                    focusedContainerColor = spec.card,
+                    unfocusedContainerColor = spec.card
                 )
             )
             Spacer(Modifier.height(12.dp))
             TextButton(
                 onClick = { onSave(selectedNetwork, handleText.trim(), nameText.trim()) },
-                modifier = Modifier.fillMaxWidth().background(FalPalette.Gold, RoundedCornerShape(14.dp))
+                modifier = Modifier.fillMaxWidth().background(spec.accent, RoundedCornerShape(14.dp))
             ) { Text("ذخیرهٔ کانال", style = FalText.button, color = Color(0xFF14100A)) }
             Spacer(Modifier.height(8.dp))
             TextButton(
                 onClick = { onSharePromo(handleText.trim(), nameText.trim()) },
-                modifier = Modifier.fillMaxWidth().background(FalPalette.NavyLight, RoundedCornerShape(14.dp))
-            ) { Text("ساخت و اشتراکِ عکسِ تبلیغاتیِ کانال", style = FalText.button, color = FalPalette.Gold) }
+                modifier = Modifier.fillMaxWidth().background(spec.card, RoundedCornerShape(14.dp))
+            ) { Text("ساخت و اشتراکِ عکسِ تبلیغاتیِ کانال", style = FalText.button, color = spec.accent) }
         }
     }
 }
@@ -534,7 +544,7 @@ private fun ChannelTab(
 /*  برنامه‌های دیگر سازنده                                              */
 /* ------------------------------------------------------------------ */
 @Composable
-private fun AppsTab() {
+private fun AppsTab(spec: FalThemeSpec) {
     val context = LocalContext.current
 
     fun openBazaar(packageName: String) {
@@ -551,10 +561,10 @@ private fun AppsTab() {
         modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        CardBox {
-            Text("سایر برنامه‌های سازنده", style = FalText.heading, color = FalPalette.GoldBright)
+        CardBox(spec = spec) {
+            Text("سایر برنامه‌های سازنده", style = FalText.heading, color = spec.accentSoft)
             Spacer(Modifier.height(4.dp))
-            Text("اگر این اپ را دوست دارید، این‌ها را هم ببینید:", style = FalText.bodyMuted, color = FalPalette.CreamMuted)
+            Text("اگر این اپ را دوست دارید، این‌ها را هم ببینید:", style = FalText.bodyMuted, color = spec.onBackgroundMuted)
         }
 
         // بنر ۱: کنکوریفای
@@ -562,6 +572,7 @@ private fun AppsTab() {
             title = "کنکوریفای",
             subtitle = "برنامه‌ریز کنکور — برای کنکوری‌های جدی",
             cta = "دریافت از بازار",
+            spec = spec,
             onClick = { openBazaar("ir.konkoorify.app") }
         )
 
@@ -570,26 +581,27 @@ private fun AppsTab() {
             title = "فاکتور حسابداری",
             subtitle = "صدور فاکتور سریع و حرفه‌ای برای کسب‌وکار",
             cta = "دریافت از بازار",
+            spec = spec,
             onClick = { openBazaar("com.siliksama.factor_hesabdari") }
         )
     }
 }
 
 @Composable
-private fun PromoBanner(title: String, subtitle: String, cta: String, onClick: () -> Unit) {
+private fun PromoBanner(title: String, subtitle: String, cta: String, spec: FalThemeSpec, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(FalPalette.NavySoft, RoundedCornerShape(18.dp))
-            .border(1.dp, FalPalette.GoldDeep.copy(alpha = 0.45f), RoundedCornerShape(18.dp))
+            .background(spec.card, RoundedCornerShape(18.dp))
+            .border(1.dp, spec.border.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(title, style = FalText.heading, color = FalPalette.GoldBright)
-        Text(subtitle, style = FalText.bodyMuted, color = FalPalette.CreamMuted)
+        Text(title, style = FalText.heading, color = spec.accentSoft)
+        Text(subtitle, style = FalText.bodyMuted, color = spec.onBackgroundMuted)
         TextButton(
             onClick = onClick,
-            modifier = Modifier.fillMaxWidth().background(FalPalette.Gold, RoundedCornerShape(14.dp))
+            modifier = Modifier.fillMaxWidth().background(spec.accent, RoundedCornerShape(14.dp))
         ) { Text(cta, style = FalText.button, color = Color(0xFF14100A)) }
     }
 }
@@ -601,6 +613,7 @@ private fun PromoBanner(title: String, subtitle: String, cta: String, onClick: (
 private fun ThemeGrid(
     selectedId: ir.siliksama.falhafez.core.theme.FalThemeId,
     isSubscriber: Boolean,
+    appSpec: FalThemeSpec,
     onSelect: (FalThemeSpec) -> Unit
 ) {
     LazyVerticalGrid(
@@ -610,37 +623,37 @@ private fun ThemeGrid(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        gridItems(FalThemeSpec.All) { spec ->
-            val selected = spec.id == selectedId
-            val lockedForSubscriber = spec.subscriberOnly && !isSubscriber
+        gridItems(FalThemeSpec.All) { theme ->
+            val selected = theme.id == selectedId
+            val lockedForSubscriber = theme.subscriberOnly && !isSubscriber
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(if (selected) FalPalette.NavyLight else FalPalette.NavySoft)
+                    .background(if (selected) appSpec.accent.copy(alpha = 0.14f) else appSpec.card)
                     .border(
                         width = if (selected) 1.5.dp else 1.dp,
-                        color = if (selected) spec.accent else FalPalette.GoldDeep.copy(alpha = 0.4f),
+                        color = if (selected) theme.accent else appSpec.border.copy(alpha = 0.6f),
                         shape = RoundedCornerShape(16.dp)
                     )
-                    .clickable { onSelect(spec) }
+                    .clickable { onSelect(theme) }
                     .padding(8.dp)
             ) {
-                val art = spec.artworkRes
+                val art = theme.artworkRes
                 if (art != null) {
                     Image(
                         painter = painterResource(art),
-                        contentDescription = spec.id.faName,
+                        contentDescription = theme.id.faName,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxWidth().height(84.dp).clip(RoundedCornerShape(10.dp))
                     )
                     Spacer(Modifier.height(8.dp))
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(spec.id.faName, style = FalText.body, color = FalPalette.Cream, modifier = Modifier.weight(1f))
+                    Text(theme.id.faName, style = FalText.body, color = appSpec.onBackground, modifier = Modifier.weight(1f))
                     when {
-                        lockedForSubscriber -> Text("ویژهٔ حامیان ♥", style = FalText.caption, color = FalPalette.Gold)
-                        selected -> Icon(Icons.Filled.Check, contentDescription = "انتخاب‌شده", tint = spec.accent, modifier = Modifier.size(16.dp))
+                        lockedForSubscriber -> Text("ویژهٔ حامیان ♥", style = FalText.caption, color = appSpec.accent)
+                        selected -> Icon(Icons.Filled.Check, contentDescription = "انتخاب‌شده", tint = theme.accent, modifier = Modifier.size(16.dp))
                     }
                 }
             }
@@ -649,28 +662,28 @@ private fun ThemeGrid(
 }
 
 @Composable
-private fun CardBox(content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit) {
+private fun CardBox(spec: FalThemeSpec, content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit) {
     Column(
-        modifier = Modifier.fillMaxWidth().background(FalPalette.NavySoft, RoundedCornerShape(16.dp)).padding(16.dp),
+        modifier = Modifier.fillMaxWidth().background(spec.card, RoundedCornerShape(16.dp)).padding(16.dp),
         content = content
     )
 }
 
 @Composable
-private fun SettingSwitchRow(title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+private fun SettingSwitchRow(spec: FalThemeSpec, title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text(title, style = FalText.body, color = FalPalette.Cream)
-            Text(subtitle, style = FalText.caption, color = FalPalette.CreamMuted)
+            Text(title, style = FalText.body, color = spec.onBackground)
+            Text(subtitle, style = FalText.caption, color = spec.onBackgroundMuted)
         }
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = FalPalette.Navy,
-                checkedTrackColor = FalPalette.Gold,
-                uncheckedThumbColor = FalPalette.CreamMuted,
-                uncheckedTrackColor = FalPalette.NavyLight
+                checkedThumbColor = spec.onBackground,
+                checkedTrackColor = spec.accent,
+                uncheckedThumbColor = spec.onBackgroundMuted,
+                uncheckedTrackColor = spec.border
             )
         )
     }

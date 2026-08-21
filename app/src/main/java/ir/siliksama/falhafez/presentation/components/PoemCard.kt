@@ -19,14 +19,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
+import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.domain.model.Poem
 
 /** Compact ornamental card (2-column grid tile) used across library, search, favorites. */
 @Composable
 fun PoemCard(
     poem: Poem,
+    spec: FalThemeSpec,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isRead: Boolean = false
@@ -34,10 +35,10 @@ fun PoemCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(FalPalette.NavySoft, RoundedCornerShape(16.dp))
+            .background(spec.card, RoundedCornerShape(16.dp))
             .border(
                 1.dp,
-                if (isRead) FalPalette.GoldDeep.copy(alpha = 0.7f) else FalPalette.GoldDeep.copy(alpha = 0.4f),
+                if (isRead) spec.accent.copy(alpha = 0.7f) else spec.border.copy(alpha = 0.6f),
                 RoundedCornerShape(16.dp)
             )
             .clickable(onClick = onClick)
@@ -47,7 +48,7 @@ fun PoemCard(
             Text(
                 text = "${poem.collection.poet.faName} — ${poem.collection.faName}",
                 style = FalText.caption,
-                color = FalPalette.CreamMuted,
+                color = spec.onBackgroundMuted,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
@@ -56,7 +57,7 @@ fun PoemCard(
                 Icon(
                     imageVector = Icons.Filled.CheckCircle,
                     contentDescription = "خوانده‌شده",
-                    tint = FalPalette.Gold,
+                    tint = spec.accent,
                     modifier = Modifier.height(14.dp)
                 )
             }
@@ -65,7 +66,7 @@ fun PoemCard(
         Text(
             text = poem.opening,
             style = FalText.verseSmall,
-            color = FalPalette.Cream,
+            color = spec.onBackground,
             maxLines = 3,
             overflow = TextOverflow.Ellipsis
         )

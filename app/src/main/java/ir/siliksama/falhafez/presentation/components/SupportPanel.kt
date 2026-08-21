@@ -17,8 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
+import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.core.util.PersianText
 import ir.siliksama.falhafez.domain.model.SupportTier
 
@@ -31,6 +31,7 @@ fun SupportPanel(
     currentTier: SupportTier,
     purchasing: Boolean,
     onPurchase: (SupportTier) -> Unit,
+    spec: FalThemeSpec,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -38,11 +39,11 @@ fun SupportPanel(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(FalPalette.NavyLight, RoundedCornerShape(16.dp))
+                    .background(spec.accent.copy(alpha = 0.14f), RoundedCornerShape(16.dp))
                     .padding(14.dp)
             ) {
-                Text("وضعیت: ${currentTier.faName} ✓", style = FalText.body, color = FalPalette.Gold)
-                Text("تبلیغات برای همیشه حذف شده است. سپاس از حمایت شما ♥", style = FalText.caption, color = FalPalette.CreamMuted)
+                Text("وضعیت: ${currentTier.faName} ✓", style = FalText.body, color = spec.accentSoft)
+                Text("تبلیغات برای همیشه حذف شده است. سپاس از حمایت شما ♥", style = FalText.caption, color = spec.onBackgroundMuted)
             }
         }
 
@@ -51,23 +52,23 @@ fun SupportPanel(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(if (active) FalPalette.NavyLight else FalPalette.NavySoft, RoundedCornerShape(16.dp))
-                    .border(1.5.dp, if (active) FalPalette.Gold else FalPalette.GoldDeep.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                    .background(if (active) spec.accent.copy(alpha = 0.14f) else spec.card, RoundedCornerShape(16.dp))
+                    .border(1.5.dp, if (active) spec.accent else spec.border.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(tier.faName, style = FalText.heading, color = FalPalette.GoldBright, modifier = Modifier.weight(1f))
-                    Text("${formatPrice(tier.priceToman)} تومان", style = FalText.heading, color = FalPalette.Cream)
+                    Text(tier.faName, style = FalText.heading, color = spec.accentSoft, modifier = Modifier.weight(1f))
+                    Text("${formatPrice(tier.priceToman)} تومان", style = FalText.heading, color = spec.onBackground)
                 }
-                Text(tier.perks, style = FalText.caption, color = FalPalette.CreamMuted)
+                Text(tier.perks, style = FalText.caption, color = spec.onBackgroundMuted)
                 TextButton(
                     onClick = { if (!active) onPurchase(tier) },
                     enabled = !active && !purchasing,
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            if (active) FalPalette.GoldDeep.copy(alpha = 0.35f) else FalPalette.Gold,
+                            if (active) spec.accent.copy(alpha = 0.30f) else spec.accent,
                             RoundedCornerShape(12.dp)
                         )
                 ) {
@@ -78,7 +79,7 @@ fun SupportPanel(
                             else -> "حمایت و حذفِ تبلیغات"
                         },
                         style = FalText.button,
-                        color = if (active) FalPalette.Cream else Color(0xFF14100A)
+                        color = if (active) spec.onBackground else Color(0xFF14100A)
                     )
                 }
             }

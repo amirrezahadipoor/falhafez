@@ -16,10 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.domain.model.FalCategory
 import ir.siliksama.falhafez.presentation.components.EmptyState
@@ -55,15 +55,20 @@ fun FavoritesScreen() {
         return
     }
 
-    Box(Modifier.fillMaxSize().background(FalPalette.Navy)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(spec.backgroundTop, spec.backgroundBottom)))
+    ) {
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader(title = "علاقه‌مندی‌ها")
+            ScreenHeader(title = "علاقه‌مندی‌ها", titleColor = spec.onBackground)
             if (favorites.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     EmptyState(
                         icon = Icons.Outlined.FavoriteBorder,
                         title = "هنوز چیزی نشان نکرده‌اید",
-                        subtitle = "غزل‌ها و ابیات محبوب‌تان را اینجا نگه می‌دارید."
+                        subtitle = "غزل‌ها و ابیات محبوب‌تان را اینجا نگه می‌دارید.",
+                        color = spec.onBackgroundMuted
                     )
                 }
             } else {
@@ -75,7 +80,7 @@ fun FavoritesScreen() {
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(favorites) { poem ->
-                        PoemCard(poem = poem, onClick = { viewModel.open(poem.id) })
+                        PoemCard(poem = poem, spec = spec, onClick = { viewModel.open(poem.id) })
                     }
                 }
             }

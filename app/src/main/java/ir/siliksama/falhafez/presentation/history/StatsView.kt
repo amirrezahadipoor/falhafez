@@ -4,24 +4,23 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
+import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.core.util.DayNumber
+import ir.siliksama.falhafez.core.util.FalStats
 import ir.siliksama.falhafez.core.util.PersianText
 import ir.siliksama.falhafez.domain.model.DrawEntry
 
 /** کارنامهٔ شخصی فال — keeps the user coming back by turning draws into a story. */
 @Composable
-fun StatsView(history: List<DrawEntry>, modifier: Modifier = Modifier) {
+fun StatsView(history: List<DrawEntry>, spec: FalThemeSpec, modifier: Modifier = Modifier) {
     if (history.isEmpty()) return
 
     val total = history.size
@@ -29,30 +28,8 @@ fun StatsView(history: List<DrawEntry>, modifier: Modifier = Modifier) {
     val dayNumbers = history.map { DayNumber.local(it.drawnAt) }.distinct().sortedDescending()
     val today = DayNumber.local()
 
-    // current streak (consecutive days up to today/yesterday)
-    var streak = 0
-    var expected = today
-    if (dayNumbers.firstOrNull() == today || dayNumbers.firstOrNull() == today - 1) {
-        expected = dayNumbers.first()
-        for (d in dayNumbers) {
-            if (d == expected) {
-                streak++
-                expected -= 1
-            } else if (d < expected) break
-        }
-    }
-
-    val bestStreak = run {
-        var best = 0
-        var run = 0
-        var prev: Long? = null
-        for (d in dayNumbers.sorted()) {
-            run = if (prev != null && d == prev + 1) run + 1 else 1
-            if (run > best) best = run
-            prev = d
-        }
-        best
-    }
+    val streak = FalStats.currentStreak(dayNumbers, today)
+    val bestStreak = FalStats.bestStreak(dayNumbers)
 
     val byPoet = history.groupingBy { it.poem.poet.faName }.eachCount()
     val byTheme = history.groupingBy { it.poem.themeTag }.eachCount()
@@ -70,25 +47,25 @@ fun StatsView(history: List<DrawEntry>, modifier: Modifier = Modifier) {
     )
 
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        StatRow("فال‌های گرفته‌شده", PersianText.number(total))
-        StatRow("زنجیرهٔ فعلی", "${PersianText.number(streak)} روز")
-        StatRow("بهترین زنجیره", "${PersianText.number(bestStreak)} روز")
-        StatRow("شاعرِ غالب", topPoet)
-        StatRow("موضوعِ غالب", themeFa[topTheme] ?: topTheme)
-        StatRow("ساعتِ پرفال", topHourFa)
+        StatRow("فال‌های گرفته‌شده", PersianText.number(total), spec)
+        StatRow("زنجیرهٔ فعلی", "${PersianText.number(streak)} روز", spec)
+        StatRow("بهترین زنجیره", "${PersianText.number(bestStreak)} روز", spec)
+        StatRow("شاعرِ غالب", topPoet, spec)
+        StatRow("موضوعِ غالب", themeFa[topTheme] ?: topTheme, spec)
+        StatRow("ساعتِ پرفال", topHourFa, spec)
     }
 }
 
 @Composable
-private fun StatRow(label: String, value: String) {
+private fun StatRow(label: String, value: String, spec: FalThemeSpec) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(FalPalette.NavySoft, RoundedCornerShape(16.dp))
+            .background(spec.card, RoundedCornerShape(16.dp))
             .padding(horizontal = 18.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, style = FalText.bodyMuted, color = FalPalette.CreamMuted)
-        Text(value, style = FalText.heading, color = FalPalette.GoldBright)
+        Text(label, style = FalText.bodyMuted, color = spec.onBackgroundMuted)
+        Text(value, style = FalText.heading, color = spec.accentSoft)
     }
 }

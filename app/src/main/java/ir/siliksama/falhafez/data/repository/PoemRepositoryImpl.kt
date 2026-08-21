@@ -1,5 +1,6 @@
 package ir.siliksama.falhafez.data.repository
 
+import ir.siliksama.falhafez.core.util.SearchSanitizer
 import ir.siliksama.falhafez.data.local.PoemDao
 import ir.siliksama.falhafez.data.local.PoemWithVerses
 import ir.siliksama.falhafez.domain.model.Collection
@@ -26,21 +27,9 @@ class PoemRepositoryImpl @Inject constructor(
     override suspend fun search(query: String): List<Poem> {
         // حفاظِ کراش: فقط حروف/رقم/فاصله و نیم‌فاصله می‌مانند — عملگرهای FTS
         // («(»، «)»، «-»، «"»، «:»، «^» و…) حذف می‌شوند تا MATCH هرگز با عبارتِ
-        // نادرست خطای «malformed MATCH expression» ندهد.
-        val safe = query
-            .map { c ->
-                if (c.isLetterOrDigit() || c.isWhitespace() || c == '\u200C' || c == '\u200D') c else ' '
-            }
-            .joinToString("")
-            .replace(Regex("\\s+"), " ")
-            .trim()
-        if (safe.isBlank()) return emptyList()
-        // فقط توکن‌هایی که حرفِ فارسی/عربی یا رقم دارند (واژه‌های انگلیسیِ
-        // AND/OR/NOT نمی‌توانند به‌عنوان عملگرِ FTS خطا بسازند).
-        val tokens = safe.split(" ")
-            .filter { t -> t.any { c -> c.code in 0x0600..0x06FF || c.isDigit() } }
-        if (tokens.isEmpty()) return emptyList()
-        val matchQuery = tokens.joinToString(" ") { "$it*" }
+        // نادرست خطای «malformed MATCH expression» ندهد. (منطق در SearchSanitizer
+        // که با آزمون واحد قفل شده است.)
+        val matchQuery = SearchSanitizer.sanitize(query) ?: return emptyList()
         return runCatching { poemDao.search(matchQuery).mapWithVerses() }.getOrDefault(emptyList())
     }
 

@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
 import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.core.util.findActivity
@@ -61,20 +60,21 @@ fun HomeScreen(
         if (state.supportOpen) {
             AlertDialog(
                 onDismissRequest = viewModel::closeSupport,
-                containerColor = FalPalette.NavySoft,
-                titleContentColor = FalPalette.GoldBright,
-                textContentColor = FalPalette.Cream,
+                containerColor = spec.card,
+                titleContentColor = spec.accentSoft,
+                textContentColor = spec.onBackground,
                 title = { Text("حمایت مالی", style = FalText.heading) },
                 text = {
                     SupportPanel(
                         currentTier = supportTier,
                         purchasing = purchasing,
-                        onPurchase = { tier -> activity?.let { viewModel.purchase(it, tier) } }
+                        onPurchase = { tier -> activity?.let { viewModel.purchase(it, tier) } },
+                        spec = spec
                     )
                 },
                 confirmButton = {
                     TextButton(onClick = viewModel::closeSupport) {
-                        Text("بستن", style = FalText.button, color = FalPalette.CreamMuted)
+                        Text("بستن", style = FalText.button, color = spec.onBackgroundMuted)
                     }
                 }
             )

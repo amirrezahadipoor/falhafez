@@ -32,8 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
+import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.core.util.openAppInBazaar
 import ir.siliksama.falhafez.presentation.ads.BannerAdView
 import ir.siliksama.falhafez.presentation.favorites.FavoritesScreen
@@ -54,6 +54,8 @@ enum class MainTab(val faName: String, val icon: ImageVector) {
 fun MainScreen(onOpenSettings: () -> Unit) {
     val mainViewModel: MainViewModel = hiltViewModel()
     val pendingUpdate by mainViewModel.pendingUpdate.collectAsStateWithLifecycle()
+    val themeId by mainViewModel.themeId.collectAsStateWithLifecycle()
+    val spec = FalThemeSpec.byId(themeId)
     val context = LocalContext.current
 
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -70,9 +72,9 @@ fun MainScreen(onOpenSettings: () -> Unit) {
     pendingUpdate?.let { update ->
         AlertDialog(
             onDismissRequest = mainViewModel::dismissUpdate,
-            containerColor = FalPalette.NavySoft,
-            titleContentColor = FalPalette.GoldBright,
-            textContentColor = FalPalette.Cream,
+            containerColor = spec.card,
+            titleContentColor = spec.accentSoft,
+            textContentColor = spec.onBackground,
             title = { Text("نسخهٔ جدید موجود است", style = FalText.heading) },
             text = {
                 Text(
@@ -85,18 +87,18 @@ fun MainScreen(onOpenSettings: () -> Unit) {
                 TextButton(onClick = {
                     openAppInBazaar(context, "ir.siliksama.falhafez")
                     mainViewModel.dismissUpdate()
-                }) { Text("بروزرسانی", style = FalText.button, color = FalPalette.Gold) }
+                }) { Text("بروزرسانی", style = FalText.button, color = spec.accent) }
             },
             dismissButton = {
                 TextButton(onClick = mainViewModel::dismissUpdate) {
-                    Text("بعداً", style = FalText.button, color = FalPalette.CreamMuted)
+                    Text("بعداً", style = FalText.button, color = spec.onBackgroundMuted)
                 }
             }
         )
     }
 
     Scaffold(
-        containerColor = FalPalette.Navy,
+        containerColor = spec.backgroundBottom,
         // Each screen manages its own status-bar inset (ScreenHeader/statusBarsPadding),
         // so the Scaffold must not add a second top inset.
         contentWindowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
@@ -107,7 +109,7 @@ fun MainScreen(onOpenSettings: () -> Unit) {
                 if (selected == MainTab.HISTORY || selected == MainTab.LIBRARY) {
                     BannerAdView()
                 }
-                NavigationBar(containerColor = FalPalette.Navy) {
+                NavigationBar(containerColor = spec.backgroundTop) {
                     MainTab.entries.forEachIndexed { index, tab ->
                         NavigationBarItem(
                             selected = index == selectedIndex,
@@ -115,11 +117,11 @@ fun MainScreen(onOpenSettings: () -> Unit) {
                             icon = { Icon(tab.icon, contentDescription = tab.faName) },
                             label = { Text(tab.faName, style = FalText.caption) },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = FalPalette.GoldBright,
-                                selectedTextColor = FalPalette.Gold,
-                                unselectedIconColor = FalPalette.CreamMuted,
-                                unselectedTextColor = FalPalette.CreamMuted,
-                                indicatorColor = FalPalette.NavyLight
+                                selectedIconColor = spec.accentSoft,
+                                selectedTextColor = spec.accent,
+                                unselectedIconColor = spec.onBackgroundMuted,
+                                unselectedTextColor = spec.onBackgroundMuted,
+                                indicatorColor = spec.accent.copy(alpha = 0.18f)
                             )
                         )
                     }

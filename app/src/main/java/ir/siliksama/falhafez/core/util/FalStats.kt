@@ -1,0 +1,42 @@
+package ir.siliksama.falhafez.core.util
+
+/**
+ * منطقِ خالصِ کارنامهٔ فال — بدون وابستگی به اندروید تا قابلِ آزمونِ واحد باشد.
+ * «روز» در اینجا شمارهٔ روزِ محلی است (ببینید [DayNumber]).
+ */
+object FalStats {
+
+    /**
+     * زنجیرهٔ فعلی: تعداد روزهای پشت‌سرهم که فال گرفته شده و به امروز (یا دیروز)
+     * ختم می‌شوند. [dayNumbersDesc] باید متمایز و نزولی باشد.
+     */
+    fun currentStreak(dayNumbersDesc: List<Long>, today: Long): Int {
+        if (dayNumbersDesc.isEmpty()) return 0
+        val newest = dayNumbersDesc.first()
+        if (newest != today && newest != today - 1) return 0
+        var streak = 0
+        var expected = newest
+        for (d in dayNumbersDesc) {
+            if (d == expected) {
+                streak++
+                expected -= 1
+            } else if (d < expected) {
+                break
+            }
+        }
+        return streak
+    }
+
+    /** بهترین زنجیرهٔ ثبت‌شده در کلِ تاریخچه (روزهای متوالی). */
+    fun bestStreak(dayNumbers: List<Long>): Int {
+        var best = 0
+        var run = 0
+        var prev: Long? = null
+        for (d in dayNumbers.sorted()) {
+            run = if (prev != null && d == prev + 1) run + 1 else 1
+            if (run > best) best = run
+            prev = d
+        }
+        return best
+    }
+}

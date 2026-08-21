@@ -31,13 +31,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
 import ir.siliksama.falhafez.core.designsystem.readingColor
 import ir.siliksama.falhafez.core.theme.FalThemeSpec
@@ -72,9 +72,13 @@ fun StoriesScreen() {
         return
     }
 
-    Box(Modifier.fillMaxSize().background(FalPalette.Navy)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(spec.backgroundTop, spec.backgroundBottom)))
+    ) {
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader(title = "داستان‌های آموزنده")
+            ScreenHeader(title = "داستان‌های آموزنده", titleColor = spec.onBackground)
             if (stories.isEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -84,10 +88,11 @@ fun StoriesScreen() {
                     EmptyState(
                         icon = Icons.Outlined.AutoStories,
                         title = "در حال آماده‌سازی داستان‌ها…",
-                        subtitle = "لحظه‌ای صبر کنید"
+                        subtitle = "لحظه‌ای صبر کنید",
+                        color = spec.onBackgroundMuted
                     )
                     Spacer(Modifier.height(16.dp))
-                    GhostButton(text = "تلاش دوباره", onClick = viewModel::load, textColor = FalPalette.Gold)
+                    GhostButton(text = "تلاش دوباره", onClick = viewModel::load, textColor = spec.accent)
                 }
             } else {
                 // 2-column grid → ~2× more stories per screen, far less scrolling
@@ -99,7 +104,7 @@ fun StoriesScreen() {
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(stories) { story ->
-                        StoryTile(story = story, isRead = story.id in readIds, onClick = { viewModel.open(story) })
+                        StoryTile(story = story, spec = spec, isRead = story.id in readIds, onClick = { viewModel.open(story) })
                     }
                 }
             }
@@ -108,13 +113,13 @@ fun StoriesScreen() {
 }
 
 @Composable
-private fun StoryTile(story: Poem, isRead: Boolean, onClick: () -> Unit) {
+private fun StoryTile(story: Poem, spec: FalThemeSpec, isRead: Boolean, onClick: () -> Unit) {
     val prose = story.verses.firstOrNull { !it.isCouplet }?.first ?: story.opening
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(FalPalette.NavySoft, RoundedCornerShape(16.dp))
-            .border(1.dp, FalPalette.GoldDeep.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+            .background(spec.card, RoundedCornerShape(16.dp))
+            .border(1.dp, spec.border.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -123,14 +128,14 @@ private fun StoryTile(story: Poem, isRead: Boolean, onClick: () -> Unit) {
             Text(
                 text = "داستانِ ${PersianText.number(story.number)}",
                 style = FalText.heading,
-                color = FalPalette.GoldBright,
+                color = spec.accentSoft,
                 modifier = Modifier.weight(1f)
             )
             if (isRead) {
                 Icon(
                     imageVector = Icons.Filled.CheckCircle,
                     contentDescription = "خوانده‌شده",
-                    tint = FalPalette.Gold,
+                    tint = spec.accent,
                     modifier = Modifier.height(16.dp)
                 )
             }
@@ -138,7 +143,7 @@ private fun StoryTile(story: Poem, isRead: Boolean, onClick: () -> Unit) {
         Text(
             text = prose,
             style = FalText.caption,
-            color = FalPalette.Cream,
+            color = spec.onBackground,
             maxLines = 4,
             overflow = TextOverflow.Ellipsis
         )

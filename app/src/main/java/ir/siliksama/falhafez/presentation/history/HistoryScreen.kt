@@ -28,12 +28,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
 import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.core.util.Jalali
@@ -74,15 +74,19 @@ fun HistoryScreen() {
         return
     }
 
-    Box(Modifier.fillMaxSize().background(FalPalette.Navy)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(spec.backgroundTop, spec.backgroundBottom)))
+    ) {
         Column(Modifier.fillMaxSize()) {
             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                Box(Modifier.weight(1f)) { ScreenHeader(title = "تاریخچه") }
+                Box(Modifier.weight(1f)) { ScreenHeader(title = "تاریخچه", titleColor = spec.onBackground) }
                 IconButton(onClick = viewModel::toggleStats) {
                     Icon(
                         imageVector = Icons.Outlined.Insights,
                         contentDescription = "کارنامهٔ من",
-                        tint = if (showStats) FalPalette.GoldBright else FalPalette.CreamMuted
+                        tint = if (showStats) spec.accentSoft else spec.onBackgroundMuted
                     )
                 }
             }
@@ -90,7 +94,7 @@ fun HistoryScreen() {
                 Column(
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
                 ) {
-                    StatsView(history = history)
+                    StatsView(history = history, spec = spec)
                 }
                 return@Column
             }
@@ -99,7 +103,8 @@ fun HistoryScreen() {
                     EmptyState(
                         icon = Icons.Outlined.History,
                         title = "هنوز فالی نگرفته‌اید",
-                        subtitle = "فال‌هایی که می‌گیرید اینجا ثبت می‌شوند."
+                        subtitle = "فال‌هایی که می‌گیرید اینجا ثبت می‌شوند.",
+                        color = spec.onBackgroundMuted
                     )
                 }
             } else {
@@ -109,7 +114,7 @@ fun HistoryScreen() {
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(history.size) { index ->
-                        HistoryItem(draw = history[index], onClick = { viewModel.open(history[index].id) })
+                        HistoryItem(draw = history[index], spec = spec, onClick = { viewModel.open(history[index].id) })
                     }
                 }
             }
@@ -118,12 +123,12 @@ fun HistoryScreen() {
 }
 
 @Composable
-private fun HistoryItem(draw: DrawEntry, onClick: () -> Unit) {
+private fun HistoryItem(draw: DrawEntry, spec: FalThemeSpec, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(FalPalette.NavySoft, RoundedCornerShape(14.dp))
-            .border(1.dp, FalPalette.GoldDeep.copy(alpha = 0.4f), RoundedCornerShape(14.dp))
+            .background(spec.card, RoundedCornerShape(14.dp))
+            .border(1.dp, spec.border.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -131,13 +136,13 @@ private fun HistoryItem(draw: DrawEntry, onClick: () -> Unit) {
         Text(
             text = Jalali.shortDate(draw.drawnAt),
             style = FalText.caption,
-            color = FalPalette.Gold,
+            color = spec.accent,
             modifier = Modifier.width(96.dp)
         )
         Text(
             text = if (draw.question.isNullOrBlank()) draw.poem.opening else "«${draw.question}» — ${draw.poem.opening}",
             style = FalText.bodyMuted,
-            color = FalPalette.Cream,
+            color = spec.onBackground,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
@@ -145,7 +150,7 @@ private fun HistoryItem(draw: DrawEntry, onClick: () -> Unit) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
             contentDescription = null,
-            tint = FalPalette.CreamMuted,
+            tint = spec.onBackgroundMuted,
             modifier = Modifier.size(18.dp)
         )
     }
