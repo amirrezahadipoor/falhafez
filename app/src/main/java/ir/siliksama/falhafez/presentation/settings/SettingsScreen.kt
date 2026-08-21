@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -177,7 +178,7 @@ fun SettingsScreen(onBack: () -> Unit) {
     }
 
     Box(Modifier.fillMaxSize().background(FalPalette.Navy)) {
-        Column(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().navigationBarsPadding()) {
             ScreenHeader(title = "تنظیمات", onBack = onBack)
 
             // تب‌های جمع‌وجور — یک ردیف فشرده با عرض برابر، بدون اسکرول

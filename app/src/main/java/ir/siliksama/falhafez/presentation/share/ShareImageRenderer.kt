@@ -60,90 +60,120 @@ object ShareImageRenderer {
         drawOrnamentFrame(canvas, spec.accent.toArgb())
 
         val textWidth = (W - 2 * PAD).toInt()
-        var y = 150f
+        var y = 130f
 
+        // ── سربرگ ──
         y = drawText(
-            canvas, "فال حافظ", 64f, nastaliq, spec.accentSoft.toArgb(),
+            canvas, "فال حافظ", 60f, nastaliq, spec.accentSoft.toArgb(),
             textWidth, PAD, y, Layout.Alignment.ALIGN_CENTER, 1.2f
         )
-        y += 6f
+        y += 4f
         drawCenterOrnament(canvas, y, spec.accent.toArgb())
-        y += 44f
-
+        y += 36f
         val meta = "${poem.collection.poet.faName} — ${poem.collection.faName}"
         y = drawText(
-            canvas, meta, 30f, vazir, spec.onBackgroundMuted.toArgb(),
+            canvas, meta, 28f, vazir, spec.onBackgroundMuted.toArgb(),
             textWidth, PAD, y, Layout.Alignment.ALIGN_CENTER, 1.0f
         )
-        y += 40f
+        val contentTop = y + 26f
 
-        // --- متن کاملِ تعبیر (+ زاویهٔ موضوعی) را اندازه بگیریم ---
+        // ── تعبیر کامل (+ زاویهٔ موضوعی) ──
         val tafsirText = poem.tafsir + if (category != FalCategory.NONE) {
             val angle = CategoryAngles.text(category)
             if (angle != null) "\n\n$angle" else ""
         } else ""
 
-        val footerReserve = if (channel != null && channel.isSet) 400f else 135f
+        // ── پاورقی: کارتِ حامی یا برند ──
+        val ch = channel
+        val withChannel = ch != null && ch.isSet
+        val footerBlock = if (withChannel) 360f else 130f
+        val footerTop = H - footerBlock
 
-        var tafsirSize = 30f
-        var tafsirH = measureText(tafsirText, tafsirSize, vazir, textWidth, 1.5f)
-        val maxTafsirH = H * 0.42f
-        if (tafsirH > maxTafsirH) {
-            tafsirSize = 25f
-            tafsirH = measureText(tafsirText, tafsirSize, vazir, textWidth, 1.5f)
+        // ── بودجهٔ فضای میانی ──
+        val middle = (footerTop - contentTop).coerceAtLeast(200f)
+        val gapTop = 16f
+        val gapAfterVerse = 22f
+        val dividerH = 46f
+        val labelH = 46f
+        val gapAfterLabel = 12f
+        val gapBottom = 20f
+
+        // بهترین ترکیب: بزرگ‌ترین فونتِ تعبیر که جا شود (و بعد، بیت‌های بیشتر)
+        var selMaxBeits = 2
+        var selVerseSize = 32f
+        var selTafsirSize = 20f
+        var bestTafsir = -1f
+        val tafsirSizes = floatArrayOf(30f, 27f, 24f, 22f, 20f)
+        for (maxBeits in intArrayOf(3, 2)) {
+            for (verseSize in floatArrayOf(42f, 36f, 32f)) {
+                val chosen = poem.verses.take(maxBeits)
+                val lines = mutableListOf<String>()
+                chosen.forEach { b ->
+                    lines += b.first
+                    b.second?.let { lines += it }
+                }
+                if (poem.verses.size > chosen.size) lines += "…"
+                val verseText = lines.joinToString("\n")
+                val verseH = measureText(verseText, verseSize, nastaliq, textWidth, 1.5f)
+                val fixed = gapTop + verseH + gapAfterVerse + dividerH + labelH + gapAfterLabel + gapBottom
+                val tafsirBudget = middle - fixed
+                if (tafsirBudget < 90f) continue
+                for (ts in tafsirSizes) {
+                    val tafsirH = measureText(tafsirText, ts, vazir, textWidth, 1.5f)
+                    if (tafsirH <= tafsirBudget) {
+                        if (ts > bestTafsir || (ts == bestTafsir && maxBeits > selMaxBeits)) {
+                            bestTafsir = ts
+                            selMaxBeits = maxBeits
+                            selVerseSize = verseSize
+                            selTafsirSize = ts
+                        }
+                    }
+                }
+            }
         }
 
-        // --- چند بیت از شعر، به‌اندازه‌ای که در فضای باقی‌مانده جا شود ---
-        val dividerSpace = 56f
-        val tafsirLabelH = 58f
-        val headerBottom = y + 34f
-        val availableForBeits =
-            H - headerBottom - footerReserve - dividerSpace - tafsirLabelH - tafsirH - 80f
-
-        val verseSize = 42f
-        val beitHeight = 2f * verseSize * 1.5f + 16f
-        val maxBeits = (availableForBeits / beitHeight).toInt().coerceIn(2, 5)
-
-        val chosen = poem.verses.take(maxBeits)
-        val lines = mutableListOf<String>()
-        chosen.forEach { b ->
-            lines += b.first
-            b.second?.let { lines += it }
+        // ── رسمِ بیت‌ها ──
+        val chosenBeits = poem.verses.take(selMaxBeits)
+        val verseLines = mutableListOf<String>()
+        chosenBeits.forEach { b ->
+            verseLines += b.first
+            b.second?.let { verseLines += it }
         }
-        if (poem.verses.size > chosen.size) lines += "…"
-        val verseText = lines.joinToString("\n")
-        val verseH = measureText(verseText, verseSize, nastaliq, textWidth, 1.5f)
+        if (poem.verses.size > chosenBeits.size) verseLines += "…"
+        val verseText = verseLines.joinToString("\n")
 
-        y = headerBottom + ((availableForBeits - verseH) / 2f).coerceAtLeast(0f)
-        y = drawText(
-            canvas, verseText, verseSize, nastaliq, spec.onBackground.toArgb(),
-            textWidth, PAD, y, Layout.Alignment.ALIGN_NORMAL, 1.5f
+        var cy = contentTop + gapTop
+        cy = drawText(
+            canvas, verseText, selVerseSize, nastaliq, spec.onBackground.toArgb(),
+            textWidth, PAD, cy, Layout.Alignment.ALIGN_NORMAL, 1.5f
         )
-        y += 30f
+        cy += gapAfterVerse
 
-        drawDividerOrnament(canvas, y, spec.accent.toArgb())
-        y += 40f
+        drawDividerOrnament(canvas, cy, spec.accent.toArgb())
+        cy += dividerH
 
-        y = drawText(
-            canvas, "تعبیر", 40f, vazirBold, spec.accent.toArgb(),
-            textWidth, PAD, y, Layout.Alignment.ALIGN_NORMAL, 1.0f
+        cy = drawText(
+            canvas, "تعبیر", 34f, vazirBold, spec.accent.toArgb(),
+            textWidth, PAD, cy, Layout.Alignment.ALIGN_NORMAL, 1.0f
         )
-        y += 14f
+        cy += gapAfterLabel
 
+        // تعبیرِ کامل — همیشه بالای پاورقی
         drawText(
-            canvas, tafsirText, tafsirSize, vazir, spec.onBackground.toArgb(),
-            textWidth, PAD, y, Layout.Alignment.ALIGN_NORMAL, 1.5f
+            canvas, tafsirText, selTafsirSize, vazir, spec.onBackground.toArgb(),
+            textWidth, PAD, cy, Layout.Alignment.ALIGN_NORMAL, 1.5f
         )
 
-        val footerY = if (channel != null && channel.isSet) H - 370f else H - 190f
+        // ── پاورقی ──
+        val footerY = footerTop
         drawDividerOrnament(canvas, footerY - 30f, spec.accent.copy(alpha = 0.6f).toArgb())
 
-        if (channel != null && channel.isSet) {
-            val network = SocialNetwork.byKey(channel.network)
-            drawChannelFooter(canvas, context, channel, network, footerY, spec, gold = supporterBadge)
+        if (withChannel) {
+            val network = SocialNetwork.byKey(ch!!.network)
+            drawChannelFooter(canvas, context, ch, network, footerY, spec, gold = supporterBadge)
         } else {
             drawText(
-                canvas, "فال حافظ | تعبیر هوشمند", 30f, vazir, spec.onBackgroundMuted.toArgb(),
+                canvas, "فال حافظ | تعبیر هوشمند", 28f, vazir, spec.onBackgroundMuted.toArgb(),
                 textWidth, PAD, footerY, Layout.Alignment.ALIGN_CENTER, 1.0f
             )
         }
