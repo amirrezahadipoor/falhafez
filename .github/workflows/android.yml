@@ -70,3 +70,28 @@ jobs:
           name: falhafez-universal-release
           path: dist/FalHafez-universal-release.apk
           retention-days: 30
+
+      # ─────────────────────────────────────────────────────────────
+      # نسخهٔ آزمایشیِ سازنده: تمام قابلیت‌های پرمیوم باز (بدون تبلیغ،
+      # فال نامحدود، قالب طلایی، کارتِ حامی) — فقط برای تست، نه انتشار.
+      # ─────────────────────────────────────────────────────────────
+      - name: Build premium-unlocked release APK (test-only)
+        env:
+          KEYSTORE_PATH: release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          PREMIUM_UNLOCKED: "true"
+        run: ./gradlew clean assembleRelease --no-daemon --no-build-cache --stacktrace
+
+      - name: Rename premium artifact
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/release/app-release.apk dist/FalHafez-premium-universal-release.apk
+
+      - name: Upload premium-unlocked release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: falhafez-premium-universal-release
+          path: dist/FalHafez-premium-universal-release.apk
+          retention-days: 30

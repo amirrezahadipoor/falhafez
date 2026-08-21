@@ -1,5 +1,6 @@
 package ir.siliksama.falhafez.data.repository
 
+import ir.siliksama.falhafez.BuildConfig
 import ir.siliksama.falhafez.core.util.SupportStore
 import ir.siliksama.falhafez.domain.model.SupportTier
 import ir.siliksama.falhafez.domain.repository.SettingsRepository
@@ -13,7 +14,10 @@ class SupportRepositoryImpl @Inject constructor(
 ) : SupportRepository {
 
     override val tier: Flow<SupportTier> =
-        settingsRepository.supportTier.map { SupportTier.fromKey(it) }
+        settingsRepository.supportTier.map {
+            // بیلدِ آزمایشیِ سازنده: همهٔ قابلیت‌های پرمیوم باز است (سطح طلایی).
+            if (BuildConfig.PREMIUM_UNLOCKED) SupportTier.GOLD else SupportTier.fromKey(it)
+        }
 
     override suspend fun setTier(tier: SupportTier) {
         settingsRepository.setSupportTier(tier.key)

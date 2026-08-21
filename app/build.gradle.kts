@@ -18,6 +18,11 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
+        // ساختِ آزمایشی با تمام قابلیت‌های پرمیوم (فقط برای تستِ سازنده):
+        // در CI با PREMIUM_UNLOCKED=true بیلد می‌شود؛ نسخهٔ عادی همیشه false است.
+        val premiumUnlocked = (System.getenv("PREMIUM_UNLOCKED") ?: "false").equals("true", ignoreCase = true)
+        buildConfigField("boolean", "PREMIUM_UNLOCKED", premiumUnlocked.toString())
+
         // کلید اپلیکیشن تپسل — توسط SDK از مانیفست خوانده می‌شود (auto-init).
         addManifestPlaceholders(mapOf("TapsellMediationAppKey" to "tcgrrdhdhqmccrmqjeobdfsppktsqfhdqpijdkrfmkstiersqilbhfojrjblshbosqdkrb"))
     }

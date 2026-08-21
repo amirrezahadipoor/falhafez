@@ -91,5 +91,5 @@
 برای هر پرسش یا درخواست:
 
 - **ایمیل**: [siliksama@gmail.com](mailto:siliksama@gmail.com)
-- **تلگرام / واتس‌اپ**: [۰۹۲۱ ۲۳۱ ۱۲۵۱](tel:+989212311251) (هر دو روی همین شماره)
+- **تلگرام / واتس‌اپ**: [۰۹۲۱۲۳۱۱۲۵۱](tel:+989212311251) (هر دو روی همین شماره)
 - **گیت‌هاب پروژه**: [github.com/amirrezahadipoor/falhafez](https://github.com/amirrezahadipoor/falhafez)

@@ -90,7 +90,7 @@ private fun formatPrice(toman: Int): String =
     PersianText.digits(toman.toString().reversed().chunked(3).joinToString(",").reversed())
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit = {}) {
     val viewModel: SettingsViewModel = hiltViewModel()
     val themeId by viewModel.themeId.collectAsStateWithLifecycle()
     val fontSizeScale by viewModel.fontSizeScale.collectAsStateWithLifecycle()
@@ -330,7 +330,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                             Text("ارتباط با ما", style = FalText.heading, color = spec.accentSoft)
                             Spacer(Modifier.height(4.dp))
                             Text("ایمیل: siliksama@gmail.com", style = FalText.caption, color = spec.onBackgroundMuted)
-                            Text("تلگرام و واتس‌اپ: ۰۹۲۱ ۲۳۱ ۱۲۵۱", style = FalText.caption, color = spec.onBackgroundMuted)
+                            Text("تلگرام و واتس‌اپ: ۰۹۲۱۲۳۱۱۲۵۱", style = FalText.caption, color = spec.onBackgroundMuted)
                             Spacer(Modifier.height(10.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 ContactButton(
@@ -369,21 +369,12 @@ fun SettingsScreen(onBack: () -> Unit) {
                             Text("حریم خصوصی", style = FalText.heading, color = spec.accentSoft)
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                "این اپ دادهٔ شخصی جمع نمی‌کند؛ متن کاملِ سیاستِ حفظ حریم خصوصی را بخوانید.",
+                                "این اپ دادهٔ شخصی جمع نمی‌کند؛ متن کاملِ سیاستِ حفظ حریم خصوصی را همین‌جا بخوانید.",
                                 style = FalText.caption, color = spec.onBackgroundMuted
                             )
                             Spacer(Modifier.height(8.dp))
                             TextButton(
-                                onClick = {
-                                    runCatching {
-                                        context.startActivity(
-                                            Intent(
-                                                Intent.ACTION_VIEW,
-                                                Uri.parse("https://amirrezahadipoor.github.io/falhafez/privacy.html")
-                                            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        )
-                                    }
-                                },
+                                onClick = onOpenPrivacy,
                                 modifier = Modifier.background(spec.card, RoundedCornerShape(12.dp))
                             ) { Text("مشاهدهٔ سیاستِ حریم خصوصی", style = FalText.button, color = spec.accent) }
                         }

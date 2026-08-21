@@ -93,10 +93,10 @@ object ShareImageRenderer {
             if (angle != null) "\n\n$angle" else ""
         } else ""
 
-        // ── پاورقی: کارتِ حامی یا برند ──
+        // ── پاورقی: کارتِ حامی یا برند (هر دو تا پایین‌ترین خطِ قاب) ──
         val ch = channel
         val withChannel = ch != null && ch.isSet
-        val footerBlock = if (withChannel) 360f else 130f
+        val footerBlock = if (withChannel) 360f else 160f
         val footerTop = H - footerBlock
 
         // ── بودجهٔ فضای میانی (بین سربرگ و پاورقی) ──
@@ -204,16 +204,21 @@ object ShareImageRenderer {
         )
 
         // ── پاورقی ──
-        val footerY = footerTop
-        drawDividerOrnament(canvas, footerY - 30f, spec.accent.copy(alpha = 0.6f).toArgb(), softGold)
-
         if (withChannel) {
+            // کارتِ حامی/کانال — تا پایین‌ترین خطِ قاب کشیده می‌شود.
+            val footerY = H - 356f
+            drawDividerOrnament(canvas, footerY - 30f, spec.accent.copy(alpha = 0.6f).toArgb(), softGold)
             val network = SocialNetwork.byKey(ch!!.network)
             drawChannelFooter(canvas, context, ch, network, footerY, spec, gold = supporterBadge)
         } else {
+            // تبلیغِ اپلیکیشن — دقیقاً روی پایین‌ترین خطِ قاب (تهِ فریم).
+            val brand = "فال حافظ | تعبیر هوشمند"
+            val brandH = measureText(brand, 28f, vazir, textWidth, 1.0f)
+            val brandY = H - 66f - brandH
+            drawDividerOrnament(canvas, brandY - 30f, spec.accent.copy(alpha = 0.6f).toArgb(), softGold)
             drawText(
-                canvas, "فال حافظ | تعبیر هوشمند", 28f, vazir, muted,
-                textWidth, PAD, footerY, Layout.Alignment.ALIGN_CENTER, 1.0f
+                canvas, brand, 28f, vazir, muted,
+                textWidth, PAD, brandY, Layout.Alignment.ALIGN_CENTER, 1.0f
             )
         }
 

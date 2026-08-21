@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import ir.siliksama.falhafez.presentation.main.MainScreen
 import ir.siliksama.falhafez.presentation.onboarding.OnboardingScreen
+import ir.siliksama.falhafez.presentation.privacy.PrivacyScreen
 import ir.siliksama.falhafez.presentation.settings.SettingsScreen
 import ir.siliksama.falhafez.presentation.splash.SplashScreen
 
@@ -43,7 +44,14 @@ fun FalNavHost(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Route.Settings.route) {
-            SettingsScreen(onBack = { navController.popBackStack() })
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenPrivacy = { navController.navigate(Route.Privacy.route) }
+            )
+        }
+
+        composable(Route.Privacy.route) {
+            PrivacyScreen(onBack = { navController.popBackStack() })
         }
     }
 }

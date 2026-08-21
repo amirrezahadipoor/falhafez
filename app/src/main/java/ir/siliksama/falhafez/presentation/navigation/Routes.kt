@@ -5,4 +5,5 @@ sealed class Route(val route: String) {
     data object Onboarding : Route("onboarding")
     data object Main : Route("main")
     data object Settings : Route("settings")
+    data object Privacy : Route("privacy")
 }
