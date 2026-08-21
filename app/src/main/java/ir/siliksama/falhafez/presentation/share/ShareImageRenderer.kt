@@ -83,8 +83,7 @@ object ShareImageRenderer {
             if (angle != null) "\n\n$angle" else ""
         } else ""
 
-        val footerReserve = if (channel != null && channel.isSet) 205f else 135f
-        val supporterReserve = if (supporterBadge) 72f else 0f
+        val footerReserve = if (channel != null && channel.isSet) 400f else 135f
 
         var tafsirSize = 30f
         var tafsirH = measureText(tafsirText, tafsirSize, vazir, textWidth, 1.5f)
@@ -99,7 +98,7 @@ object ShareImageRenderer {
         val tafsirLabelH = 58f
         val headerBottom = y + 34f
         val availableForBeits =
-            H - headerBottom - footerReserve - supporterReserve - dividerSpace - tafsirLabelH - tafsirH - 80f
+            H - headerBottom - footerReserve - dividerSpace - tafsirLabelH - tafsirH - 80f
 
         val verseSize = 42f
         val beitHeight = 2f * verseSize * 1.5f + 16f
@@ -136,12 +135,12 @@ object ShareImageRenderer {
             textWidth, PAD, y, Layout.Alignment.ALIGN_NORMAL, 1.5f
         )
 
-        val footerY = H - 190f
+        val footerY = if (channel != null && channel.isSet) H - 370f else H - 190f
         drawDividerOrnament(canvas, footerY - 30f, spec.accent.copy(alpha = 0.6f).toArgb())
 
         if (channel != null && channel.isSet) {
             val network = SocialNetwork.byKey(channel.network)
-            drawChannelFooter(canvas, context, channel, network, footerY, spec)
+            drawChannelFooter(canvas, context, channel, network, footerY, spec, gold = supporterBadge)
         } else {
             drawText(
                 canvas, "فال حافظ | تعبیر هوشمند", 30f, vazir, spec.onBackgroundMuted.toArgb(),
@@ -149,50 +148,86 @@ object ShareImageRenderer {
             )
         }
 
-        if (supporterBadge) {
-            drawText(
-                canvas, "پشتیبانِ همیشگی ♥", 26f, vazirBold, spec.accent.toArgb(),
-                textWidth, PAD, H - 96f, Layout.Alignment.ALIGN_CENTER, 1.0f
-            )
-        }
-
         return bitmap
     }
 
-    /** کانالِ کاربر — آیکون + نام + شناسه، تا فالِ اشتراکی تبلیغِ کانال باشد. */
+    /**
+     * کارتِ حامی — برجسته در پایینِ فالِ اشتراکی:
+     * قاب طلایی + آیکونِ شبکه + «با حمایتِ مالیِ» + نام + @شناسه + دعوت به دنبال‌کردن.
+     */
     private fun drawChannelFooter(
         canvas: Canvas,
         context: Context,
         channel: ChannelInfo,
         network: SocialNetwork,
         y: Float,
-        spec: FalThemeSpec
+        spec: FalThemeSpec,
+        gold: Boolean
     ) {
         val icon = runCatching {
             BitmapFactory.decodeResource(context.resources, network.iconRes)
         }.getOrNull() ?: return
 
-        val size = 84f
-        val cx = W / 2f - size / 2f - 130f
-        val dst = Rect(cx.toInt(), y.toInt(), (cx + size).toInt(), (y + size).toInt())
-        canvas.drawBitmap(icon, null, dst, Paint(Paint.ANTI_ALIAS_FLAG).apply { isFilterBitmap = true })
+        val cardH = 330f
+        val left = 70f
+        val right = W - 70f
+        val textWidth = (right - left - 40f).toInt()
 
         val vazir = ResourcesCompat.getFont(context, R.font.vazirmatn_regular) ?: Typeface.DEFAULT
         val vazirBold = ResourcesCompat.getFont(context, R.font.vazirmatn_bold) ?: Typeface.DEFAULT_BOLD
-        val textWidth = (W - 2 * PAD).toInt()
-        val label = if (channel.name.isNotBlank()) channel.name else network.label
-        drawText(
-            canvas, label, 32f, vazirBold, spec.onBackground.toArgb(),
-            (W / 2 - 20).toInt(), W / 2f + 20f, y, Layout.Alignment.ALIGN_NORMAL, 1.0f
+
+        // پس‌زمینهٔ کارت + قاب طلایی
+        val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = spec.card.copy(alpha = 0.85f).toArgb()
+        }
+        canvas.drawRoundRect(left, y, right, y + cardH, 28f, 28f, bgPaint)
+        val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = spec.accent.copy(alpha = 0.9f).toArgb()
+            style = Paint.Style.STROKE
+            strokeWidth = 3f
+        }
+        canvas.drawRoundRect(left, y, right, y + cardH, 28f, 28f, borderPaint)
+
+        val centerX = (W - textWidth) / 2f
+
+        // برچسب بالا
+        var yy = y + 22f
+        val badge = if (gold) "پشتیبانِ همیشگی ♥" else "با حمایتِ مالیِ"
+        yy = drawText(
+            canvas, badge, 28f, vazirBold, spec.accent.toArgb(),
+            textWidth, centerX, yy, Layout.Alignment.ALIGN_CENTER, 1.0f
         )
+
+        // آیکون شبکه (وسط)
+        val size = 92f
+        val iconLeft = (W - size) / 2f
+        val iconTop = yy + 10f
+        canvas.drawBitmap(
+            icon, null,
+            Rect(iconLeft.toInt(), iconTop.toInt(), (iconLeft + size).toInt(), (iconTop + size).toInt()),
+            Paint(Paint.ANTI_ALIAS_FLAG).apply { isFilterBitmap = true }
+        )
+        yy = iconTop + size + 12f
+
+        // نام
+        val name = if (channel.name.isNotBlank()) channel.name else network.label
+        yy = drawText(
+            canvas, name, 40f, vazirBold, spec.accentSoft.toArgb(),
+            textWidth, centerX, yy, Layout.Alignment.ALIGN_CENTER, 1.0f
+        )
+
+        // شناسه
+        yy = drawText(
+            canvas, "@${channel.handle.trim().trimStart('@')}", 30f, vazir,
+            spec.onBackground.toArgb(),
+            textWidth, centerX, yy + 8f, Layout.Alignment.ALIGN_CENTER, 1.0f
+        )
+
+        // دعوت
         drawText(
-            canvas, "@${channel.handle.trim().trimStart('@')}", 26f, vazir,
+            canvas, "برای فالِ روزانه، ما را دنبال کنید", 26f, vazir,
             spec.onBackgroundMuted.toArgb(),
-            (W / 2 - 20).toInt(), W / 2f + 20f, y + 52f, Layout.Alignment.ALIGN_NORMAL, 1.0f
-        )
-        drawText(
-            canvas, "برای فالِ روزانه، ما را دنبال کنید", 24f, vazir, spec.onBackgroundMuted.toArgb(),
-            textWidth, PAD, y + 96f, Layout.Alignment.ALIGN_CENTER, 1.0f
+            textWidth, centerX, yy + 8f, Layout.Alignment.ALIGN_CENTER, 1.0f
         )
     }
 

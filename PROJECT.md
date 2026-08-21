@@ -21,6 +21,18 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 15 — Polish + release | ✅ | Fal-source selector (حافظ/سعدی/مولانا/خیام/همه) with live poem counts; font size + font COLOR presets; complete Rumi rubaiyat (1,994) + Saadi minor collections — **8,368 poems**; generated release keystore + random secrets; CI signs release when secrets present |
 | 16 — Branding + Bazaar | ✅ | App name «فال حافظ | تعبیر هوشمند»; unique package `ir.siliksama.falhafez`; Tapsell registration guide + ready-to-copy info sheet |
 
+| 17 — Support + channel + Tapsell | ✅ | 3 financial-support tiers (100/300/490k Toman) → permanent ad removal + perks; user social-channel (icon + link + promo-image generator) promoted on every shared fal; "other apps by developer" banners in Settings; **AdMob fully removed**, Tapsell prepared |
+| 18 — Size + universal | ✅ | corpus gzipped, Vazirmatn subset, theme JPEGs recompressed, WAVs downsampled; **universal release APK only**; flat Bazaar icon (34KB) |
+| 19 — Tapsell live + signing | ✅ | **Tapsell Mediation SDK 1.3.0** (real key + 4 placements, auto-init); **release APK signed with the real keystore** via GitHub Secrets |
+| 20 — Zones + update check | ✅ | All 5 Tapsell zone IDs wired; in-app Cafe Bazaar update check (manual + once-a-day auto) |
+| 21 — Poolakey + support heart | ✅ | Poolakey 2.0.0 (Bazaar IAP), SKUs fal_support_base/plus/gold; beating-heart «حمایت مالی» on Home; version 1.0.0 |
+| 22 — Polish + fixes | ✅ | rotating settings gear; share image shows beits + full tafsir; compact settings tabs; golden fading scrollbar; ad-removal bug fixed; corpus validated |
+| 23 — Freemium draws | ✅ | **2 free draws/day**; beyond that each draw = rewarded video; **subscribers unlimited** |
+| 24 — Bug pass + ads schedule | ✅ | rewarded-ad failure toast, midnight quota refresh, Locale.US formatting, guarded hydration; docs: ad schedule + gap analysis |
+| 25 — Value pass | ✅ | **3-page onboarding**; **Masnavi beit meanings restored**; **unit tests** (Jalali + PersianText) in CI |
+| 26 — Full content + free themes | ✅ | **All 13 themes free**; **complete beit meanings for whole corpus (99%)**; **Hafez tafsirs longer + motif-grounded** |
+| 27 — Supporter share card | ✅ | Tier perks rewritten; **supporter name+channel shown on share template only for PLUS/GOLD** (gold-framed card); GOLD badge; instant-draw GOLD-only |
+
 ## Corpus (complete, offline) — 8,368 poems
 > Hafez 495 · Khayyam 178 · Saadi 1,355 (غزلیات 637 + گلستان 291 + بوستان 230 + رباعیات 146 + قطعات 20 + ملحقات 31) · Rumi 6,240 (مثنوی 972 + شمس 3,274 + رباعیات 1,994) · + 100 داستان آموزنده
 > Saadi: غزلیات (637) + گلستان (291) + بوستان (230) · Rumi: مثنوی (972) + دیوان شمس (3,274) · Hafez 495 · Khayyam 178 · + 100 داستان آموزنده

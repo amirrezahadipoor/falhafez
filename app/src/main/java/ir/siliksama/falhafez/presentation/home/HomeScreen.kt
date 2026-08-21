@@ -99,7 +99,7 @@ fun HomeScreen(
                     onRewardedDraw = if (activity != null) { { viewModel.requestExtraDraw(activity) } } else null,
                     onSourceSelect = viewModel::onSourceSelect,
                     onDailyFal = viewModel::openDailyFal,
-                    channel = channel,
+                    channel = if (supportTier.showsChannel) channel else null,
                     adsRemoved = adsRemoved,
                     onOpenSupport = viewModel::openSupport,
                     onOpenSettings = onOpenSettings
@@ -124,7 +124,7 @@ fun HomeScreen(
                     onRewardedDraw = null,
                     onSourceSelect = viewModel::onSourceSelect,
                     onDailyFal = viewModel::openDailyFal,
-                    channel = channel,
+                    channel = if (supportTier.showsChannel) channel else null,
                     adsRemoved = adsRemoved,
                     onOpenSupport = viewModel::openSupport,
                     onOpenSettings = onOpenSettings
@@ -154,7 +154,7 @@ fun HomeScreen(
                     onRewardedDraw = null,
                     onSourceSelect = viewModel::onSourceSelect,
                     onDailyFal = viewModel::openDailyFal,
-                    channel = channel,
+                    channel = if (supportTier.showsChannel) channel else null,
                     adsRemoved = adsRemoved,
                     onOpenSupport = viewModel::openSupport,
                     onOpenSettings = onOpenSettings

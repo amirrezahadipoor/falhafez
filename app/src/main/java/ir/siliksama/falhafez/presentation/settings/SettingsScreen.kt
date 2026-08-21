@@ -430,7 +430,7 @@ private fun ChannelTab(
             Text("کانال یا صفحهٔ اجتماعیِ شما", style = FalText.heading, color = FalPalette.GoldBright)
             Spacer(Modifier.height(6.dp))
             Text(
-                "از این پس، تصویرِ فالِ اشتراکی، کانالِ شما را هم معرفی می‌کند — تبلیغِ رایگان در هر فال.",
+                "با «حمایتِ ویژه» یا «حمایتِ همیشگی»، نام و کانالِ شما روی فالِ اشتراکی نقش می‌بندد — تبلیغِ شما در هر فال.",
                 style = FalText.bodyMuted, color = FalPalette.CreamMuted
             )
         }

@@ -22,10 +22,13 @@ object ShareManager {
 
     /** Renders the fal image (off the main thread) into a cache file. */
     fun renderFile(context: Context, poem: Poem, category: FalCategory, spec: FalThemeSpec): File {
+        val tier = SupportStore.tier
+        // نام و کانال فقط برای حمایتِ ویژه/همیشگی روی فالِ اشتراکی نقش می‌بندد.
+        val channel = if (tier.showsChannel) ChannelStore.info else null
         val bitmap = ShareImageRenderer.render(
             context.applicationContext, poem, category, spec,
-            channel = ChannelStore.info,
-            supporterBadge = SupportStore.tier == SupportTier.GOLD
+            channel = channel,
+            supporterBadge = tier == SupportTier.GOLD
         )
         val dir = File(context.cacheDir, "share").apply { mkdirs() }
         val file = File(dir, "fal_${System.currentTimeMillis()}.png")
