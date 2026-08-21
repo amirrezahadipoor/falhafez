@@ -61,6 +61,9 @@ interface PoemDao {
     @Query("SELECT COUNT(*) FROM poems WHERE poet = :poet AND collection != 'stories'")
     suspend fun countForPoet(poet: String): Int
 
+    @Query("SELECT COUNT(*) FROM poems WHERE collection = :collection")
+    suspend fun countByCollection(collection: String): Int
+
     @Query("SELECT COUNT(*) FROM poems")
     suspend fun count(): Int
 

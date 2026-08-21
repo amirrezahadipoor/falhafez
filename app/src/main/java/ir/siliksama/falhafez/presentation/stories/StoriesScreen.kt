@@ -78,7 +78,7 @@ fun StoriesScreen() {
             .background(Brush.verticalGradient(listOf(spec.backgroundTop, spec.backgroundBottom)))
     ) {
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader(title = "داستان‌های آموزنده", titleColor = spec.onBackground)
+            ScreenHeader(title = "عرفان روز", titleColor = spec.onBackground)
             if (stories.isEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -87,7 +87,7 @@ fun StoriesScreen() {
                 ) {
                     EmptyState(
                         icon = Icons.Outlined.AutoStories,
-                        title = "در حال آماده‌سازی داستان‌ها…",
+                        title = "در حال آماده‌سازی مطالب…",
                         subtitle = "لحظه‌ای صبر کنید",
                         color = spec.onBackgroundMuted
                     )
@@ -126,7 +126,7 @@ private fun StoryTile(story: Poem, spec: FalThemeSpec, isRead: Boolean, onClick:
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "داستانِ ${PersianText.number(story.number)}",
+                text = "مطلبِ ${PersianText.number(story.number)}",
                 style = FalText.heading,
                 color = spec.accentSoft,
                 modifier = Modifier.weight(1f)
@@ -165,7 +165,7 @@ private fun StoryDetail(
     RitualBackground(spec = spec, showParticles = false) {
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp)) {
             ScreenHeader(
-                title = "داستانِ ${PersianText.number(story.number)}",
+                title = "مطلبِ ${PersianText.number(story.number)}",
                 onBack = onBack,
                 titleColor = spec.onBackground
             )
@@ -189,7 +189,7 @@ private fun StoryDetail(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("درسِ این حکایت", style = FalText.caption, color = spec.accentSoft)
+                            Text("چکیدهٔ کلیدی", style = FalText.caption, color = spec.accentSoft)
                             Spacer(Modifier.height(8.dp))
                             morals.forEach { m ->
                                 Text(m.first, style = FalText.verse, color = readingColor(spec.onBackground))
@@ -221,9 +221,9 @@ private fun StoryDetail(
                     )
                 }
                 IconButton(onClick = {
-                    Clipboard.copy(context, "داستان", "$prose\n\n${morals.joinToString("\n") { it.fullText }}")
+                    Clipboard.copy(context, "مطلب", "$prose\n\n${morals.joinToString("\n") { it.fullText }}")
                 }) {
-                    Icon(Icons.Outlined.ContentCopy, contentDescription = "کپی داستان", tint = spec.onBackgroundMuted)
+                    Icon(Icons.Outlined.ContentCopy, contentDescription = "کپی مطلب", tint = spec.onBackgroundMuted)
                 }
             }
             GhostButton(text = "بازگشت", onClick = onBack, textColor = spec.onBackgroundMuted, modifier = Modifier.fillMaxWidth())

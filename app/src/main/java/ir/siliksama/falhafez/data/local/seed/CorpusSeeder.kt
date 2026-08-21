@@ -35,30 +35,42 @@ class CorpusSeeder @Inject constructor(
     )
 
     suspend fun seedIfNeeded() = mutex.withLock {
-        if (poemDao.count() > 0) return@withLock
-
-        var total = 0
-        var any = false
-        for (file in corpusFiles) {
-            val batch = runCatching {
-                val text = java.util.zip.GZIPInputStream(context.assets.open(file))
-                    .bufferedReader(Charsets.UTF_8).use { it.readText() }
-                json.decodeFromString<List<SeedPoem>>(text)
-            }.getOrDefault(emptyList())
-
-            if (batch.isEmpty()) continue
-            any = true
-            total += batch.size
-            // Insert file-by-file (each in its own transaction) so Hafez commits first.
-            // حفاظِ کراش: اگر یک فایل خراب باشد، همان فایل رد می‌شود و بقیه seed می‌شوند.
-            runCatching {
-                poemDao.insertPoems(batch.map { it.toEntity() })
-                poemDao.insertVerses(batch.flatMap { it.toVerses() })
-                poemDao.insertFts(batch.map { it.toFts() })
-            }.onFailure { Log.e("FalHafez", "Seeding failed for $file", it) }
+        // نصبِ تازه: همهٔ فایل‌ها.
+        if (poemDao.count() == 0) {
+            var total = 0
+            for (file in corpusFiles) {
+                total += seedFile(file)
+            }
+            Log.i("FalHafez", "Corpus seeded: $total poems")
+            return@withLock
         }
 
-        if (!any) Log.w("FalHafez", "Corpus seeding: no poems loaded from assets")
-        else Log.i("FalHafez", "Corpus seeded: $total poems")
+        // به‌روزرسانی: اگر بخشِ «عرفان روز» (collection='stories') خالی است،
+        // فقط همان را seed کن — تا نسخهٔ جدیدِ مطالب جایگزینِ داستان‌های قدیمی شود.
+        if (poemDao.countByCollection("stories") == 0) {
+            val n = seedFile("corpus/stories.dat")
+            if (n > 0) Log.i("FalHafez", "Mysticism section reseeded: $n items")
+        }
+    }
+
+    /** یک فایلِ کورپوس را می‌خواند و درج می‌کند؛ تعدادِ شعرهای seed شده را برمی‌گرداند. */
+    private suspend fun seedFile(file: String): Int {
+        val batch = runCatching {
+            val text = java.util.zip.GZIPInputStream(context.assets.open(file))
+                .bufferedReader(Charsets.UTF_8).use { it.readText() }
+            json.decodeFromString<List<SeedPoem>>(text)
+        }.getOrDefault(emptyList())
+
+        if (batch.isEmpty()) {
+            Log.w("FalHafez", "Seeding: no poems loaded from $file")
+            return 0
+        }
+        // حفاظِ کراش: اگر یک فایل خراب باشد، همان فایل رد می‌شود و بقیه seed می‌شوند.
+        runCatching {
+            poemDao.insertPoems(batch.map { it.toEntity() })
+            poemDao.insertVerses(batch.flatMap { it.toVerses() })
+            poemDao.insertFts(batch.map { it.toFts() })
+        }.onFailure { Log.e("FalHafez", "Seeding failed for $file", it) }
+        return batch.size
     }
 }

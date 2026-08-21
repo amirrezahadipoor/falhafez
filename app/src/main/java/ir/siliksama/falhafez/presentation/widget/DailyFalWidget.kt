@@ -65,7 +65,7 @@ class DailyFalWidgetProvider : AppWidgetProvider() {
             if (ids.isEmpty()) return
 
             val db = Room.databaseBuilder(context, FalDatabase::class.java, "falhafez.db")
-                .addMigrations(FalDatabase.MIGRATION_1_2, FalDatabase.MIGRATION_2_3)
+                .addMigrations(FalDatabase.MIGRATION_1_2, FalDatabase.MIGRATION_2_3, FalDatabase.MIGRATION_3_4)
                 .fallbackToDestructiveMigration()
                 .build()
             try {

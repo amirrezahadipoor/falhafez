@@ -14,7 +14,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         FavoriteEntity::class,
         ReadEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class FalDatabase : RoomDatabase() {
@@ -39,6 +39,24 @@ abstract class FalDatabase : RoomDatabase() {
                         "poemId INTEGER NOT NULL PRIMARY KEY, " +
                         "createdAt INTEGER NOT NULL)"
                 )
+            }
+        }
+
+        /**
+         * v3 → v4: جایگزینیِ داستان‌های قدیمی با «عرفان روز».
+         * داستان‌های گلستان (collection='stories') حذف می‌شوند تا seed جدیدِ
+         * «عرفان روز» (۵۰ مطلب) در راه‌اندازیِ بعدی جایگزین شود؛ ارجاع‌های
+         * یتیم در تاریخچه/علاقه‌مندی‌ها/خوانده‌شده‌ها/جستجو هم پاک می‌شوند.
+         */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val ids = "SELECT id FROM poems WHERE collection = 'stories'"
+                db.execSQL("DELETE FROM verses WHERE poemId IN ($ids)")
+                db.execSQL("DELETE FROM poems_fts WHERE rowid IN ($ids)")
+                db.execSQL("DELETE FROM favorites WHERE poemId IN ($ids)")
+                db.execSQL("DELETE FROM draws WHERE poemId IN ($ids)")
+                db.execSQL("DELETE FROM read_poems WHERE poemId IN ($ids)")
+                db.execSQL("DELETE FROM poems WHERE collection = 'stories'")
             }
         }
     }

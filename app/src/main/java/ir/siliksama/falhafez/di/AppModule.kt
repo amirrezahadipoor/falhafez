@@ -36,7 +36,7 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): FalDatabase =
         Room.databaseBuilder(context, FalDatabase::class.java, "falhafez.db")
-            .addMigrations(FalDatabase.MIGRATION_1_2, FalDatabase.MIGRATION_2_3)
+            .addMigrations(FalDatabase.MIGRATION_1_2, FalDatabase.MIGRATION_2_3, FalDatabase.MIGRATION_3_4)
             // حفاظِ کراش: اگر روزی اسکیمای دیگری آمد، به‌جای کراش، جدول‌ها بازسازی می‌شوند
             // و کورپوسِ داخلِ APK دوباره seed می‌شود (تاریخچه/علاقه‌مندی‌ها از دست می‌رود ولی اپ می‌ماند).
             .fallbackToDestructiveMigration()

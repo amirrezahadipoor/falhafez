@@ -19,7 +19,7 @@ enum class Collection(val key: String, val faName: String, val poet: Poet) {
     SAADI_ROBAEE("saadi-robaee", "رباعیات", Poet.SAADI),
     SAADI_GHETE("saadi-ghete", "قطعات", Poet.SAADI),
     SAADI_MOLHAGHAT("saadi-molhaghat", "ملحقات", Poet.SAADI),
-    STORIES("stories", "داستان‌های آموزنده", Poet.SAADI),
+    STORIES("stories", "عرفان روز", Poet.SAADI),
     RUMI_MASNAVI("masnavi", "مثنوی معنوی", Poet.RUMI),
     RUMI_SHAMS("shams", "دیوان شمس", Poet.RUMI),
     RUMI_ROBAEE("robaee", "رباعیات", Poet.RUMI),
