@@ -38,7 +38,8 @@ class PoemRepositoryImpl @Inject constructor(
             poemDao.getCandidateIdsForPoet(poet.key, excludeIds)
         }
         val pool = if (candidates.isNotEmpty()) candidates else {
-            if (poet == null) poemDao.getAllPoemIds() else poemDao.getPoemIdsForPoet(poet.key)
+            // fallback امن: بدون هیچ حذفی، اما باز هم بدون داستان‌ها
+            if (poet == null) poemDao.getCandidateIds(emptyList()) else poemDao.getPoemIdsForPoet(poet.key)
         }
         val chosen = pool.randomOrNull() ?: return null
         return getPoem(chosen)

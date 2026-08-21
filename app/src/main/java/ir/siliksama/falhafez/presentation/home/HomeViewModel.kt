@@ -115,7 +115,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             recomputeRemaining()
             counts = Poet.entries.associateWith { poemRepository.countForPoet(it) }
-            _uiState.update { it.copy(sourceCount = counts[it.falSource] ?: 495) }
+            _uiState.update { it.copy(sourceCount = counts[it.falSource]?.takeIf { c -> c > 0 } ?: 495) }
         }
     }
 
@@ -250,6 +250,8 @@ class HomeViewModel @Inject constructor(
                 favoriteTargetId.value = null
                 true
             }
+            // در حین انیمیشنِ گشودن دیوان، بازگشت را می‌بلعیم تا اپ بسته نشود.
+            s.stage == DrawStage.DRAWING -> true
             else -> false
         }
     }

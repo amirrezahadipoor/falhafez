@@ -51,6 +51,7 @@ fun HomeScreen(
     // دکمه/حرکتِ بازگشتِ سیستم — گام‌به‌گام به حالتِ نیّت برمی‌گردد.
     BackHandler(
         enabled = state.supportOpen || state.dailyFal != null ||
+            state.stage == DrawStage.DRAWING ||
             state.stage == DrawStage.REVEAL || state.stage == DrawStage.INTERPRETATION
     ) {
         viewModel.onSystemBack()
