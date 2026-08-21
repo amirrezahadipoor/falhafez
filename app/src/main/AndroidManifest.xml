@@ -7,10 +7,10 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- حریم خصوصی: داده (نیّت، تاریخچه، علاقه‌مندی‌ها) هرگز به فضای ابریِ گوگل منتقل نمی‌شود؛
+         خروجی دستی از تنظیمات در دسترس است. -->
     <application
         android:name=".FalHafezApp"
-        <!-- حریم خصوصی: داده (نیّت، تاریخچه، علاقه‌مندی‌ها) هرگز به فضای ابریِ گوگل منتقل نمی‌شود؛
-             خروجی دستی از تنظیمات در دسترس است. -->
         android:allowBackup="false"
         android:largeHeap="true"
         android:icon="@mipmap/ic_launcher"
