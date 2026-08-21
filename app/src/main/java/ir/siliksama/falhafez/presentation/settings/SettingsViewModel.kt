@@ -81,6 +81,17 @@ class SettingsViewModel @Inject constructor(
     val updateResult: StateFlow<UpdateCheckResult?> = _updateResult.asStateFlow()
 
     // ---- theme / display / sound ----
+    private val _showSupport = MutableStateFlow(false)
+    val showSupport: StateFlow<Boolean> = _showSupport.asStateFlow()
+
+    fun openSupport() {
+        _showSupport.value = true
+    }
+
+    fun closeSupport() {
+        _showSupport.value = false
+    }
+
     fun setTheme(id: FalThemeId) {
         viewModelScope.launch { settingsRepository.setTheme(id) }
     }

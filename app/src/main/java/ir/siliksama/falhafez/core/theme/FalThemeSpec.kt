@@ -17,7 +17,8 @@ enum class FalThemeId(val id: String, val faName: String) {
     MOONLIGHT("moonlight", "مهتاب"),
     ROSE("rose", "گل و مرغ"),
     MORNING("morning", "صبحِ روشن"),
-    PARCHMENT("parchment", "کاغذِ کهنه");
+    PARCHMENT("parchment", "کاغذِ کهنه"),
+    GOLD("gold", "طلایِ حامیان");
 
     companion object {
         fun fromId(id: String?): FalThemeId = entries.firstOrNull { it.id == id } ?: TAZHIB
@@ -37,12 +38,13 @@ data class FalThemeSpec(
     val particleSecondary: Color,
     val border: Color,
     @DrawableRes val artworkRes: Int? = null,
-    val artworkAlpha: Float = 0.55f
+    val artworkAlpha: Float = 0.55f,
+    val subscriberOnly: Boolean = false
 ) {
     companion object {
         val All: List<FalThemeSpec> = listOf(
             tazhib(), candle(), garden(), minimal(), nowruz(), yalda(),
-            dawn(), sea(), desert(), moonlight(), rose(), morning(), parchment()
+            dawn(), sea(), desert(), moonlight(), rose(), morning(), parchment(), gold()
         )
 
         fun byId(id: FalThemeId): FalThemeSpec = All.first { it.id == id }
@@ -155,6 +157,17 @@ data class FalThemeSpec(
             onBackground = Color(0xFF1C2A38), onBackgroundMuted = Color(0xFF5A7286),
             card = Color(0xFFFFFFFF), particle = Color(0xFFA9D4F2), particleSecondary = Color(0xFF6FB2E6),
             border = Color(0xFFB6CFE2), artworkRes = R.drawable.theme_morning, artworkAlpha = 0.72f
+        )
+
+        /** طلایِ حامیان — قالبِ اختصاصیِ دارندگانِ اشتراک (ویژه/همیشگی). */
+        fun gold() = FalThemeSpec(
+            id = FalThemeId.GOLD,
+            backgroundTop = Color(0xFF0A0F1E), backgroundBottom = Color(0xFF1A1430),
+            accent = Color(0xFFF0C24B), accentSoft = Color(0xFFFFE9A8),
+            onBackground = Color(0xFFFBF3DD), onBackgroundMuted = Color(0xFFC9B98E),
+            card = Color(0xFF171228), particle = Color(0xFFFFD873), particleSecondary = Color(0xFFF0C24B),
+            border = Color(0xFF8A6D2F), artworkRes = R.drawable.theme_gold, artworkAlpha = 0.62f,
+            subscriberOnly = true
         )
 
         /** کاغذِ کهنه — aged manuscript paper (روشن). */

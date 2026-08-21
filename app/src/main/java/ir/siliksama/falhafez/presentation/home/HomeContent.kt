@@ -137,7 +137,7 @@ fun NiyyatContent(
                 Text(text = "فال حافظ", style = FalText.displaySmall, color = spec.accentSoft)
                 Text(text = "تعبیر هوشمند", style = FalText.caption, color = spec.onBackgroundMuted)
             }
-            SupportHeart(spec = spec, onClick = onOpenSupport)
+            SupportHeart(spec = spec, isSubscriber = adsRemoved, onClick = onOpenSupport)
             RotatingGear(spec = spec, onClick = onOpenSettings)
         }
         OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.6f))
@@ -541,7 +541,7 @@ private fun VerseView(verse: Verse, color: Color) {
 
 /** قلبِ تپندهٔ «حمایت مالی» — بالای صفحهٔ اصلی. */
 @Composable
-private fun SupportHeart(spec: FalThemeSpec, onClick: () -> Unit) {
+private fun SupportHeart(spec: FalThemeSpec, isSubscriber: Boolean, onClick: () -> Unit) {
     val transition = rememberInfiniteTransition(label = "heart")
     val scale by transition.animateFloat(
         initialValue = 1f,
@@ -564,11 +564,15 @@ private fun SupportHeart(spec: FalThemeSpec, onClick: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Filled.Favorite,
-            contentDescription = "حمایت مالی",
-            tint = androidx.compose.ui.graphics.Color(0xFFE05263),
+            contentDescription = if (isSubscriber) "پشتیبان" else "حمایت مالی",
+            tint = if (isSubscriber) spec.accentSoft else androidx.compose.ui.graphics.Color(0xFFE05263),
             modifier = Modifier.size(24.dp).scale(scale)
         )
-        Text("حمایت مالی", style = FalText.caption, color = spec.onBackgroundMuted)
+        Text(
+            if (isSubscriber) "پشتیبان ♥" else "حمایت مالی",
+            style = FalText.caption,
+            color = if (isSubscriber) spec.accentSoft else spec.onBackgroundMuted
+        )
     }
 }
 

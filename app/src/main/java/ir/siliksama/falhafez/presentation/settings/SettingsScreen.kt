@@ -104,6 +104,7 @@ fun SettingsScreen(onBack: () -> Unit) {
     val channelHandle by viewModel.channelHandle.collectAsStateWithLifecycle()
     val channelName by viewModel.channelName.collectAsStateWithLifecycle()
     val updateResult by viewModel.updateResult.collectAsStateWithLifecycle()
+    val showSupport by viewModel.showSupport.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
@@ -133,6 +134,14 @@ fun SettingsScreen(onBack: () -> Unit) {
     }
 
     var tab by rememberSaveable { mutableIntStateOf(0) }
+
+    // اگر روی قالبِ «ویژهٔ حامیان» کلیک شود، به تبِ حمایت مالی می‌پریم.
+    LaunchedEffect(showSupport) {
+        if (showSupport) {
+            tab = SettingsTab.entries.indexOf(SettingsTab.SUPPORT)
+            viewModel.closeSupport()
+        }
+    }
 
     LaunchedEffect(updateResult) {
         when (val r = updateResult) {
@@ -218,7 +227,14 @@ fun SettingsScreen(onBack: () -> Unit) {
                 when (SettingsTab.entries[tab]) {
                     SettingsTab.THEME -> ThemeGrid(
                         selectedId = themeId,
-                        onSelect = { spec -> viewModel.setTheme(spec.id) }
+                        isSubscriber = supportTier.adsRemoved,
+                        onSelect = { spec ->
+                            if (spec.subscriberOnly && !supportTier.adsRemoved) {
+                                viewModel.openSupport()
+                            } else {
+                                viewModel.setTheme(spec.id)
+                            }
+                        }
                     )
                     SettingsTab.DISPLAY -> ScrollableColumn(
                         modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
@@ -584,6 +600,7 @@ private fun PromoBanner(title: String, subtitle: String, cta: String, onClick: (
 @Composable
 private fun ThemeGrid(
     selectedId: ir.siliksama.falhafez.core.theme.FalThemeId,
+    isSubscriber: Boolean,
     onSelect: (FalThemeSpec) -> Unit
 ) {
     LazyVerticalGrid(
@@ -595,6 +612,7 @@ private fun ThemeGrid(
     ) {
         gridItems(FalThemeSpec.All) { spec ->
             val selected = spec.id == selectedId
+            val lockedForSubscriber = spec.subscriberOnly && !isSubscriber
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -620,8 +638,9 @@ private fun ThemeGrid(
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(spec.id.faName, style = FalText.body, color = FalPalette.Cream, modifier = Modifier.weight(1f))
-                    if (selected) {
-                        Icon(Icons.Filled.Check, contentDescription = "انتخاب‌شده", tint = spec.accent, modifier = Modifier.size(16.dp))
+                    when {
+                        lockedForSubscriber -> Text("ویژهٔ حامیان ♥", style = FalText.caption, color = FalPalette.Gold)
+                        selected -> Icon(Icons.Filled.Check, contentDescription = "انتخاب‌شده", tint = spec.accent, modifier = Modifier.size(16.dp))
                     }
                 }
             }

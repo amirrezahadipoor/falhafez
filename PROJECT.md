@@ -33,7 +33,8 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 26 — Full content + free themes | ✅ | **All 13 themes free**; **complete beit meanings for whole corpus (99%)**; **Hafez tafsirs longer + motif-grounded** |
 | 27 — Supporter share card | ✅ | Tier perks rewritten; **supporter name+channel shown on share template only for PLUS/GOLD** (gold-framed card); GOLD badge; instant-draw GOLD-only |
 | 28 — Back navigation + fixes | ✅ | **System back button wired app-wide**; **widget now refreshes daily**; deep content scan (0 issues) |
-| 29 — Share tafsir + home fix | ✅ | **Share template rewritten with budget-based layout** — full tafsir ALWAYS visible above the footer (was hidden behind the supporter card for long interpretations); **navigation-bar insets** added to Settings/Onboarding so the system Home/gesture bar never overlaps content |
+| 29 — Share tafsir + home fix | ✅ | **Share template budget-based layout** — full tafsir always visible; **navigation-bar insets** on Settings/Onboarding |
+| 30 — Transparent icons + subscriber value | ✅ | Social-channel icons de-whitened (flood-fill background → transparent corners); **exclusive «طلایِ حامیان» theme** (subscriber-only, jumps to support tab); **supporter badge** on Home heart for subscribers |
 
 ## Corpus (complete, offline) — 8,368 poems
 > Hafez 495 · Khayyam 178 · Saadi 1,355 (غزلیات 637 + گلستان 291 + بوستان 230 + رباعیات 146 + قطعات 20 + ملحقات 31) · Rumi 6,240 (مثنوی 972 + شمس 3,274 + رباعیات 1,994) · + 100 داستان آموزنده
