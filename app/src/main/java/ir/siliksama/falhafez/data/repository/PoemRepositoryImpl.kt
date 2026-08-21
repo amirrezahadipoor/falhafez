@@ -74,8 +74,9 @@ class PoemRepositoryImpl @Inject constructor(
         if (isEmpty()) return emptyList()
         // حفاظِ کراش: پرس‌وجوهای IN به قطعاتِ کوچک تقسیم می‌شوند — دستگاه‌های قدیمی
         // (SQLite < 3.32، اندروید ≤ 10) سقفِ ۹۹۹ متغیر دارند و «دیوان شمس» ۳۲۷۴ شعر دارد.
+        val ids = map { it.id }
         val verses = buildList {
-            map { it.id }.chunked(400).forEach { chunk ->
+            ids.chunked(400).forEach { chunk ->
                 addAll(poemDao.getVersesForIds(chunk))
             }
         }
