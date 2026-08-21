@@ -239,7 +239,7 @@ private val THEME_FA = mapOf(
 )
 
 @Composable
-private fun PoemsList(poems: List<ir.siliksama.falhafez.domain.model.Poem>, loading: Boolean, onOpen: (ir.siliksama.falhafez.domain.model.Poem) -> Unit) {
+private fun PoemsList(poems: List<ir.siliksama.falhafez.domain.model.Poem>, loading: Boolean, readIds: Set<Long>, onOpen: (ir.siliksama.falhafez.domain.model.Poem) -> Unit) {
     if (loading) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = FalPalette.Gold)
@@ -312,7 +312,7 @@ private fun PoemsList(poems: List<ir.siliksama.falhafez.domain.model.Poem>, load
 }
 
 @Composable
-private fun SearchResults(results: List<ir.siliksama.falhafez.domain.model.Poem>, onOpen: (ir.siliksama.falhafez.domain.model.Poem) -> Unit) {
+private fun SearchResults(results: List<ir.siliksama.falhafez.domain.model.Poem>, readIds: Set<Long>, onOpen: (ir.siliksama.falhafez.domain.model.Poem) -> Unit) {
     if (results.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             EmptyState(
