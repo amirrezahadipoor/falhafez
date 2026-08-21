@@ -8,15 +8,16 @@ object FalStats {
 
     /**
      * زنجیرهٔ فعلی: تعداد روزهای پشت‌سرهم که فال گرفته شده و به امروز (یا دیروز)
-     * ختم می‌شوند. [dayNumbersDesc] باید متمایز و نزولی باشد.
+     * ختم می‌شوند. ورودی می‌تواند نامرتب یا تکراری باشد — داخل تابع یکتا و نزولی می‌شود.
      */
-    fun currentStreak(dayNumbersDesc: List<Long>, today: Long): Int {
-        if (dayNumbersDesc.isEmpty()) return 0
-        val newest = dayNumbersDesc.first()
+    fun currentStreak(dayNumbers: List<Long>, today: Long): Int {
+        val days = dayNumbers.distinct().sortedDescending()
+        if (days.isEmpty()) return 0
+        val newest = days.first()
         if (newest != today && newest != today - 1) return 0
         var streak = 0
         var expected = newest
-        for (d in dayNumbersDesc) {
+        for (d in days) {
             if (d == expected) {
                 streak++
                 expected -= 1
