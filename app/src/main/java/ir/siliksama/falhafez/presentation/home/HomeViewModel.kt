@@ -115,7 +115,9 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             recomputeRemaining()
-            counts = Poet.entries.associateWith { poemRepository.countForPoet(it) }
+            counts = runCatching {
+                Poet.entries.associateWith { poemRepository.countForPoet(it) }
+            }.getOrDefault(emptyMap())
             _uiState.update { it.copy(sourceCount = counts[it.falSource]?.takeIf { c -> c > 0 } ?: 495) }
         }
     }
@@ -130,7 +132,9 @@ class HomeViewModel @Inject constructor(
     fun onSourceSelect(source: Poet?) {
         viewModelScope.launch {
             // شمارنده‌ها را تازه بگیر (در اولین اجرا ممکن است هنوز کامل seed نشده باشند)
-            counts = Poet.entries.associateWith { poemRepository.countForPoet(it) }
+            counts = runCatching {
+                Poet.entries.associateWith { poemRepository.countForPoet(it) }
+            }.getOrDefault(counts)
             val count = when (source) {
                 null -> counts.values.sum()
                 else -> counts[source] ?: 0
@@ -186,8 +190,13 @@ class HomeViewModel @Inject constructor(
         Sounds.draw()
 
         val question = s.question.trim().ifBlank { null }
-        val result = drawFal(question, s.category, s.falSource)
-        favoriteTargetId.value = result?.poem?.id
+        // حفاظِ کراش: اگر فال به هر دلیلی ساخته نشد، بی‌صدا به حالتِ نیّت برمی‌گردیم.
+        val result = runCatching { drawFal(question, s.category, s.falSource) }.getOrNull()
+        if (result == null) {
+            _uiState.update { it.copy(busy = false, stage = DrawStage.NIYYAT) }
+            return
+        }
+        favoriteTargetId.value = result.poem.id
         val instant = supportRepository.tier.first().instantDraw
         _uiState.update {
             it.copy(lastDraw = result, dailyFal = null, cooldownActive = !instant, busy = false)

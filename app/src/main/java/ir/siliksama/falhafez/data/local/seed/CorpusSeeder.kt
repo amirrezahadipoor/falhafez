@@ -50,9 +50,12 @@ class CorpusSeeder @Inject constructor(
             any = true
             total += batch.size
             // Insert file-by-file (each in its own transaction) so Hafez commits first.
-            poemDao.insertPoems(batch.map { it.toEntity() })
-            poemDao.insertVerses(batch.flatMap { it.toVerses() })
-            poemDao.insertFts(batch.map { it.toFts() })
+            // حفاظِ کراش: اگر یک فایل خراب باشد، همان فایل رد می‌شود و بقیه seed می‌شوند.
+            runCatching {
+                poemDao.insertPoems(batch.map { it.toEntity() })
+                poemDao.insertVerses(batch.flatMap { it.toVerses() })
+                poemDao.insertFts(batch.map { it.toFts() })
+            }.onFailure { Log.e("FalHafez", "Seeding failed for $file", it) }
         }
 
         if (!any) Log.w("FalHafez", "Corpus seeding: no poems loaded from assets")

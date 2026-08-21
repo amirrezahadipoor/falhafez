@@ -59,6 +59,7 @@ class DailyFalWidgetProvider : AppWidgetProvider() {
 
             val db = Room.databaseBuilder(context, FalDatabase::class.java, "falhafez.db")
                 .addMigrations(FalDatabase.MIGRATION_1_2, FalDatabase.MIGRATION_2_3)
+                .fallbackToDestructiveMigration()
                 .build()
             try {
                 val poemDao = db.poemDao()

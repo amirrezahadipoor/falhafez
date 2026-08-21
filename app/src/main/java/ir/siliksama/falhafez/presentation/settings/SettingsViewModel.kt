@@ -145,13 +145,13 @@ class SettingsViewModel @Inject constructor(
         val info = ChannelInfo(channelNetwork.value, handle, name)
         if (!info.isSet) return
         viewModelScope.launch {
-            val bitmap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
-                ChannelPromoRenderer.render(context.applicationContext, info)
-            }
-            val dir = File(context.cacheDir, "share").apply { mkdirs() }
-            val file = File(dir, "channel_${System.currentTimeMillis()}.png")
-            file.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
-            runCatching {
+            val ok = runCatching {
+                val bitmap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                    ChannelPromoRenderer.render(context.applicationContext, info)
+                }
+                val dir = File(context.cacheDir, "share").apply { mkdirs() }
+                val file = File(dir, "channel_${System.currentTimeMillis()}.png")
+                file.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
                 val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
                 val intent = Intent(Intent.ACTION_SEND).apply {
                     type = "image/png"
@@ -162,6 +162,9 @@ class SettingsViewModel @Inject constructor(
                     Intent.createChooser(intent, "اشتراک عکس تبلیغاتی کانال")
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 )
+            }.isSuccess
+            if (!ok) {
+                android.widget.Toast.makeText(context, "ساختِ عکس ممکن نشد", android.widget.Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -180,23 +183,23 @@ class SettingsViewModel @Inject constructor(
     // ---- داده‌ها ----
     fun exportData() {
         viewModelScope.launch {
-            val history = drawRepository.observeHistory().first()
-            val favorites = favoriteRepository.favoriteIds()
-            val json = buildString {
-                append("{\n  \"exportedAt\": ").append(System.currentTimeMillis()).append(",\n")
-                append("  \"history\": [")
-                history.forEachIndexed { i, d ->
-                    append(if (i == 0) "\n" else ",\n")
-                    append("    {\"poemId\": ").append(d.poem.id)
-                    append(", \"poet\": \"").append(d.poem.poet.faName)
-                    append("\", \"question\": \"").append(d.question ?: "").append("\"}")
+            val ok = runCatching {
+                val history = drawRepository.observeHistory().first()
+                val favorites = favoriteRepository.favoriteIds()
+                val json = buildString {
+                    append("{\n  \"exportedAt\": ").append(System.currentTimeMillis()).append(",\n")
+                    append("  \"history\": [")
+                    history.forEachIndexed { i, d ->
+                        append(if (i == 0) "\n" else ",\n")
+                        append("    {\"poemId\": ").append(d.poem.id)
+                        append(", \"poet\": \"").append(d.poem.poet.faName)
+                        append("\", \"question\": \"").append(escapeJson(d.question)).append("\"}")
+                    }
+                    append("\n  ],\n  \"favorites\": ").append(favorites.joinToString(prefix = "[", postfix = "]")).append("\n}")
                 }
-                append("\n  ],\n  \"favorites\": ").append(favorites.joinToString(prefix = "[", postfix = "]")).append("\n}")
-            }
-            val dir = File(context.cacheDir, "backup").apply { mkdirs() }
-            val file = File(dir, "fal_backup_${System.currentTimeMillis()}.json")
-            file.writeText(json)
-            runCatching {
+                val dir = File(context.cacheDir, "backup").apply { mkdirs() }
+                val file = File(dir, "fal_backup_${System.currentTimeMillis()}.json")
+                file.writeText(json)
                 val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
                 val intent = Intent(Intent.ACTION_SEND).apply {
                     type = "application/json"
@@ -207,7 +210,18 @@ class SettingsViewModel @Inject constructor(
                     Intent.createChooser(intent, "پشتیبان‌گیری از داده‌ها")
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 )
+            }.isSuccess
+            if (!ok) {
+                android.widget.Toast.makeText(context, "پشتیبان‌گیری ممکن نشد", android.widget.Toast.LENGTH_SHORT).show()
             }
         }
     }
+
+    private fun escapeJson(value: String?): String =
+        (value ?: "")
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t")
 }

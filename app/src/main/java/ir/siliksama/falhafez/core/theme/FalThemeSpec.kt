@@ -47,7 +47,7 @@ data class FalThemeSpec(
             dawn(), sea(), desert(), moonlight(), rose(), morning(), parchment(), gold()
         )
 
-        fun byId(id: FalThemeId): FalThemeSpec = All.first { it.id == id }
+        fun byId(id: FalThemeId): FalThemeSpec = All.firstOrNull { it.id == id } ?: tazhib()
 
         fun tazhib() = FalThemeSpec(
             id = FalThemeId.TAZHIB,
