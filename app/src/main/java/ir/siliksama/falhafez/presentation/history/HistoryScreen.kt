@@ -1,5 +1,6 @@
 package ir.siliksama.falhafez.presentation.history
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -53,6 +54,11 @@ fun HistoryScreen() {
 
     val showStats by viewModel.showStats.collectAsStateWithLifecycle()
     val selectedDraw = selectedId?.let { id -> history.firstOrNull { it.id == id } }
+
+    // دکمهٔ بازگشت: بستنِ کارنامه یا جزئیات فال
+    BackHandler(enabled = showStats || selectedDraw != null) {
+        if (showStats) viewModel.toggleStats() else viewModel.close()
+    }
 
     if (selectedDraw != null) {
         RitualBackground(spec = spec, showParticles = false) {

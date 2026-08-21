@@ -1,5 +1,6 @@
 package ir.siliksama.falhafez.presentation.library
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -79,6 +80,13 @@ fun LibraryScreen(
             viewModel.openPoemById(requestedPoemId)
             onRequestConsumed()
         }
+    }
+
+    // دکمهٔ بازگشتِ سیستم: جزئیات ← فهرست ← مجموعه ← شاعر
+    BackHandler(
+        enabled = detail != null || state.collection != null || state.poet != null
+    ) {
+        viewModel.back()
     }
 
     detail?.let { poem ->

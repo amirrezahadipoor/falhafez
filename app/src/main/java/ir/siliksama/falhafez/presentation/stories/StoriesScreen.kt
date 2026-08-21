@@ -1,5 +1,6 @@
 package ir.siliksama.falhafez.presentation.stories
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -54,6 +55,8 @@ fun StoriesScreen() {
     val selected by viewModel.selected.collectAsStateWithLifecycle()
     val themeId by viewModel.themeId.collectAsStateWithLifecycle()
     val spec = FalThemeSpec.byId(themeId)
+
+    BackHandler(enabled = selected != null) { viewModel.close() }
 
     selected?.let { story ->
         StoryDetail(story = story, spec = spec, onBack = viewModel::close)

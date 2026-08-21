@@ -1,5 +1,6 @@
 package ir.siliksama.falhafez.presentation.main
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -58,6 +59,13 @@ fun MainScreen(onOpenSettings: () -> Unit) {
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     var requestedPoemId by remember { mutableStateOf<Long?>(null) }
     val selected = MainTab.entries[selectedIndex]
+
+    // بازگشتِ سیستم از هر تب → بازگشت به تبِ فال (و اگر در فال بود، بستنِ اپ).
+    // این هندلر قبل از محتوای تب‌ها ثبت می‌شود؛ هندلرهای داخلیِ هر تب (جزئیات، مراحل فال و…)
+    // چون بعداً compose می‌شوند، در صورت فعال بودن بر این اولویت دارند.
+    BackHandler(enabled = selectedIndex != 0) {
+        selectedIndex = 0
+    }
 
     pendingUpdate?.let { update ->
         AlertDialog(

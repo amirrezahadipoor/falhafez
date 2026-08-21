@@ -9,10 +9,13 @@ import android.content.Intent
 import android.widget.RemoteViews
 import androidx.room.Room
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import java.util.concurrent.TimeUnit
 import ir.siliksama.falhafez.MainActivity
 import ir.siliksama.falhafez.R
 import ir.siliksama.falhafez.data.local.FalDatabase
@@ -34,11 +37,16 @@ class DailyFalWidgetProvider : AppWidgetProvider() {
     }
 
     private fun scheduleUpdate(context: Context) {
-        val request = OneTimeWorkRequestBuilder<DailyFalWidgetWorker>().build()
-        WorkManager.getInstance(context).enqueueUniqueWork(
-            "daily_fal_widget_update",
-            ExistingWorkPolicy.REPLACE,
-            request
+        val wm = WorkManager.getInstance(context)
+        // به‌روزرسانی فوری هنگام افزودن ویجت
+        val once = OneTimeWorkRequestBuilder<DailyFalWidgetWorker>().build()
+        wm.enqueueUniqueWork("daily_fal_widget_now", ExistingWorkPolicy.REPLACE, once)
+        // به‌روزرسانی روزانه — تا «بیتِ امروز» واقعاً هر روز عوض شود
+        val periodic = PeriodicWorkRequestBuilder<DailyFalWidgetWorker>(1, TimeUnit.DAYS).build()
+        wm.enqueueUniquePeriodicWork(
+            "daily_fal_widget_daily",
+            ExistingPeriodicWorkPolicy.UPDATE,
+            periodic
         )
     }
 

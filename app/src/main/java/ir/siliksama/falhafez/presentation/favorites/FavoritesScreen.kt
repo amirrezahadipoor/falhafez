@@ -1,5 +1,6 @@
 package ir.siliksama.falhafez.presentation.favorites
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +38,8 @@ fun FavoritesScreen() {
     val spec = FalThemeSpec.byId(themeId)
 
     val selectedPoem = selectedId?.let { id -> favorites.firstOrNull { it.id == id } }
+
+    BackHandler(enabled = selectedPoem != null) { viewModel.close() }
 
     if (selectedPoem != null) {
         RitualBackground(spec = spec, showParticles = false) {

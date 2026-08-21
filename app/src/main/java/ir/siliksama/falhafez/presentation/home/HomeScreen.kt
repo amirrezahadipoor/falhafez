@@ -1,5 +1,6 @@
 package ir.siliksama.falhafez.presentation.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
@@ -45,6 +46,14 @@ fun HomeScreen(
     LifecycleResumeEffect(Unit) {
         viewModel.refreshQuota()
         onPauseOrDispose { }
+    }
+
+    // دکمه/حرکتِ بازگشتِ سیستم — گام‌به‌گام به حالتِ نیّت برمی‌گردد.
+    BackHandler(
+        enabled = state.supportOpen || state.dailyFal != null ||
+            state.stage == DrawStage.REVEAL || state.stage == DrawStage.INTERPRETATION
+    ) {
+        viewModel.onSystemBack()
     }
 
     RitualBackground(spec = spec) {

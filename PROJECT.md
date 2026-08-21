@@ -32,6 +32,7 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 25 — Value pass | ✅ | **3-page onboarding**; **Masnavi beit meanings restored**; **unit tests** (Jalali + PersianText) in CI |
 | 26 — Full content + free themes | ✅ | **All 13 themes free**; **complete beit meanings for whole corpus (99%)**; **Hafez tafsirs longer + motif-grounded** |
 | 27 — Supporter share card | ✅ | Tier perks rewritten; **supporter name+channel shown on share template only for PLUS/GOLD** (gold-framed card); GOLD badge; instant-draw GOLD-only |
+| 28 — Back navigation + fixes | ✅ | **System back button wired app-wide** (Home stages/dialog/daily-fal → niyyat, Library detail→list→collection→poet, History/Favorites/Stories detail→list, tab→FAL); **widget now refreshes daily** (was one-shot); deep content scan (0 issues) |
 
 ## Corpus (complete, offline) — 8,368 poems
 > Hafez 495 · Khayyam 178 · Saadi 1,355 (غزلیات 637 + گلستان 291 + بوستان 230 + رباعیات 146 + قطعات 20 + ملحقات 31) · Rumi 6,240 (مثنوی 972 + شمس 3,274 + رباعیات 1,994) · + 100 داستان آموزنده

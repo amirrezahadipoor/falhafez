@@ -230,6 +230,30 @@ class HomeViewModel @Inject constructor(
 
     fun openSupport() = _uiState.update { it.copy(supportOpen = true) }
 
+    /**
+     * بازگشتِ سیستم (دکمه/حرکتِ بازگشت گوشی) — بدون تبلیغ.
+     * ترتیب: دیالوگِ حمایت ← فالِ روز ← تفسیر/رونمایی. true یعنی هندل شد.
+     */
+    fun onSystemBack(): Boolean {
+        val s = _uiState.value
+        return when {
+            s.supportOpen -> {
+                closeSupport()
+                true
+            }
+            s.dailyFal != null -> {
+                closeDailyFal()
+                true
+            }
+            s.stage == DrawStage.INTERPRETATION || s.stage == DrawStage.REVEAL -> {
+                _uiState.update { it.copy(stage = DrawStage.NIYYAT, lastDraw = null) }
+                favoriteTargetId.value = null
+                true
+            }
+            else -> false
+        }
+    }
+
     fun closeSupport() {
         _purchasing.value = false
         _uiState.update { it.copy(supportOpen = false) }
