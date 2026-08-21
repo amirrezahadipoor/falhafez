@@ -53,6 +53,13 @@ class DailyFalWidgetProvider : AppWidgetProvider() {
 
     companion object {
         suspend fun updateAll(context: Context) {
+            // حفاظِ کراش: خطای دیتابیس/رندر نباید Worker را از کار بیندازد.
+            runCatching {
+                updateAllUnsafe(context)
+            }
+        }
+
+        private suspend fun updateAllUnsafe(context: Context) {
             val manager = AppWidgetManager.getInstance(context)
             val ids = manager.getAppWidgetIds(ComponentName(context, DailyFalWidgetProvider::class.java))
             if (ids.isEmpty()) return

@@ -107,9 +107,10 @@ object ShareImageRenderer {
         // بهترین ترکیب: بزرگ‌ترین فونتِ تعبیر که جا شود (و بعد، بیت‌های بیشتر)
         var selMaxBeits = 2
         var selVerseSize = 32f
-        var selTafsirSize = 20f
+        var selTafsirSize = 16f
         var bestTafsir = -1f
-        val tafsirSizes = floatArrayOf(30f, 27f, 24f, 22f, 20f)
+        // تا ۱۶ — برای تعبیرهای بلند، تا متنِ کامل همیشه بالای پاورقی جا شود.
+        val tafsirSizes = floatArrayOf(30f, 27f, 24f, 22f, 20f, 18f, 16f)
         for (maxBeits in intArrayOf(3, 2)) {
             for (verseSize in floatArrayOf(42f, 36f, 32f)) {
                 val chosen = poem.verses.take(maxBeits)

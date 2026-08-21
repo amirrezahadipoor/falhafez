@@ -34,7 +34,12 @@ class DrawRepositoryImpl @Inject constructor(
         drawDao.observeAll().map { rows ->
             if (rows.isEmpty()) emptyList()
             else {
-                val poems = poemDao.getPoemsWithVerses(rows.map { it.poemId }.distinct())
+                // حفاظِ کراش: chunked تا سقفِ ۹۹۹ متغیرِ SQLite در دستگاه‌های قدیمی رد نشود.
+                val poems = buildList {
+                    rows.map { it.poemId }.distinct().chunked(400).forEach { chunk ->
+                        addAll(poemDao.getPoemsWithVerses(chunk))
+                    }
+                }
                 val byId = poems.associateBy { it.poem.id }
                 rows.mapNotNull { row ->
                     byId[row.poemId]?.let { withVerses ->

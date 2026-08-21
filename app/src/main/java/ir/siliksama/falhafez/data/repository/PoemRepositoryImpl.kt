@@ -24,10 +24,24 @@ class PoemRepositoryImpl @Inject constructor(
         poemDao.getByCollection(collection.key).mapWithVerses()
 
     override suspend fun search(query: String): List<Poem> {
-        val safe = query.trim().replace("\"", "").replace("*", "")
+        // حفاظِ کراش: فقط حروف/رقم/فاصله و نیم‌فاصله می‌مانند — عملگرهای FTS
+        // («(»، «)»، «-»، «"»، «:»، «^» و…) حذف می‌شوند تا MATCH هرگز با عبارتِ
+        // نادرست خطای «malformed MATCH expression» ندهد.
+        val safe = query
+            .map { c ->
+                if (c.isLetterOrDigit() || c.isWhitespace() || c == '\u200C' || c == '\u200D') c else ' '
+            }
+            .joinToString("")
+            .replace(Regex("\\s+"), " ")
+            .trim()
         if (safe.isBlank()) return emptyList()
-        val matchQuery = safe.split(Regex("\\s+")).joinToString(" ") { "$it*" }
-        return poemDao.search(matchQuery).mapWithVerses()
+        // فقط توکن‌هایی که حرفِ فارسی/عربی یا رقم دارند (واژه‌های انگلیسیِ
+        // AND/OR/NOT نمی‌توانند به‌عنوان عملگرِ FTS خطا بسازند).
+        val tokens = safe.split(" ")
+            .filter { t -> t.any { c -> c.code in 0x0600..0x06FF || c.isDigit() } }
+        if (tokens.isEmpty()) return emptyList()
+        val matchQuery = tokens.joinToString(" ") { "$it*" }
+        return runCatching { poemDao.search(matchQuery).mapWithVerses() }.getOrDefault(emptyList())
     }
 
     override suspend fun getRandomPoem(excludeIds: List<Long>, poet: Poet?): Poem? {
@@ -58,7 +72,13 @@ class PoemRepositoryImpl @Inject constructor(
 
     private suspend fun List<ir.siliksama.falhafez.data.local.PoemEntity>.mapWithVerses(): List<Poem> {
         if (isEmpty()) return emptyList()
-        val verses = poemDao.getVersesForIds(map { it.id })
+        // حفاظِ کراش: پرس‌وجوهای IN به قطعاتِ کوچک تقسیم می‌شوند — دستگاه‌های قدیمی
+        // (SQLite < 3.32، اندروید ≤ 10) سقفِ ۹۹۹ متغیر دارند و «دیوان شمس» ۳۲۷۴ شعر دارد.
+        val verses = buildList {
+            map { it.id }.chunked(400).forEach { chunk ->
+                addAll(poemDao.getVersesForIds(chunk))
+            }
+        }
         val grouped = verses.groupBy { it.poemId }
         return map { entity ->
             val vs = grouped[entity.id].orEmpty().sortedBy { it.position }

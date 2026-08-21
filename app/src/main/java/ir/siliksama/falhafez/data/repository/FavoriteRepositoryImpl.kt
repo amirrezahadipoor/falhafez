@@ -35,9 +35,17 @@ class FavoriteRepositoryImpl @Inject constructor(
     override fun observeFavorites(): Flow<List<Poem>> =
         favoriteDao.observeAll().map { rows ->
             if (rows.isEmpty()) emptyList()
-            else poemDao.getPoemsWithVerses(rows.map { it.poemId })
-                .sortedByDescending { pv -> rows.first { it.poemId == pv.poem.id }.createdAt }
-                .map { it.toDomain() }
+            else {
+                // حفاظِ کراش: chunked تا سقفِ ۹۹۹ متغیرِ SQLite در دستگاه‌های قدیمی رد نشود.
+                val poems = buildList {
+                    rows.map { it.poemId }.chunked(400).forEach { chunk ->
+                        addAll(poemDao.getPoemsWithVerses(chunk))
+                    }
+                }
+                poems
+                    .sortedByDescending { pv -> rows.first { it.poemId == pv.poem.id }.createdAt }
+                    .map { it.toDomain() }
+            }
         }
 
     override suspend fun favoriteIds(): Set<Long> = favoriteDao.favoriteIds().toSet()
