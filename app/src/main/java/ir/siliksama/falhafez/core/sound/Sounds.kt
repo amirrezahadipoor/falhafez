@@ -41,8 +41,8 @@ object Sounds {
     }
 
     fun tap() = play(tapId, 0.55f)
-    fun draw() = play(drawId, 0.7f)
-    fun reveal() = play(revealId, 0.6f)
+    fun draw() = play(drawId, 1.0f)
+    fun reveal() = play(revealId, 0.85f)
     fun ambient() = play(ambientId, 0.45f)
 
     private fun play(id: Int, volume: Float) {

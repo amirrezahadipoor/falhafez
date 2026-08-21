@@ -73,6 +73,7 @@ fun LibraryScreen(
     val themeId by viewModel.themeId.collectAsStateWithLifecycle()
     val results by viewModel.searchResults.collectAsStateWithLifecycle()
     val isFavorite by viewModel.favorite.isSelectedFavorite.collectAsStateWithLifecycle()
+    val readIds by viewModel.readIds.collectAsStateWithLifecycle()
     val spec = FalThemeSpec.byId(themeId)
 
     LaunchedEffect(requestedPoemId) {
@@ -96,7 +97,9 @@ fun LibraryScreen(
                 category = FalCategory.NONE,
                 spec = spec,
                 isFavorite = isFavorite,
+                isRead = poem.id in readIds,
                 onToggleFavorite = viewModel.favorite::toggleSelected,
+                onToggleRead = { viewModel.toggleRead(poem) },
                 onBack = viewModel::back
             )
         }
@@ -116,10 +119,11 @@ fun LibraryScreen(
             val currentPoet = state.poet
             val currentCollection = state.collection
             when {
-                state.query.isNotBlank() -> SearchResults(results = results, onOpen = viewModel::openPoem)
+                state.query.isNotBlank() -> SearchResults(results = results, readIds = readIds, onOpen = viewModel::openPoem)
                 currentCollection != null -> PoemsList(
                     poems = state.poems,
                     loading = state.loading,
+                    readIds = readIds,
                     onOpen = viewModel::openPoem
                 )
                 currentPoet != null -> CollectionsList(
@@ -298,7 +302,8 @@ private fun PoemsList(poems: List<ir.siliksama.falhafez.domain.model.Poem>, load
             }
         }
         items(filtered.size) { index ->
-            PoemCard(poem = filtered[index], onClick = { onOpen(filtered[index]) })
+            val poem = filtered[index]
+            PoemCard(poem = poem, onClick = { onOpen(poem) }, isRead = poem.id in readIds)
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
             NativeAdCard()
@@ -326,7 +331,7 @@ private fun SearchResults(results: List<ir.siliksama.falhafez.domain.model.Poem>
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(results) { poem ->
-            PoemCard(poem = poem, onClick = { onOpen(poem) })
+            PoemCard(poem = poem, onClick = { onOpen(poem) }, isRead = poem.id in readIds)
         }
     }
 }

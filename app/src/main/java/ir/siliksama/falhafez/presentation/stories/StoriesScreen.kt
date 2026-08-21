@@ -21,7 +21,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoStories
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -54,12 +56,19 @@ fun StoriesScreen() {
     val stories by viewModel.stories.collectAsStateWithLifecycle()
     val selected by viewModel.selected.collectAsStateWithLifecycle()
     val themeId by viewModel.themeId.collectAsStateWithLifecycle()
+    val readIds by viewModel.readIds.collectAsStateWithLifecycle()
     val spec = FalThemeSpec.byId(themeId)
 
     BackHandler(enabled = selected != null) { viewModel.close() }
 
     selected?.let { story ->
-        StoryDetail(story = story, spec = spec, onBack = viewModel::close)
+        StoryDetail(
+            story = story,
+            spec = spec,
+            isRead = story.id in readIds,
+            onToggleRead = { viewModel.toggleRead(story) },
+            onBack = viewModel::close
+        )
         return
     }
 
@@ -67,12 +76,18 @@ fun StoriesScreen() {
         Column(Modifier.fillMaxSize()) {
             ScreenHeader(title = "داستان‌های آموزنده")
             if (stories.isEmpty()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
                     EmptyState(
                         icon = Icons.Outlined.AutoStories,
-                        title = "هنوز داستانی بارگذاری نشده",
-                        subtitle = "لحظه‌ای صبر کنید…"
+                        title = "در حال آماده‌سازی داستان‌ها…",
+                        subtitle = "لحظه‌ای صبر کنید"
                     )
+                    Spacer(Modifier.height(16.dp))
+                    GhostButton(text = "تلاش دوباره", onClick = viewModel::load, textColor = FalPalette.Gold)
                 }
             } else {
                 // 2-column grid → ~2× more stories per screen, far less scrolling
@@ -84,7 +99,7 @@ fun StoriesScreen() {
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(stories) { story ->
-                        StoryTile(story = story, onClick = { viewModel.open(story) })
+                        StoryTile(story = story, isRead = story.id in readIds, onClick = { viewModel.open(story) })
                     }
                 }
             }
@@ -93,7 +108,7 @@ fun StoriesScreen() {
 }
 
 @Composable
-private fun StoryTile(story: Poem, onClick: () -> Unit) {
+private fun StoryTile(story: Poem, isRead: Boolean, onClick: () -> Unit) {
     val prose = story.verses.firstOrNull { !it.isCouplet }?.first ?: story.opening
     Column(
         modifier = Modifier
@@ -104,11 +119,22 @@ private fun StoryTile(story: Poem, onClick: () -> Unit) {
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text(
-            text = "داستانِ ${PersianText.number(story.number)}",
-            style = FalText.heading,
-            color = FalPalette.GoldBright
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "داستانِ ${PersianText.number(story.number)}",
+                style = FalText.heading,
+                color = FalPalette.GoldBright,
+                modifier = Modifier.weight(1f)
+            )
+            if (isRead) {
+                Icon(
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = "خوانده‌شده",
+                    tint = FalPalette.Gold,
+                    modifier = Modifier.height(16.dp)
+                )
+            }
+        }
         Text(
             text = prose,
             style = FalText.caption,
@@ -120,7 +146,13 @@ private fun StoryTile(story: Poem, onClick: () -> Unit) {
 }
 
 @Composable
-private fun StoryDetail(story: Poem, spec: FalThemeSpec, onBack: () -> Unit) {
+private fun StoryDetail(
+    story: Poem,
+    spec: FalThemeSpec,
+    isRead: Boolean,
+    onToggleRead: () -> Unit,
+    onBack: () -> Unit
+) {
     val context = LocalContext.current
     val prose = story.verses.filter { !it.isCouplet }.joinToString("\n\n") { it.first }
     val morals = story.verses.filter { it.isCouplet }
@@ -176,6 +208,13 @@ private fun StoryDetail(story: Poem, spec: FalThemeSpec, onBack: () -> Unit) {
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                IconButton(onClick = onToggleRead) {
+                    Icon(
+                        imageVector = if (isRead) Icons.Filled.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                        contentDescription = if (isRead) "حذف علامت خوانده‌شده" else "علامت خوانده‌شده",
+                        tint = if (isRead) spec.accent else spec.onBackgroundMuted
+                    )
+                }
                 IconButton(onClick = {
                     Clipboard.copy(context, "داستان", "$prose\n\n${morals.joinToString("\n") { it.fullText }}")
                 }) {

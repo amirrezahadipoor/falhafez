@@ -495,34 +495,31 @@ fun InterpretationContent(
             }
         }
 
-        when {
-            cooldownActive && supportTier.instantDraw -> GoldButton(
-                text = "فالِ فوری", onClick = onDrawAgain, glow = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            cooldownActive && onRewarded != null && !adsRemoved -> GoldButton(
-                text = "فال فوری — تماشای ویدئو", onClick = onRewarded, glow = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            cooldownActive -> GoldButton(
-                text = "لحظه‌ای درنگ…", onClick = onDrawAgain, enabled = false,
-                modifier = Modifier.fillMaxWidth()
-            )
-            adsRemoved || remainingToday > 0 -> GoldButton(
-                text = "فال دوباره", onClick = onDrawAgain, glow = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            onRewarded != null -> GoldButton(
-                text = "فال دوباره — تماشای ویدئو", onClick = onRewarded, glow = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            else -> GoldButton(
-                text = "فال دوباره", onClick = onDrawAgain, enabled = false,
-                modifier = Modifier.fillMaxWidth()
-            )
+        // دکمهٔ «فال دوباره» کوچک و وسطِ صفحه
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            when {
+                cooldownActive && supportTier.instantDraw -> GoldButton(
+                    text = "فالِ فوری", onClick = onDrawAgain, glow = true
+                )
+                cooldownActive && onRewarded != null && !adsRemoved -> GoldButton(
+                    text = "فال فوری — تماشای ویدئو", onClick = onRewarded, glow = true
+                )
+                cooldownActive -> GoldButton(
+                    text = "لحظه‌ای درنگ…", onClick = onDrawAgain, enabled = false
+                )
+                adsRemoved || remainingToday > 0 -> GoldButton(
+                    text = "فال دوباره", onClick = onDrawAgain, glow = true
+                )
+                onRewarded != null -> GoldButton(
+                    text = "فال دوباره — تماشای ویدئو", onClick = onRewarded, glow = true
+                )
+                else -> GoldButton(
+                    text = "فال دوباره", onClick = onDrawAgain, enabled = false
+                )
+            }
+            Spacer(Modifier.height(6.dp))
+            GhostButton(text = "بازگشت", onClick = onDismiss, textColor = spec.onBackgroundMuted)
         }
-        Spacer(Modifier.height(6.dp))
-        GhostButton(text = "بازگشت", onClick = onDismiss, textColor = spec.onBackgroundMuted, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(12.dp))
     }
 }

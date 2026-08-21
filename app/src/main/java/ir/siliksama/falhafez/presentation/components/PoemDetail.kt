@@ -13,7 +13,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Visibility
@@ -48,7 +50,9 @@ fun PoemDetail(
     category: FalCategory,
     spec: FalThemeSpec,
     isFavorite: Boolean,
+    isRead: Boolean = false,
     onToggleFavorite: () -> Unit,
+    onToggleRead: (() -> Unit)? = null,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -131,6 +135,15 @@ fun PoemDetail(
                 )
             }
             SharePoemButton(poem = poem, category = category, spec = spec, tint = spec.onBackgroundMuted)
+            if (onToggleRead != null) {
+                IconButton(onClick = onToggleRead) {
+                    Icon(
+                        imageVector = if (isRead) Icons.Filled.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                        contentDescription = if (isRead) "حذف علامت خوانده‌شده" else "علامت خوانده‌شده",
+                        tint = if (isRead) spec.accent else spec.onBackgroundMuted
+                    )
+                }
+            }
             IconButton(onClick = { Clipboard.copy(context, "متن شعر", poem.verses.joinToString("\n") { it.fullText } + "\n\n" + poem.tafsir) }) {
                 Icon(Icons.Outlined.ContentCopy, contentDescription = "کپی متن", tint = spec.onBackgroundMuted)
             }

@@ -8,6 +8,7 @@ import ir.siliksama.falhafez.domain.model.Poem
 import ir.siliksama.falhafez.domain.model.Poet
 import ir.siliksama.falhafez.domain.repository.FavoriteRepository
 import ir.siliksama.falhafez.domain.repository.PoemRepository
+import ir.siliksama.falhafez.domain.repository.ReadRepository
 import ir.siliksama.falhafez.domain.repository.SettingsRepository
 import ir.siliksama.falhafez.presentation.components.FavoriteState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -38,6 +40,7 @@ data class LibraryUiState(
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     private val poemRepository: PoemRepository,
+    private val readRepository: ReadRepository,
     favoriteRepository: FavoriteRepository,
     settingsRepository: SettingsRepository
 ) : ViewModel() {
@@ -52,6 +55,10 @@ class LibraryViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FalThemeId.TAZHIB)
 
     val favorite = FavoriteState(favoriteRepository, viewModelScope)
+
+    /** مجموعهٔ شعرهای خوانده‌شده — برای نشانِ «خوانده‌شده» در فهرست‌ها. */
+    val readIds: StateFlow<Set<Long>> = readRepository.observeIds()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     val searchResults: StateFlow<List<Poem>> = _uiState
         .map { it.query }
@@ -74,7 +81,13 @@ class LibraryViewModel @Inject constructor(
         val c = _uiState.value.collection ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(loading = true) }
-            val list = poemRepository.getPoemsByCollection(c)
+            // retry — اگر صفحه قبل از پایانِ seed باز شود، داده به‌زودی می‌رسد.
+            var list = emptyList<Poem>()
+            repeat(20) {
+                list = poemRepository.getPoemsByCollection(c)
+                if (list.isNotEmpty()) return@launch _uiState.update { it.copy(poems = list, loading = false) }
+                delay(600L)
+            }
             _uiState.update { it.copy(poems = list, loading = false) }
         }
     }
@@ -82,6 +95,17 @@ class LibraryViewModel @Inject constructor(
     fun openPoem(poem: Poem) {
         _detail.value = poem
         favorite.select(poem.id)
+        viewModelScope.launch { readRepository.markRead(poem.id) }
+    }
+
+    fun toggleRead(poem: Poem) {
+        viewModelScope.launch {
+            if (readIds.value.contains(poem.id)) {
+                readRepository.unmarkRead(poem.id)
+            } else {
+                readRepository.markRead(poem.id)
+            }
+        }
     }
 
     fun openPoemById(id: Long) {

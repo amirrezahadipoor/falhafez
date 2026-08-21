@@ -110,3 +110,19 @@ interface FavoriteDao {
     @Query("SELECT * FROM favorites ORDER BY createdAt DESC")
     fun observeAll(): Flow<List<FavoriteEntity>>
 }
+
+
+@Dao
+interface ReadDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun markRead(read: ReadEntity)
+
+    @Query("DELETE FROM read_poems WHERE poemId = :poemId")
+    suspend fun unmarkRead(poemId: Long)
+
+    @Query("SELECT * FROM read_poems WHERE poemId = :poemId")
+    fun observe(poemId: Long): Flow<ReadEntity?>
+
+    @Query("SELECT poemId FROM read_poems")
+    fun observeIds(): Flow<List<Long>>
+}

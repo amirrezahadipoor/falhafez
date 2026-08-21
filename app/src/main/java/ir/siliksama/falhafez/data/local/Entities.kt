@@ -80,3 +80,10 @@ data class PoemWithVerses(
     @Relation(parentColumn = "id", entityColumn = "poemId")
     val verses: List<VerseEntity>
 )
+
+
+@Entity(tableName = "read_poems", indices = [Index(value = ["poemId"], unique = true)])
+data class ReadEntity(
+    @PrimaryKey val poemId: Long,
+    val createdAt: Long
+)

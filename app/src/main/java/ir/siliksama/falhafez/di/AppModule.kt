@@ -6,16 +6,19 @@ import ir.siliksama.falhafez.data.local.FalDatabase
 import ir.siliksama.falhafez.data.local.DrawDao
 import ir.siliksama.falhafez.data.local.FavoriteDao
 import ir.siliksama.falhafez.data.local.PoemDao
+import ir.siliksama.falhafez.data.local.ReadDao
 import ir.siliksama.falhafez.data.repository.DrawRepositoryImpl
 import ir.siliksama.falhafez.data.repository.FavoriteRepositoryImpl
 import ir.siliksama.falhafez.data.repository.PoemRepositoryImpl
 import ir.siliksama.falhafez.data.payments.BazaarPaymentGateway
 import ir.siliksama.falhafez.data.payments.PaymentGateway
+import ir.siliksama.falhafez.data.repository.ReadRepositoryImpl
 import ir.siliksama.falhafez.data.repository.SettingsRepositoryImpl
 import ir.siliksama.falhafez.data.repository.SupportRepositoryImpl
 import ir.siliksama.falhafez.domain.repository.DrawRepository
 import ir.siliksama.falhafez.domain.repository.FavoriteRepository
 import ir.siliksama.falhafez.domain.repository.PoemRepository
+import ir.siliksama.falhafez.domain.repository.ReadRepository
 import ir.siliksama.falhafez.domain.repository.SettingsRepository
 import ir.siliksama.falhafez.domain.repository.SupportRepository
 import dagger.Module
@@ -33,7 +36,7 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): FalDatabase =
         Room.databaseBuilder(context, FalDatabase::class.java, "falhafez.db")
-            .addMigrations(FalDatabase.MIGRATION_1_2)
+            .addMigrations(FalDatabase.MIGRATION_1_2, FalDatabase.MIGRATION_2_3)
             .build()
 
     @Provides
@@ -44,6 +47,9 @@ object AppModule {
 
     @Provides
     fun provideFavoriteDao(db: FalDatabase): FavoriteDao = db.favoriteDao()
+
+    @Provides
+    fun provideReadDao(db: FalDatabase): ReadDao = db.readDao()
 
     @Provides
     @Singleton
@@ -63,6 +69,11 @@ object AppModule {
     @Singleton
     fun provideSettingsRepository(store: ir.siliksama.falhafez.data.settings.SettingsDataStore): SettingsRepository =
         SettingsRepositoryImpl(store)
+
+    @Provides
+    @Singleton
+    fun provideReadRepository(readDao: ReadDao): ReadRepository =
+        ReadRepositoryImpl(readDao)
 
     @Provides
     @Singleton

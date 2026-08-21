@@ -57,7 +57,7 @@ class DailyFalWidgetProvider : AppWidgetProvider() {
             if (ids.isEmpty()) return
 
             val db = Room.databaseBuilder(context, FalDatabase::class.java, "falhafez.db")
-                .addMigrations(FalDatabase.MIGRATION_1_2)
+                .addMigrations(FalDatabase.MIGRATION_1_2, FalDatabase.MIGRATION_2_3)
                 .build()
             try {
                 val poemDao = db.poemDao()
