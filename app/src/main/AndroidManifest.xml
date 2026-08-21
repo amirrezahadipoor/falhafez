@@ -9,7 +9,9 @@
 
     <application
         android:name=".FalHafezApp"
-        android:allowBackup="true"
+        <!-- حریم خصوصی: داده (نیّت، تاریخچه، علاقه‌مندی‌ها) هرگز به فضای ابریِ گوگل منتقل نمی‌شود؛
+             خروجی دستی از تنظیمات در دسترس است. -->
+        android:allowBackup="false"
         android:largeHeap="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
