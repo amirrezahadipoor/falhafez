@@ -75,7 +75,7 @@ object PersianOrdinal {
         "اول", "دوم", "سوم", "چهارم", "پنجم", "ششم", "هفتم", "هشتم", "نهم", "دهم",
         "یازدهم", "دوازدهم", "سیزدهم", "چهاردهم", "پانزدهم", "شانزدهم", "هفدهم", "هجدهم", "نوزدهم", "بیستم"
     )
-    fun number(n: Int): String = if (n in 1..ordinals.size) ordinals[n - 1] else n.toString()
+    fun number(n: Int): String = if (n in 1..ordinals.size) ordinals[n - 1] else ir.siliksama.falhafez.core.util.PersianText.number(n)
 }
 
 data class DrawEntry(

@@ -269,7 +269,7 @@ fun NiyyatContent(
         // نشانِ سهمیهٔ رایگان روزانه (فقط برای کاربران عادی)
         if (!adsRemoved && state.remainingToday < Int.MAX_VALUE) {
             Text(
-                text = "فالِ رایگانِ امروز: ${PersianText.number(state.remainingToday)} از ${PersianText.number(2)}",
+                text = "فالِ رایگانِ امروز: ${PersianText.number(state.remainingToday)} از ${PersianText.number(1)}",
                 style = FalText.caption,
                 color = spec.onBackgroundMuted
             )

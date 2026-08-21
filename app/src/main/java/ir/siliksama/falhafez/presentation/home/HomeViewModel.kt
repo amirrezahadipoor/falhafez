@@ -39,7 +39,8 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
-private const val DAILY_FREE_LIMIT = 2
+/** یک فالِ رایگان در روز — بدون نیاز به دیدن ویدیو؛ فالِ بیشتر با ویدیوی جایزه‌ای. */
+private const val DAILY_FREE_LIMIT = 1
 private const val COOLDOWN_MS = 8_000L
 
 enum class DrawStage { NIYYAT, DRAWING, REVEAL, INTERPRETATION }

@@ -25,7 +25,8 @@ import ir.siliksama.falhafez.presentation.home.CategoryAngles
 
 /**
  * Composes the shareable fal image entirely with android.graphics (Canvas) —
- * ornamental gold frame, Nastaliq verse, Vazirmatn interpretation. 1080×1350 (4:5).
+ * a tazhib-style double gold frame with corner shamseh medallions, Nastaliq
+ * verse (centered), and a Vazirmatn interpretation. 1080×1350 (4:5).
  */
 object ShareImageRenderer {
 
@@ -57,22 +58,27 @@ object ShareImageRenderer {
         val vazir = ResourcesCompat.getFont(context, R.font.vazirmatn_regular) ?: Typeface.DEFAULT
         val vazirBold = ResourcesCompat.getFont(context, R.font.vazirmatn_bold) ?: Typeface.DEFAULT_BOLD
 
-        drawOrnamentFrame(canvas, spec.accent.toArgb())
+        val gold = spec.accent.toArgb()
+        val softGold = spec.accentSoft.toArgb()
+        val ink = spec.onBackground.toArgb()
+        val muted = spec.onBackgroundMuted.toArgb()
+
+        drawOrnamentFrame(canvas, gold, softGold)
 
         val textWidth = (W - 2 * PAD).toInt()
-        var y = 130f
+        var y = 150f
 
         // ── سربرگ ──
         y = drawText(
-            canvas, "فال حافظ", 60f, nastaliq, spec.accentSoft.toArgb(),
-            textWidth, PAD, y, Layout.Alignment.ALIGN_CENTER, 1.2f
+            canvas, "فال حافظ", 64f, nastaliq, softGold,
+            textWidth, PAD, y, Layout.Alignment.ALIGN_CENTER, 1.15f
         )
-        y += 4f
-        drawCenterOrnament(canvas, y, spec.accent.toArgb())
-        y += 36f
+        y += 6f
+        drawShamsa(canvas, W / 2f, y + 18f, 17f, gold, softGold, outline = true)
+        y += 52f
         val meta = "${poem.collection.poet.faName} — ${poem.collection.faName}"
         y = drawText(
-            canvas, meta, 28f, vazir, spec.onBackgroundMuted.toArgb(),
+            canvas, meta, 28f, vazir, muted,
             textWidth, PAD, y, Layout.Alignment.ALIGN_CENTER, 1.0f
         )
         val contentTop = y + 26f
@@ -91,11 +97,11 @@ object ShareImageRenderer {
 
         // ── بودجهٔ فضای میانی ──
         val middle = (footerTop - contentTop).coerceAtLeast(200f)
-        val gapTop = 16f
-        val gapAfterVerse = 22f
-        val dividerH = 46f
-        val labelH = 46f
-        val gapAfterLabel = 12f
+        val gapTop = 20f
+        val gapAfterVerse = 26f
+        val dividerH = 52f
+        val labelH = 50f
+        val gapAfterLabel = 14f
         val gapBottom = 20f
 
         // بهترین ترکیب: بزرگ‌ترین فونتِ تعبیر که جا شود (و بعد، بیت‌های بیشتر)
@@ -132,7 +138,7 @@ object ShareImageRenderer {
             }
         }
 
-        // ── رسمِ بیت‌ها ──
+        // ── رسمِ بیت‌ها (وسط‌چین) ──
         val chosenBeits = poem.verses.take(selMaxBeits)
         val verseLines = mutableListOf<String>()
         chosenBeits.forEach { b ->
@@ -144,41 +150,181 @@ object ShareImageRenderer {
 
         var cy = contentTop + gapTop
         cy = drawText(
-            canvas, verseText, selVerseSize, nastaliq, spec.onBackground.toArgb(),
-            textWidth, PAD, cy, Layout.Alignment.ALIGN_NORMAL, 1.5f
+            canvas, verseText, selVerseSize, nastaliq, ink,
+            textWidth, PAD, cy, Layout.Alignment.ALIGN_CENTER, 1.5f
         )
         cy += gapAfterVerse
 
-        drawDividerOrnament(canvas, cy, spec.accent.toArgb())
+        drawDividerOrnament(canvas, cy + 14f, gold, softGold)
         cy += dividerH
 
-        cy = drawText(
-            canvas, "تعبیر", 34f, vazirBold, spec.accent.toArgb(),
-            textWidth, PAD, cy, Layout.Alignment.ALIGN_NORMAL, 1.0f
-        )
-        cy += gapAfterLabel
+        drawFlankedLabel(canvas, "تعبیر", 34f, vazirBold, gold, cy, gold, textWidth)
+        cy += labelH + gapAfterLabel
 
         // تعبیرِ کامل — همیشه بالای پاورقی
         drawText(
-            canvas, tafsirText, selTafsirSize, vazir, spec.onBackground.toArgb(),
+            canvas, tafsirText, selTafsirSize, vazir, ink,
             textWidth, PAD, cy, Layout.Alignment.ALIGN_NORMAL, 1.5f
         )
 
         // ── پاورقی ──
         val footerY = footerTop
-        drawDividerOrnament(canvas, footerY - 30f, spec.accent.copy(alpha = 0.6f).toArgb())
+        drawDividerOrnament(canvas, footerY - 30f, spec.accent.copy(alpha = 0.6f).toArgb(), softGold)
 
         if (withChannel) {
             val network = SocialNetwork.byKey(ch!!.network)
             drawChannelFooter(canvas, context, ch, network, footerY, spec, gold = supporterBadge)
         } else {
             drawText(
-                canvas, "فال حافظ | تعبیر هوشمند", 28f, vazir, spec.onBackgroundMuted.toArgb(),
+                canvas, "فال حافظ | تعبیر هوشمند", 28f, vazir, muted,
                 textWidth, PAD, footerY, Layout.Alignment.ALIGN_CENTER, 1.0f
             )
         }
 
         return bitmap
+    }
+
+    /** برچسبِ وسط‌چین با خط و نقطهٔ تزیینی در دو طرف. */
+    private fun drawFlankedLabel(
+        canvas: Canvas, text: String, size: Float, typeface: Typeface,
+        color: Int, y: Float, accent: Int, width: Int
+    ) {
+        val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.typeface = typeface
+            textSize = size
+        }
+        val w = paint.measureText(text)
+        val cx = W / 2f
+        val lineY = y + size / 2f
+        val gap = 20f
+        val len = 90f
+        val line = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = accent
+            style = Paint.Style.STROKE
+            strokeWidth = 1.5f
+        }
+        canvas.drawLine(cx - w / 2f - gap - len, lineY, cx - w / 2f - gap, lineY, line)
+        canvas.drawLine(cx + w / 2f + gap, lineY, cx + w / 2f + gap + len, lineY, line)
+        val dot = Paint(Paint.ANTI_ALIAS_FLAG).apply { this.color = accent; style = Paint.Style.FILL }
+        canvas.drawCircle(cx - w / 2f - gap - len - 9f, lineY, 3.5f, dot)
+        canvas.drawCircle(cx + w / 2f + gap + len + 9f, lineY, 3.5f, dot)
+        drawText(canvas, text, size, typeface, color, width, PAD, y, Layout.Alignment.ALIGN_CENTER, 1.0f)
+    }
+
+    /** ارتفاع متن رندر‌شده را بدون کشیدن اندازه می‌گیرد. */
+    private fun measureText(
+        text: String, size: Float, typeface: Typeface, width: Int, lineSpacing: Float
+    ): Float {
+        val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.typeface = typeface
+            textSize = size
+        }
+        val layout = StaticLayout.Builder
+            .obtain(text, 0, text.length, paint, width)
+            .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+            .setTextDirection(TextDirectionHeuristics.RTL)
+            .setLineSpacing(0f, lineSpacing)
+            .setIncludePad(false)
+            .build()
+        return layout.height.toFloat()
+    }
+
+    private fun drawText(
+        canvas: Canvas, text: String, size: Float, typeface: Typeface, color: Int,
+        width: Int, x: Float, startY: Float, align: Layout.Alignment, lineSpacing: Float
+    ): Float {
+        val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.typeface = typeface
+            textSize = size
+            this.color = color
+        }
+        val layout = StaticLayout.Builder
+            .obtain(text, 0, text.length, paint, width)
+            .setAlignment(align)
+            .setTextDirection(TextDirectionHeuristics.RTL)
+            .setLineSpacing(0f, lineSpacing)
+            .setIncludePad(false)
+            .build()
+        canvas.save()
+        canvas.translate(x, startY)
+        layout.draw(canvas)
+        canvas.restore()
+        return startY + layout.height
+    }
+
+    /** قابِ دوخطیِ طلایی + شمسهٔ گوشه‌ها (لچک) + نقطه‌های گوشه. */
+    private fun drawOrnamentFrame(canvas: Canvas, gold: Int, softGold: Int) {
+        val outer = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = gold
+            style = Paint.Style.STROKE
+            strokeWidth = 3f
+        }
+        canvas.drawRoundRect(32f, 32f, W - 32f, H - 32f, 26f, 26f, outer)
+
+        val inner = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = gold
+            alpha = 130
+            style = Paint.Style.STROKE
+            strokeWidth = 1.2f
+        }
+        canvas.drawRoundRect(50f, 50f, W - 50f, H - 50f, 18f, 18f, inner)
+
+        // شمسهٔ گوشه‌ها
+        val corners = listOf(
+            50f to 50f, (W - 50f) to 50f, 50f to (H - 50f), (W - 50f) to (H - 50f)
+        )
+        for ((cx, cy) in corners) {
+            drawShamsa(canvas, cx, cy, 30f, gold, softGold, outline = false)
+        }
+
+        // نقطه‌های طلایی روی گوشهٔ قابِ بیرونی
+        val dot = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = gold; style = Paint.Style.FILL }
+        for ((cx, cy) in corners) {
+            canvas.drawCircle(cx, cy, 6f, dot)
+        }
+    }
+
+    /** شمسه (ستارهٔ هشت‌پر) — دو مربعِ چرخیدهٔ روی هم + حلقه و نقطهٔ مرکزی. */
+    private fun drawShamsa(
+        canvas: Canvas, cx: Float, cy: Float, r: Float,
+        gold: Int, softGold: Int, outline: Boolean
+    ) {
+        val fillSoft = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = softGold; style = Paint.Style.FILL }
+        val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = gold; style = Paint.Style.FILL }
+        val squares = listOf(0.0 to fillSoft, Math.PI / 4 to fill)
+        for ((rot, paint) in squares) {
+            val p = Path()
+            for (i in 0..3) {
+                val a = rot + i * Math.PI / 2
+                val x = cx + (r * Math.cos(a)).toFloat()
+                val y = cy + (r * Math.sin(a)).toFloat()
+                if (i == 0) p.moveTo(x, y) else p.lineTo(x, y)
+            }
+            p.close()
+            canvas.drawPath(p, paint)
+        }
+        if (outline) {
+            val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = gold
+                style = Paint.Style.STROKE
+                strokeWidth = 1.5f
+            }
+            canvas.drawCircle(cx, cy, r * 0.62f, ring)
+        }
+        canvas.drawCircle(cx, cy, r * 0.30f, fill)
+    }
+
+    /** جداکنندهٔ تزیینی: خط + شمسهٔ کوچک + خط. */
+    private fun drawDividerOrnament(canvas: Canvas, y: Float, gold: Int, softGold: Int) {
+        val cx = W / 2f
+        val line = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = gold
+            style = Paint.Style.STROKE
+            strokeWidth = 1.5f
+        }
+        canvas.drawLine(PAD * 1.4f, y, cx - 34f, y, line)
+        canvas.drawLine(cx + 34f, y, W - PAD * 1.4f, y, line)
+        drawShamsa(canvas, cx, y, 15f, gold, softGold, outline = false)
     }
 
     /**
@@ -259,89 +405,5 @@ object ShareImageRenderer {
             spec.onBackgroundMuted.toArgb(),
             textWidth, centerX, yy + 8f, Layout.Alignment.ALIGN_CENTER, 1.0f
         )
-    }
-
-    /** ارتفاع متن رندر‌شده را بدون کشیدن اندازه می‌گیرد. */
-    private fun measureText(
-        text: String, size: Float, typeface: Typeface, width: Int, lineSpacing: Float
-    ): Float {
-        val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.typeface = typeface
-            textSize = size
-        }
-        val layout = StaticLayout.Builder
-            .obtain(text, 0, text.length, paint, width)
-            .setAlignment(Layout.Alignment.ALIGN_NORMAL)
-            .setTextDirection(TextDirectionHeuristics.RTL)
-            .setLineSpacing(0f, lineSpacing)
-            .setIncludePad(false)
-            .build()
-        return layout.height.toFloat()
-    }
-
-    private fun drawText(
-        canvas: Canvas, text: String, size: Float, typeface: Typeface, color: Int,
-        width: Int, x: Float, startY: Float, align: Layout.Alignment, lineSpacing: Float
-    ): Float {
-        val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.typeface = typeface
-            textSize = size
-            this.color = color
-        }
-        val layout = StaticLayout.Builder
-            .obtain(text, 0, text.length, paint, width)
-            .setAlignment(align)
-            .setTextDirection(TextDirectionHeuristics.RTL)
-            .setLineSpacing(0f, lineSpacing)
-            .setIncludePad(false)
-            .build()
-        canvas.save()
-        canvas.translate(x, startY)
-        layout.draw(canvas)
-        canvas.restore()
-        return startY + layout.height
-    }
-
-    private fun drawOrnamentFrame(canvas: Canvas, gold: Int) {
-        val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = gold
-            style = Paint.Style.STROKE
-            strokeWidth = 3f
-        }
-        val in1 = 40f
-        val in2 = 58f
-        canvas.drawRoundRect(in1, in1, W - in1, H - in1, 20f, 20f, stroke)
-        stroke.strokeWidth = 1.5f
-        canvas.drawRoundRect(in2, in2, W - in2, H - in2, 14f, 14f, stroke)
-
-        val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = gold; style = Paint.Style.FILL }
-        val r = 30f
-        val corners = listOf(
-            in1 to in1, (W - in1) to in1, in1 to (H - in1), (W - in1) to (H - in1)
-        )
-        for ((cx, cy) in corners) {
-            val path = Path().apply {
-                moveTo(cx, cy - r); lineTo(cx + r, cy); lineTo(cx, cy + r); lineTo(cx - r, cy); close()
-            }
-            canvas.drawPath(path, fill)
-            canvas.drawCircle(cx, cy, 7f, fill)
-        }
-    }
-
-    private fun drawCenterOrnament(canvas: Canvas, y: Float, gold: Int) {
-        val cx = W / 2f
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = gold; style = Paint.Style.FILL }
-        val line = Paint(paint).apply { strokeWidth = 1.5f; style = Paint.Style.STROKE }
-        canvas.drawLine(PAD * 1.4f, y, cx - 34f, y, line)
-        canvas.drawLine(cx + 34f, y, W - PAD * 1.4f, y, line)
-        val r = 16f
-        val path = Path().apply {
-            moveTo(cx, y - r); lineTo(cx + r, y); lineTo(cx, y + r); lineTo(cx - r, y); close()
-        }
-        canvas.drawPath(path, paint)
-    }
-
-    private fun drawDividerOrnament(canvas: Canvas, y: Float, gold: Int) {
-        drawCenterOrnament(canvas, y, gold)
     }
 }
