@@ -327,6 +327,67 @@ fun SettingsScreen(onBack: () -> Unit) {
                             ) { Text("خروجی گرفتن", style = FalText.button, color = spec.accent) }
                         }
                         CardBox(spec = spec) {
+                            Text("ارتباط با ما", style = FalText.heading, color = spec.accentSoft)
+                            Spacer(Modifier.height(4.dp))
+                            Text("ایمیل: siliksama@gmail.com", style = FalText.caption, color = spec.onBackgroundMuted)
+                            Text("تلگرام و واتس‌اپ: ۰۹۲۱ ۲۳۱ ۱۲۵۱", style = FalText.caption, color = spec.onBackgroundMuted)
+                            Spacer(Modifier.height(10.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                ContactButton(
+                                    label = "ایمیل", spec = spec, modifier = Modifier.weight(1f)
+                                ) {
+                                    runCatching {
+                                        context.startActivity(
+                                            Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:siliksama@gmail.com"))
+                                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        )
+                                    }
+                                }
+                                ContactButton(
+                                    label = "تلگرام", spec = spec, modifier = Modifier.weight(1f)
+                                ) {
+                                    runCatching {
+                                        context.startActivity(
+                                            Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/+989212311251"))
+                                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        )
+                                    }
+                                }
+                                ContactButton(
+                                    label = "واتس‌اپ", spec = spec, modifier = Modifier.weight(1f)
+                                ) {
+                                    runCatching {
+                                        context.startActivity(
+                                            Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/989212311251"))
+                                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        CardBox(spec = spec) {
+                            Text("حریم خصوصی", style = FalText.heading, color = spec.accentSoft)
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "این اپ دادهٔ شخصی جمع نمی‌کند؛ متن کاملِ سیاستِ حفظ حریم خصوصی را بخوانید.",
+                                style = FalText.caption, color = spec.onBackgroundMuted
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            TextButton(
+                                onClick = {
+                                    runCatching {
+                                        context.startActivity(
+                                            Intent(
+                                                Intent.ACTION_VIEW,
+                                                Uri.parse("https://amirrezahadipoor.github.io/falhafez/privacy.html")
+                                            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.background(spec.card, RoundedCornerShape(12.dp))
+                            ) { Text("مشاهدهٔ سیاستِ حریم خصوصی", style = FalText.button, color = spec.accent) }
+                        }
+                        CardBox(spec = spec) {
                             Text("فال حافظ | تعبیر هوشمند — نسخهٔ ${PersianText.digits(version)}", style = FalText.body, color = spec.onBackground)
                             Spacer(Modifier.height(4.dp))
                             Text(
@@ -667,6 +728,21 @@ private fun CardBox(spec: FalThemeSpec, content: @Composable androidx.compose.fo
         modifier = Modifier.fillMaxWidth().background(spec.card, RoundedCornerShape(16.dp)).padding(16.dp),
         content = content
     )
+}
+
+@Composable
+private fun ContactButton(
+    label: String,
+    spec: FalThemeSpec,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = modifier.background(spec.card, RoundedCornerShape(12.dp))
+    ) {
+        Text(label, style = FalText.button, color = spec.accent)
+    }
 }
 
 @Composable

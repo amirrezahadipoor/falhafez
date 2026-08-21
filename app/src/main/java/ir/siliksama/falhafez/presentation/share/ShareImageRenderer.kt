@@ -26,12 +26,16 @@ import ir.siliksama.falhafez.presentation.home.CategoryAngles
 /**
  * Composes the shareable fal image entirely with android.graphics (Canvas) —
  * a tazhib-style double gold frame with corner shamseh medallions, Nastaliq
- * verse (centered), and a Vazirmatn interpretation. 1080×1350 (4:5).
+ * verse (centered), and a Vazirmatn interpretation. 1080×1620 (2:3).
+ *
+ * Layout strategy: compact header, then the verse + FULL interpretation block is
+ * fitted (measure-first) to fill the space between header and footer; the
+ * interpretation is never truncated except as an absolute last resort.
  */
 object ShareImageRenderer {
 
     private const val W = 1080
-    private const val H = 1350
+    private const val H = 1620
     private const val PAD = 120f
 
     fun render(
@@ -66,22 +70,22 @@ object ShareImageRenderer {
         drawOrnamentFrame(canvas, gold, softGold)
 
         val textWidth = (W - 2 * PAD).toInt()
-        var y = 150f
 
-        // ── سربرگ (ثابت بالای صفحه) ──
+        // ── سربرگِ فشرده — کمترین ارتفاع، تا فضای بیشتری به شعر و تعبیر برسد ──
+        var y = 96f
         y = drawText(
-            canvas, "فال حافظ", 64f, nastaliq, softGold,
-            textWidth, PAD, y, Layout.Alignment.ALIGN_CENTER, 1.15f
+            canvas, "فال حافظ", 56f, nastaliq, softGold,
+            textWidth, PAD, y, Layout.Alignment.ALIGN_CENTER, 1.05f
         )
-        y += 6f
-        drawShamsa(canvas, W / 2f, y + 18f, 17f, gold, softGold, outline = true)
-        y += 52f
+        y += 2f
+        drawShamsa(canvas, W / 2f, y + 16f, 15f, gold, softGold, outline = true)
+        y += 40f
         val meta = "${poem.collection.poet.faName} — ${poem.collection.faName}"
         y = drawText(
-            canvas, meta, 28f, vazir, muted,
+            canvas, meta, 26f, vazir, muted,
             textWidth, PAD, y, Layout.Alignment.ALIGN_CENTER, 1.0f
         )
-        val contentTop = y + 26f
+        val contentTop = y + 18f
 
         // ── تعبیر کامل (+ زاویهٔ موضوعی) ──
         val tafsirText = poem.tafsir + if (category != FalCategory.NONE) {
@@ -97,13 +101,12 @@ object ShareImageRenderer {
 
         // ── بودجهٔ فضای میانی (بین سربرگ و پاورقی) ──
         val middle = (footerTop - contentTop).coerceAtLeast(200f)
-        val gapTop = 20f
-        val gapAfterVerse = 26f
-        val dividerH = 52f
-        val labelH = 50f
-        val gapAfterLabel = 14f
-        val gapBottom = 20f
-        val tafsirSizes = floatArrayOf(30f, 27f, 24f, 22f, 20f, 18f, 16f)
+        val gapTop = 18f
+        val gapAfterVerse = 24f
+        val dividerH = 48f
+        val labelH = 46f
+        val gapAfterLabel = 12f
+        val gapBottom = 16f
 
         fun buildVerseText(maxBeits: Int): String {
             val chosen = poem.verses.take(maxBeits)
@@ -116,55 +119,68 @@ object ShareImageRenderer {
             return lines.joinToString("\n")
         }
 
-        // ── انتخابِ بهترین ترکیب با اندازه‌گیری (بدون رسم) — بزرگ‌ترین فونتِ تعبیر که جا شود ──
+        // ── برازش (measure-first): تعبیرِ کامل + بیت‌های بیشتر، برای پُرکردنِ فضا ──
         var selVerseText = buildVerseText(2)
         var selVerseSize = 32f
         var selTafsirText = tafsirText
-        var selTafsirSize = 16f
+        var selTafsirSize = 18f
         var selVerseH = measureText(selVerseText, selVerseSize, nastaliq, textWidth, 1.5f)
         var selTafsirH = measureText(selTafsirText, selTafsirSize, vazir, textWidth, 1.5f)
-        var bestTafsir = -1f
-        var bestBeits = 0
+        var bestScore = -1f
 
-        for (maxBeits in intArrayOf(3, 2)) {
-            for (verseSize in floatArrayOf(42f, 36f, 32f)) {
-                val verseText = buildVerseText(maxBeits)
-                val verseH = measureText(verseText, verseSize, nastaliq, textWidth, 1.5f)
-                val fixed = gapTop + verseH + gapAfterVerse + dividerH + labelH + gapAfterLabel + gapBottom
-                val tafsirBudget = middle - fixed
-                if (tafsirBudget < 60f) continue
-                for (ts in tafsirSizes) {
-                    val tafsirH = measureText(tafsirText, ts, vazir, textWidth, 1.5f)
-                    if (tafsirH <= tafsirBudget &&
-                        (ts > bestTafsir || (ts == bestTafsir && maxBeits > bestBeits))
-                    ) {
-                        bestTafsir = ts
-                        bestBeits = maxBeits
-                        selVerseText = verseText
-                        selVerseSize = verseSize
-                        selVerseH = verseH
-                        selTafsirText = tafsirText
-                        selTafsirSize = ts
-                        selTafsirH = tafsirH
+        fun consider(maxBeits: Int, verseSize: Float, ts: Float) {
+            val verseText = buildVerseText(maxBeits)
+            val verseH = measureText(verseText, verseSize, nastaliq, textWidth, 1.5f)
+            val fixed = gapTop + verseH + gapAfterVerse + dividerH + labelH + gapAfterLabel + gapBottom
+            val tafsirBudget = middle - fixed
+            if (tafsirBudget < 60f) return
+            val tafsirH = measureText(tafsirText, ts, vazir, textWidth, 1.5f)
+            if (tafsirH > tafsirBudget) return
+            // پُرکردنِ فضا: بلوکِ بلندتر بهتر؛ در تساوی، تعبیر بزرگ‌تر و بیتِ بیشتر.
+            val blockH = fixed + tafsirH
+            val score = blockH * 1000f + ts * 100f + maxBeits * 10f + verseSize
+            if (score > bestScore) {
+                bestScore = score
+                selVerseText = verseText
+                selVerseSize = verseSize
+                selVerseH = verseH
+                selTafsirText = tafsirText
+                selTafsirSize = ts
+                selTafsirH = tafsirH
+            }
+        }
+
+        // لایهٔ ۱: تعبیر با فونتِ خوانا (≥۱۸)
+        for (maxBeits in intArrayOf(5, 4, 3, 2)) {
+            for (verseSize in floatArrayOf(48f, 44f, 40f, 36f, 32f)) {
+                for (ts in floatArrayOf(28f, 26f, 24f, 22f, 20f, 18f)) {
+                    consider(maxBeits, verseSize, ts)
+                }
+            }
+        }
+        // لایهٔ ۲: تعبیرِ خیلی بلند — فونتِ ریزتر ولی همچنان کامل
+        if (bestScore < 0f) {
+            for (maxBeits in intArrayOf(4, 3, 2)) {
+                for (verseSize in floatArrayOf(38f, 34f, 30f)) {
+                    for (ts in floatArrayOf(16f, 15f, 14f)) {
+                        consider(maxBeits, verseSize, ts)
                     }
                 }
             }
         }
-
-        // تضمینِ قطعیِ جا شدن: اگر حتی ریزترین فونت هم در بودجه نگنجید،
-        // تعبیر روی مرزِ واژه کوتاه می‌شود (با «…») تا هرگز روی پاورقی نرود.
-        if (bestTafsir < 0f) {
+        // لایهٔ ۳ (آخرین چارهٔ تضمینی): کوتاه‌کردن روی مرزِ واژه — عملاً رخ نمی‌دهد.
+        if (bestScore < 0f) {
             selVerseText = buildVerseText(2)
-            selVerseSize = 32f
+            selVerseSize = 30f
             selVerseH = measureText(selVerseText, selVerseSize, nastaliq, textWidth, 1.5f)
-            selTafsirSize = 16f
+            selTafsirSize = 14f
             val fixed = gapTop + selVerseH + gapAfterVerse + dividerH + labelH + gapAfterLabel + gapBottom
             val budget = middle - fixed
             selTafsirText = truncateToFit(tafsirText, budget, selTafsirSize, vazir, textWidth, 1.5f)
             selTafsirH = measureText(selTafsirText, selTafsirSize, vazir, textWidth, 1.5f)
         }
 
-        // ── رسمِ بدنه — عمودی وسط‌چین میانِ سربرگ و پاورقی تا جای خالی متوازن شود ──
+        // ── رسمِ بدنه — عمودی وسط‌چین میانِ سربرگ و پاورقی ──
         val blockH = gapTop + selVerseH + gapAfterVerse + dividerH + labelH + gapAfterLabel + selTafsirH
         val startY = contentTop + ((middle - blockH) / 2f).coerceAtLeast(0f)
 
@@ -178,10 +194,10 @@ object ShareImageRenderer {
         drawDividerOrnament(canvas, cy + 14f, gold, softGold)
         cy += dividerH
 
-        drawFlankedLabel(canvas, "تعبیر", 34f, vazirBold, gold, cy, gold, textWidth)
+        drawFlankedLabel(canvas, "تعبیر", 32f, vazirBold, gold, cy, gold, textWidth)
         cy += labelH + gapAfterLabel
 
-        // تعبیر — ارتفاعش داخل بودجه تضمین شده است؛ هرگز به پاورقی نمی‌رسد.
+        // تعبیرِ کامل — ارتفاعش داخل بودجه تضمین شده است؛ هرگز به پاورقی نمی‌رسد.
         drawText(
             canvas, selTafsirText, selTafsirSize, vazir, ink,
             textWidth, PAD, cy, Layout.Alignment.ALIGN_NORMAL, 1.5f
@@ -252,7 +268,6 @@ object ShareImageRenderer {
     /**
      * متن را آن‌قدر کوتاه می‌کند که ارتفاعش در [maxHeight] جا شود؛
      * برش روی مرزِ واژه انجام می‌شود و «…» در پایان می‌آید.
-     * (جست‌وجوی دودویی روی طولِ متن — تضمینِ قطعیِ عدمِ سرریز روی پاورقی.)
      */
     private fun truncateToFit(
         text: String,
@@ -325,7 +340,6 @@ object ShareImageRenderer {
         }
         canvas.drawRoundRect(50f, 50f, W - 50f, H - 50f, 18f, 18f, inner)
 
-        // شمسهٔ گوشه‌ها
         val corners = listOf(
             50f to 50f, (W - 50f) to 50f, 50f to (H - 50f), (W - 50f) to (H - 50f)
         )
@@ -333,7 +347,6 @@ object ShareImageRenderer {
             drawShamsa(canvas, cx, cy, 30f, gold, softGold, outline = false)
         }
 
-        // نقطه‌های طلایی روی گوشهٔ قابِ بیرونی
         val dot = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = gold; style = Paint.Style.FILL }
         for ((cx, cy) in corners) {
             canvas.drawCircle(cx, cy, 6f, dot)
@@ -408,7 +421,6 @@ object ShareImageRenderer {
         val vazir = ResourcesCompat.getFont(context, R.font.vazirmatn_regular) ?: Typeface.DEFAULT
         val vazirBold = ResourcesCompat.getFont(context, R.font.vazirmatn_bold) ?: Typeface.DEFAULT_BOLD
 
-        // پس‌زمینهٔ کارت + قاب طلایی
         val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = spec.card.copy(alpha = 0.85f).toArgb()
         }
@@ -422,7 +434,6 @@ object ShareImageRenderer {
 
         val centerX = (W - textWidth) / 2f
 
-        // برچسب بالا
         var yy = y + 22f
         val badge = if (gold) "پشتیبانِ همیشگی ♥" else "با حمایتِ مالیِ"
         yy = drawText(
@@ -430,7 +441,6 @@ object ShareImageRenderer {
             textWidth, centerX, yy, Layout.Alignment.ALIGN_CENTER, 1.0f
         )
 
-        // آیکون شبکه (وسط)
         val size = 92f
         val iconLeft = (W - size) / 2f
         val iconTop = yy + 10f
@@ -441,21 +451,18 @@ object ShareImageRenderer {
         )
         yy = iconTop + size + 12f
 
-        // نام
         val name = if (channel.name.isNotBlank()) channel.name else network.label
         yy = drawText(
             canvas, name, 40f, vazirBold, spec.accentSoft.toArgb(),
             textWidth, centerX, yy, Layout.Alignment.ALIGN_CENTER, 1.0f
         )
 
-        // شناسه
         yy = drawText(
             canvas, "@${channel.handle.trim().trimStart('@')}", 30f, vazir,
             spec.onBackground.toArgb(),
             textWidth, centerX, yy + 8f, Layout.Alignment.ALIGN_CENTER, 1.0f
         )
 
-        // دعوت
         drawText(
             canvas, "برای فالِ روزانه، ما را دنبال کنید", 26f, vazir,
             spec.onBackgroundMuted.toArgb(),
