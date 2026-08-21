@@ -1,6 +1,7 @@
 package ir.siliksama.falhafez.presentation.home
 
 import android.app.Activity
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ir.siliksama.falhafez.core.sound.Sounds
@@ -35,8 +36,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
+private const val DAILY_FREE_LIMIT = 2
 private const val COOLDOWN_MS = 8_000L
 
 enum class DrawStage { NIYYAT, DRAWING, REVEAL, INTERPRETATION }
@@ -50,7 +53,7 @@ data class HomeUiState(
     val lastDraw: DrawEntry? = null,
     val dailyFal: Poem? = null,
     val cooldownActive: Boolean = false,
-    val remainingToday: Int = Int.MAX_VALUE,
+    val remainingToday: Int = DAILY_FREE_LIMIT,
     val busy: Boolean = false,
     val supportOpen: Boolean = false
 ) {
@@ -123,12 +126,21 @@ class HomeViewModel @Inject constructor(
     }
 
     /** Fal source: حافظ / سعدی / مولانا / خیام / همهٔ مجموعه‌ها. */
-    fun onSourceSelect(source: Poet?) = _uiState.update {
-        val count = when (source) {
-            null -> counts.values.sum()
-            else -> counts[source] ?: 0
+    fun onSourceSelect(source: Poet?) {
+        viewModelScope.launch {
+            // شمارنده‌ها را تازه بگیر (در اولین اجرا ممکن است هنوز کامل seed نشده باشند)
+            counts = Poet.entries.associateWith { poemRepository.countForPoet(it) }
+            val count = when (source) {
+                null -> counts.values.sum()
+                else -> counts[source] ?: 0
+            }
+            _uiState.update { it.copy(falSource = source, sourceCount = count) }
         }
-        it.copy(falSource = source, sourceCount = count)
+    }
+
+    /** سهمیهٔ روزانه را تازه‌سازی کن (هنگام برگشت اپ به پیش‌زمینه — مثلاً بعد از نیمه‌شب). */
+    fun refreshQuota() {
+        viewModelScope.launch { recomputeRemaining() }
     }
 
     fun draw() {
@@ -137,15 +149,14 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch { performDraw(bypassCooldown = false) }
     }
 
-    /** Rewarded hook — grants an extra free draw beyond the daily limit. */
+    /** فالِ بعد از سهمیهٔ رایگان — با تماشای ویدیوی پاداشی (هر ویدیو = یک فال). */
     fun requestExtraDraw(activity: Activity) {
         viewModelScope.launch {
-            adManager.showRewarded(activity) {
-                viewModelScope.launch {
-                    settingsRepository.addRewardedDraw(1)
-                    recomputeRemaining()
-                    performDraw(bypassCooldown = true)
-                }
+            val shown = adManager.showRewarded(activity) {
+                viewModelScope.launch { performDraw(bypassCooldown = true) }
+            }
+            if (!shown) {
+                Toast.makeText(activity, "تبلیغ در دسترس نیست — اینترنت را چک کنید", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -153,11 +164,14 @@ class HomeViewModel @Inject constructor(
     /** Rewarded hook — skips the 8s repeat cooldown and draws immediately (GOLD: free). */
     fun requestSkipCooldown(activity: Activity) {
         viewModelScope.launch {
-            if (supportRepository.tier.first() == SupportTier.GOLD) {
+            if (supportRepository.tier.first().instantDraw) {
                 performDraw(bypassCooldown = true)
             } else {
-                adManager.showRewarded(activity) {
+                val shown = adManager.showRewarded(activity) {
                     viewModelScope.launch { performDraw(bypassCooldown = true) }
+                }
+                if (!shown) {
+                    Toast.makeText(activity, "تبلیغ در دسترس نیست — اینترنت را چک کنید", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -173,9 +187,9 @@ class HomeViewModel @Inject constructor(
         val question = s.question.trim().ifBlank { null }
         val result = drawFal(question, s.category, s.falSource)
         favoriteTargetId.value = result?.poem?.id
-        val gold = supportRepository.tier.first() == SupportTier.GOLD
+        val instant = supportRepository.tier.first().instantDraw
         _uiState.update {
-            it.copy(lastDraw = result, dailyFal = null, cooldownActive = !gold, busy = false)
+            it.copy(lastDraw = result, dailyFal = null, cooldownActive = !instant, busy = false)
         }
         recomputeRemaining()
         adManager.onDrawCompleted()
@@ -187,8 +201,24 @@ class HomeViewModel @Inject constructor(
     }
 
     private suspend fun recomputeRemaining() {
-        // فال نامحدود است — هیچ محدودیت روزانه‌ای وجود ندارد.
-        _uiState.update { it.copy(remainingToday = Int.MAX_VALUE) }
+        val subscribed = supportRepository.tier.first().adsRemoved
+        val remaining = if (subscribed) {
+            Int.MAX_VALUE
+        } else {
+            val used = drawRepository.countSince(startOfToday())
+            (DAILY_FREE_LIMIT - used).coerceAtLeast(0)
+        }
+        _uiState.update { it.copy(remainingToday = remaining) }
+    }
+
+    private fun startOfToday(): Long {
+        val c = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return c.timeInMillis
     }
 
     fun onDrawingFinished() {
@@ -212,9 +242,6 @@ class HomeViewModel @Inject constructor(
         val started = paymentGateway.purchase(activity, tier) {
             viewModelScope.launch {
                 supportRepository.setTier(tier)
-                if (tier == SupportTier.PLUS || tier == SupportTier.GOLD) {
-                    settingsRepository.unlockTheme(FalThemeId.YALDA)
-                }
                 recomputeRemaining()
                 _purchasing.value = false
             }

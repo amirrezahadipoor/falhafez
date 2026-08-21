@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
@@ -39,6 +40,12 @@ fun HomeScreen(
 
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
+
+    // هر بار که اپ به پیش‌زمینه برمی‌گردد، سهمیهٔ روزانه تازه‌سازی می‌شود (مثلاً بعد از نیمه‌شب).
+    LifecycleResumeEffect(Unit) {
+        viewModel.refreshQuota()
+        onPauseOrDispose { }
+    }
 
     RitualBackground(spec = spec) {
         if (state.supportOpen) {
@@ -130,6 +137,7 @@ fun HomeScreen(
                         category = entry.category,
                         isFavorite = isFavorite,
                         cooldownActive = state.cooldownActive,
+                        remainingToday = state.remainingToday,
                         onToggleFavorite = viewModel::onToggleFavorite,
                         onDrawAgain = viewModel::draw,
                         onRewarded = if (activity != null) { { viewModel.requestSkipCooldown(activity) } } else null,

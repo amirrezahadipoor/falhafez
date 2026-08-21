@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
+import java.util.Locale
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -105,7 +106,6 @@ fun SettingsScreen(onBack: () -> Unit) {
 
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
-    val unlockedThemes by viewModel.unlockedThemes.collectAsStateWithLifecycle()
     val version = remember {
         runCatching {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName
@@ -217,14 +217,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                 when (SettingsTab.entries[tab]) {
                     SettingsTab.THEME -> ThemeGrid(
                         selectedId = themeId,
-                        unlocked = unlockedThemes,
-                        onSelect = { spec ->
-                            when {
-                                !spec.locked -> viewModel.setTheme(spec.id)
-                                spec.id.id in unlockedThemes -> viewModel.setTheme(spec.id)
-                                activity != null -> viewModel.requestUnlockTheme(activity, spec.id)
-                            }
-                        }
+                        onSelect = { spec -> viewModel.setTheme(spec.id) }
                     )
                     SettingsTab.DISPLAY -> ScrollableColumn(
                         modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
@@ -246,7 +239,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                                 )
                             )
                             Text(
-                                "مقیاس: ${PersianText.digits(String.format("%.2f", fontSizeScale))}",
+                                "مقیاس: ${PersianText.digits(String.format(Locale.US, "%.2f", fontSizeScale))}",
                                 style = FalText.caption, color = FalPalette.CreamMuted
                             )
                         }
@@ -357,10 +350,10 @@ private fun SupportTab(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         CardBox {
-            Text("حمایتِ مالی = حذفِ همیشگیِ تبلیغات", style = FalText.heading, color = FalPalette.GoldBright)
+            Text("حمایتِ مالی = حذف تبلیغات + فالِ نامحدود", style = FalText.heading, color = FalPalette.GoldBright)
             Spacer(Modifier.height(6.dp))
             Text(
-                "با یک‌بار حمایت، تبلیغات برای همیشه حذف می‌شود و اپلیکیشن با انرژیِ شما زنده می‌ماند.",
+                "با یک‌بار حمایت، تبلیغات برای همیشه حذف می‌شود و فال برایتان نامحدود می‌ماند.",
                 style = FalText.bodyMuted, color = FalPalette.CreamMuted
             )
         }
@@ -590,7 +583,6 @@ private fun PromoBanner(title: String, subtitle: String, cta: String, onClick: (
 @Composable
 private fun ThemeGrid(
     selectedId: ir.siliksama.falhafez.core.theme.FalThemeId,
-    unlocked: Set<String>,
     onSelect: (FalThemeSpec) -> Unit
 ) {
     LazyVerticalGrid(
@@ -601,7 +593,6 @@ private fun ThemeGrid(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         gridItems(FalThemeSpec.All) { spec ->
-            val isUnlocked = !spec.locked || spec.id.id in unlocked
             val selected = spec.id == selectedId
             Column(
                 modifier = Modifier
@@ -628,9 +619,8 @@ private fun ThemeGrid(
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(spec.id.faName, style = FalText.body, color = FalPalette.Cream, modifier = Modifier.weight(1f))
-                    when {
-                        spec.locked && !isUnlocked -> Text("قفل", style = FalText.caption, color = FalPalette.Gold)
-                        selected -> Icon(Icons.Filled.Check, contentDescription = "انتخاب‌شده", tint = spec.accent, modifier = Modifier.size(16.dp))
+                    if (selected) {
+                        Icon(Icons.Filled.Check, contentDescription = "انتخاب‌شده", tint = spec.accent, modifier = Modifier.size(16.dp))
                     }
                 }
             }

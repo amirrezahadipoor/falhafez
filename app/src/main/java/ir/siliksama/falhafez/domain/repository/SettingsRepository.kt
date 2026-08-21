@@ -9,7 +9,6 @@ interface SettingsRepository {
     val notificationsEnabled: Flow<Boolean>
     val seenOnboarding: Flow<Boolean>
     val rewardedExtraDraws: Flow<Int>
-    val unlockedThemes: Flow<Set<String>>
     val soundEnabled: Flow<Boolean>
     val hapticsEnabled: Flow<Boolean>
     val fontColor: Flow<String>
@@ -24,7 +23,6 @@ interface SettingsRepository {
     suspend fun setNotificationsEnabled(enabled: Boolean)
     suspend fun setSeenOnboarding(seen: Boolean)
     suspend fun addRewardedDraw(count: Int)
-    suspend fun unlockTheme(id: FalThemeId)
     suspend fun setSoundEnabled(enabled: Boolean)
     suspend fun setHapticsEnabled(enabled: Boolean)
     suspend fun setFontColor(key: String)

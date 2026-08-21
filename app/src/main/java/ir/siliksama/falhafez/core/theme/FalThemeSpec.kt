@@ -36,7 +36,6 @@ data class FalThemeSpec(
     val particle: Color,
     val particleSecondary: Color,
     val border: Color,
-    val locked: Boolean = false,
     @DrawableRes val artworkRes: Int? = null,
     val artworkAlpha: Float = 0.55f
 ) {
@@ -99,7 +98,7 @@ data class FalThemeSpec(
             accent = Color(0xFFE05263), accentSoft = Color(0xFFF18A97),
             onBackground = Color(0xFFFBE9E4), onBackgroundMuted = Color(0xFFC79A9F),
             card = Color(0xFF33151B), particle = Color(0xFFF27E8E), particleSecondary = Color(0xFFE05263),
-            border = Color(0xFF7A2A33), locked = true, artworkRes = R.drawable.theme_yalda, artworkAlpha = 0.60f
+            border = Color(0xFF7A2A33), artworkRes = R.drawable.theme_yalda, artworkAlpha = 0.60f
         )
 
         fun dawn() = FalThemeSpec(

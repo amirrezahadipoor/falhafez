@@ -31,7 +31,9 @@ class FalHafezApp : Application() {
         appScope.launch { corpusSeeder.seedIfNeeded() }
         Sounds.init(this)
         // سطح حمایت را زود بارگذاری کن تا اگر کاربر خرید کرده، از همان لحظهٔ اول تبلیغی نمایش داده نشود.
-        appScope.launch { SupportStore.tier = supportRepository.tier.first() }
+        appScope.launch {
+            runCatching { SupportStore.tier = supportRepository.tier.first() }
+        }
         // تپسل به‌صورت خودکار (ContentProvider) با کلیدِ مانیفست راه‌اندازی می‌شود — بدون نیاز به کد.
     }
 

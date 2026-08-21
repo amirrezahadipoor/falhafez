@@ -28,6 +28,9 @@ jobs:
       - name: Validate corpus assets
         run: python3 tools/validate_corpus.py
 
+      - name: Run unit tests
+        run: chmod +x gradlew && ./gradlew testReleaseUnitTest --no-daemon
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 

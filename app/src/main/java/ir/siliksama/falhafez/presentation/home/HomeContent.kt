@@ -250,13 +250,31 @@ fun NiyyatContent(
         // ---- fixed bottom: CTA + daily fal + banner ----
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             BreathingRosette(tint = spec.accent, size = 130.dp)
-            GoldButton(
-                text = if (state.busy) "در حال گشودن دیوان…" else "فال بگیر",
-                onClick = onDraw,
-                enabled = state.canDraw,
-                glow = true
+            if (state.remainingToday <= 0 && onRewardedDraw != null && !adsRemoved) {
+                GoldButton(
+                    text = "فال با تماشای ویدئو",
+                    onClick = onRewardedDraw,
+                    glow = true
+                )
+            } else {
+                GoldButton(
+                    text = if (state.busy) "در حال گشودن دیوان…" else "فال بگیر",
+                    onClick = onDraw,
+                    enabled = state.canDraw,
+                    glow = true
+                )
+            }
+        }
+
+        // نشانِ سهمیهٔ رایگان روزانه (فقط برای کاربران عادی)
+        if (!adsRemoved && state.remainingToday < Int.MAX_VALUE) {
+            Text(
+                text = "فالِ رایگانِ امروز: ${PersianText.number(state.remainingToday)} از ${PersianText.number(2)}",
+                style = FalText.caption,
+                color = spec.onBackgroundMuted
             )
         }
+
         Spacer(Modifier.height(8.dp))
 
         Row(
@@ -398,6 +416,7 @@ fun InterpretationContent(
     category: FalCategory,
     isFavorite: Boolean,
     cooldownActive: Boolean,
+    remainingToday: Int,
     onToggleFavorite: () -> Unit,
     onDrawAgain: () -> Unit,
     onRewarded: (() -> Unit)? = null,
@@ -477,7 +496,7 @@ fun InterpretationContent(
         }
 
         when {
-            cooldownActive && supportTier == SupportTier.GOLD -> GoldButton(
+            cooldownActive && supportTier.instantDraw -> GoldButton(
                 text = "فالِ فوری", onClick = onDrawAgain, glow = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -489,8 +508,16 @@ fun InterpretationContent(
                 text = "لحظه‌ای درنگ…", onClick = onDrawAgain, enabled = false,
                 modifier = Modifier.fillMaxWidth()
             )
-            else -> GoldButton(
+            adsRemoved || remainingToday > 0 -> GoldButton(
                 text = "فال دوباره", onClick = onDrawAgain, glow = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            onRewarded != null -> GoldButton(
+                text = "فال دوباره — تماشای ویدئو", onClick = onRewarded, glow = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            else -> GoldButton(
+                text = "فال دوباره", onClick = onDrawAgain, enabled = false,
                 modifier = Modifier.fillMaxWidth()
             )
         }

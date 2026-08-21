@@ -14,15 +14,18 @@ enum class SupportTier(
     NONE("none", "—", 0, "", ""),
 
     BASE("base", "حمایتِ پایه", 100_000, "fal_support_base",
-        "حذفِ کاملِ تبلیغات، برای همیشه"),
+        "حذفِ کاملِ تبلیغات + فالِ نامحدود، برای همیشه"),
 
     PLUS("plus", "حمایتِ ویژه", 300_000, "fal_support_plus",
-        "حذف تبلیغات + قالبِ ویژهٔ «شبِ یلدا»"),
+        "حذف تبلیغات + فالِ نامحدود + فالِ بدونِ درنگ (بدون ضرب‌آهنگ)"),
 
     GOLD("gold", "حمایتِ همیشگی", 490_000, "fal_support_gold",
-        "حذف تبلیغات + قالب یلدا + فالِ بدونِ درنگ (بدون ضرب‌آهنگ) + نشانِ «پشتیبان» روی تصویرِ اشتراک");
+        "حذف تبلیغات + فالِ نامحدود + فالِ بدونِ درنگ + نشانِ «پشتیبان» روی تصویرِ اشتراک");
 
     val adsRemoved: Boolean get() = this != NONE
+
+    /** بدونِ ضرب‌آهنگِ انتظار (فالِ فوری). */
+    val instantDraw: Boolean get() = this == PLUS || this == GOLD
 
     companion object {
         fun fromKey(key: String?): SupportTier = entries.firstOrNull { it.key == key } ?: NONE

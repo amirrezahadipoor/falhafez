@@ -53,9 +53,6 @@ class SettingsViewModel @Inject constructor(
     val notificationsEnabled: StateFlow<Boolean> = settingsRepository.notificationsEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
-    val unlockedThemes: StateFlow<Set<String>> = settingsRepository.unlockedThemes
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
-
     val soundEnabled: StateFlow<Boolean> = settingsRepository.soundEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
@@ -113,18 +110,6 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { settingsRepository.setHapticsEnabled(enabled) }
     }
 
-    /** Rewarded unlock for premium themes (شب یلدا …). */
-    fun requestUnlockTheme(activity: Activity, id: FalThemeId) {
-        viewModelScope.launch {
-            adManager.showRewarded(activity) {
-                viewModelScope.launch {
-                    settingsRepository.unlockTheme(id)
-                    settingsRepository.setTheme(id)
-                }
-            }
-        }
-    }
-
     // ---- حمایت مالی ----
     fun purchase(activity: Activity, tier: SupportTier) {
         if (_purchasing.value) return
@@ -132,10 +117,6 @@ class SettingsViewModel @Inject constructor(
         val started = paymentGateway.purchase(activity, tier) {
             viewModelScope.launch {
                 supportRepository.setTier(tier)
-                // امتیاز سطح ویژه: قفلِ قالبِ یلدا برای PLUS و GOLD باز می‌شود
-                if (tier == SupportTier.PLUS || tier == SupportTier.GOLD) {
-                    settingsRepository.unlockTheme(FalThemeId.YALDA)
-                }
                 _purchasing.value = false
             }
         }
