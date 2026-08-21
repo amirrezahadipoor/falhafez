@@ -68,7 +68,7 @@ object ShareImageRenderer {
         val textWidth = (W - 2 * PAD).toInt()
         var y = 150f
 
-        // ── سربرگ ──
+        // ── سربرگ (ثابت بالای صفحه) ──
         y = drawText(
             canvas, "فال حافظ", 64f, nastaliq, softGold,
             textWidth, PAD, y, Layout.Alignment.ALIGN_CENTER, 1.15f
@@ -95,7 +95,7 @@ object ShareImageRenderer {
         val footerBlock = if (withChannel) 360f else 130f
         val footerTop = H - footerBlock
 
-        // ── بودجهٔ فضای میانی ──
+        // ── بودجهٔ فضای میانی (بین سربرگ و پاورقی) ──
         val middle = (footerTop - contentTop).coerceAtLeast(200f)
         val gapTop = 20f
         val gapAfterVerse = 26f
@@ -103,55 +103,74 @@ object ShareImageRenderer {
         val labelH = 50f
         val gapAfterLabel = 14f
         val gapBottom = 20f
-
-        // بهترین ترکیب: بزرگ‌ترین فونتِ تعبیر که جا شود (و بعد، بیت‌های بیشتر)
-        var selMaxBeits = 2
-        var selVerseSize = 32f
-        var selTafsirSize = 16f
-        var bestTafsir = -1f
-        // تا ۱۶ — برای تعبیرهای بلند، تا متنِ کامل همیشه بالای پاورقی جا شود.
         val tafsirSizes = floatArrayOf(30f, 27f, 24f, 22f, 20f, 18f, 16f)
+
+        fun buildVerseText(maxBeits: Int): String {
+            val chosen = poem.verses.take(maxBeits)
+            val lines = mutableListOf<String>()
+            chosen.forEach { b ->
+                lines += b.first
+                b.second?.let { lines += it }
+            }
+            if (poem.verses.size > chosen.size) lines += "…"
+            return lines.joinToString("\n")
+        }
+
+        // ── انتخابِ بهترین ترکیب با اندازه‌گیری (بدون رسم) — بزرگ‌ترین فونتِ تعبیر که جا شود ──
+        var selVerseText = buildVerseText(2)
+        var selVerseSize = 32f
+        var selTafsirText = tafsirText
+        var selTafsirSize = 16f
+        var selVerseH = measureText(selVerseText, selVerseSize, nastaliq, textWidth, 1.5f)
+        var selTafsirH = measureText(selTafsirText, selTafsirSize, vazir, textWidth, 1.5f)
+        var bestTafsir = -1f
+        var bestBeits = 0
+
         for (maxBeits in intArrayOf(3, 2)) {
             for (verseSize in floatArrayOf(42f, 36f, 32f)) {
-                val chosen = poem.verses.take(maxBeits)
-                val lines = mutableListOf<String>()
-                chosen.forEach { b ->
-                    lines += b.first
-                    b.second?.let { lines += it }
-                }
-                if (poem.verses.size > chosen.size) lines += "…"
-                val verseText = lines.joinToString("\n")
+                val verseText = buildVerseText(maxBeits)
                 val verseH = measureText(verseText, verseSize, nastaliq, textWidth, 1.5f)
                 val fixed = gapTop + verseH + gapAfterVerse + dividerH + labelH + gapAfterLabel + gapBottom
                 val tafsirBudget = middle - fixed
-                if (tafsirBudget < 90f) continue
+                if (tafsirBudget < 60f) continue
                 for (ts in tafsirSizes) {
                     val tafsirH = measureText(tafsirText, ts, vazir, textWidth, 1.5f)
-                    if (tafsirH <= tafsirBudget) {
-                        if (ts > bestTafsir || (ts == bestTafsir && maxBeits > selMaxBeits)) {
-                            bestTafsir = ts
-                            selMaxBeits = maxBeits
-                            selVerseSize = verseSize
-                            selTafsirSize = ts
-                        }
+                    if (tafsirH <= tafsirBudget &&
+                        (ts > bestTafsir || (ts == bestTafsir && maxBeits > bestBeits))
+                    ) {
+                        bestTafsir = ts
+                        bestBeits = maxBeits
+                        selVerseText = verseText
+                        selVerseSize = verseSize
+                        selVerseH = verseH
+                        selTafsirText = tafsirText
+                        selTafsirSize = ts
+                        selTafsirH = tafsirH
                     }
                 }
             }
         }
 
-        // ── رسمِ بیت‌ها (وسط‌چین) ──
-        val chosenBeits = poem.verses.take(selMaxBeits)
-        val verseLines = mutableListOf<String>()
-        chosenBeits.forEach { b ->
-            verseLines += b.first
-            b.second?.let { verseLines += it }
+        // تضمینِ قطعیِ جا شدن: اگر حتی ریزترین فونت هم در بودجه نگنجید،
+        // تعبیر روی مرزِ واژه کوتاه می‌شود (با «…») تا هرگز روی پاورقی نرود.
+        if (bestTafsir < 0f) {
+            selVerseText = buildVerseText(2)
+            selVerseSize = 32f
+            selVerseH = measureText(selVerseText, selVerseSize, nastaliq, textWidth, 1.5f)
+            selTafsirSize = 16f
+            val fixed = gapTop + selVerseH + gapAfterVerse + dividerH + labelH + gapAfterLabel + gapBottom
+            val budget = middle - fixed
+            selTafsirText = truncateToFit(tafsirText, budget, selTafsirSize, vazir, textWidth, 1.5f)
+            selTafsirH = measureText(selTafsirText, selTafsirSize, vazir, textWidth, 1.5f)
         }
-        if (poem.verses.size > chosenBeits.size) verseLines += "…"
-        val verseText = verseLines.joinToString("\n")
 
-        var cy = contentTop + gapTop
+        // ── رسمِ بدنه — عمودی وسط‌چین میانِ سربرگ و پاورقی تا جای خالی متوازن شود ──
+        val blockH = gapTop + selVerseH + gapAfterVerse + dividerH + labelH + gapAfterLabel + selTafsirH
+        val startY = contentTop + ((middle - blockH) / 2f).coerceAtLeast(0f)
+
+        var cy = startY + gapTop
         cy = drawText(
-            canvas, verseText, selVerseSize, nastaliq, ink,
+            canvas, selVerseText, selVerseSize, nastaliq, ink,
             textWidth, PAD, cy, Layout.Alignment.ALIGN_CENTER, 1.5f
         )
         cy += gapAfterVerse
@@ -162,9 +181,9 @@ object ShareImageRenderer {
         drawFlankedLabel(canvas, "تعبیر", 34f, vazirBold, gold, cy, gold, textWidth)
         cy += labelH + gapAfterLabel
 
-        // تعبیرِ کامل — همیشه بالای پاورقی
+        // تعبیر — ارتفاعش داخل بودجه تضمین شده است؛ هرگز به پاورقی نمی‌رسد.
         drawText(
-            canvas, tafsirText, selTafsirSize, vazir, ink,
+            canvas, selTafsirText, selTafsirSize, vazir, ink,
             textWidth, PAD, cy, Layout.Alignment.ALIGN_NORMAL, 1.5f
         )
 
@@ -228,6 +247,42 @@ object ShareImageRenderer {
             .setIncludePad(false)
             .build()
         return layout.height.toFloat()
+    }
+
+    /**
+     * متن را آن‌قدر کوتاه می‌کند که ارتفاعش در [maxHeight] جا شود؛
+     * برش روی مرزِ واژه انجام می‌شود و «…» در پایان می‌آید.
+     * (جست‌وجوی دودویی روی طولِ متن — تضمینِ قطعیِ عدمِ سرریز روی پاورقی.)
+     */
+    private fun truncateToFit(
+        text: String,
+        maxHeight: Float,
+        size: Float,
+        typeface: Typeface,
+        width: Int,
+        lineSpacing: Float
+    ): String {
+        if (maxHeight <= 0f) return "…"
+        if (measureText(text, size, typeface, width, lineSpacing) <= maxHeight) return text
+        var lo = 0
+        var hi = text.length
+        var best = ""
+        while (lo <= hi) {
+            val mid = (lo + hi) / 2
+            var candidate = text.substring(0, mid)
+            if (candidate.isNotEmpty()) {
+                val space = candidate.lastIndexOf(' ')
+                if (space > mid * 3 / 4) candidate = candidate.substring(0, space).trimEnd()
+            }
+            val probe = if (candidate.isEmpty()) "…" else "$candidate…"
+            if (measureText(probe, size, typeface, width, lineSpacing) <= maxHeight) {
+                best = probe
+                lo = mid + 1
+            } else {
+                hi = mid - 1
+            }
+        }
+        return if (best.isNotEmpty()) best else "…"
     }
 
     private fun drawText(
