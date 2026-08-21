@@ -1,9 +1,9 @@
 package ir.siliksama.falhafez.domain.usecase
 
+import ir.siliksama.falhafez.core.util.DayNumber
 import ir.siliksama.falhafez.domain.model.Poem
 import ir.siliksama.falhafez.domain.model.Poet
 import ir.siliksama.falhafez.domain.repository.PoemRepository
-import java.util.Calendar
 import javax.inject.Inject
 
 /**
@@ -17,7 +17,7 @@ class DailyFalUseCase @Inject constructor(
     suspend fun today(): Poem? {
         val count = poemRepository.countForPoet(Poet.HAFEZ)
         if (count <= 0) return null
-        val day = startOfToday() / 86_400_000L
+        val day = DayNumber.local()
         val index = (day % count.toLong()).toInt()
         return poemRepository.getPoemAt(Poet.HAFEZ, index)
     }
@@ -29,17 +29,8 @@ class DailyFalUseCase @Inject constructor(
         return poemRepository.getPoemAt(Poet.HAFEZ, (dayNumber % count.toLong()).toInt())
     }
 
-    private fun startOfToday(): Long {
-        val c = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        return c.timeInMillis
-    }
-
     companion object {
-        fun todayDayNumber(): Long = System.currentTimeMillis() / 86_400_000L
+        /** شمارهٔ روزِ محلی — مبنای مشترکِ فالِ روز در اپ و ویجت. */
+        fun todayDayNumber(): Long = DayNumber.local()
     }
 }

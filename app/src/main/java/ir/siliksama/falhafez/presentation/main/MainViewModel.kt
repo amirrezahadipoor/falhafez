@@ -9,6 +9,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.siliksama.falhafez.core.designsystem.FalFontColors
 import ir.siliksama.falhafez.core.sound.Sounds
 import ir.siliksama.falhafez.core.util.ChannelStore
+import ir.siliksama.falhafez.core.util.DayNumber
 import ir.siliksama.falhafez.core.util.SupportStore
 import ir.siliksama.falhafez.data.updates.UpdateChecker
 import ir.siliksama.falhafez.domain.model.ChannelInfo
@@ -61,7 +62,7 @@ class MainViewModel @Inject constructor(
         }
         // چک خودکار بروزرسانی — فقط یک‌بار در روز، کاملاً بی‌صدا (آفلاین = هیچ)
         viewModelScope.launch {
-            val today = System.currentTimeMillis() / 86_400_000L
+            val today = DayNumber.local()
             val last = settingsRepository.lastUpdateCheckDay.first()
             if (today > last) {
                 settingsRepository.setLastUpdateCheckDay(today)

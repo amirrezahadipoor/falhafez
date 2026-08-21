@@ -234,6 +234,39 @@ def main():
                 total_fixed["star_verses"] += len(p.get("verses") or []) - len(new_verses)
                 changed += 1
             p["verses"] = new_verses
+            # 1b) strip spurious line-breaks inside hemistiches (story prose keeps its
+            # paragraph breaks — only collection='stories' prose is multi-paragraph).
+            if p["collection"] != "stories":
+                for v in p["verses"]:
+                    if "\n" in (v.get("first") or ""):
+                        v["first"] = (v["first"] or "").replace("\n", " ")
+                        total_fixed["newline_first"] += 1
+                        changed += 1
+                    if "\n" in (v.get("second") or ""):
+                        v["second"] = (v["second"] or "").replace("\n", " ")
+                        total_fixed["newline_second"] += 1
+                        changed += 1
+            # 1c) normalize Ganjoor manuscript-gap markers everywhere user-facing:
+            # "........." → "…" and "( ... )" → "(…)" — cleaner but still honest.
+            def normalize_ellipsis(t):
+                if not t:
+                    return t
+                if not re.search(r"\.{3,}", t):
+                    return t
+                nt = re.sub(r"\.{3,}", "…", t)
+                nt = nt.replace("( ... )", "(…)")
+                return nt
+            if re.search(r"\.{3,}", p.get("tafsir") or ""):
+                p["tafsir"] = normalize_ellipsis(p["tafsir"])
+                total_fixed["ellipsis"] += 1
+                changed += 1
+            for v in p["verses"]:
+                for field in ("first", "second", "meaning"):
+                    t = v.get(field)
+                    if t and re.search(r"\.{3,}", t):
+                        v[field] = normalize_ellipsis(t)
+                        total_fixed["ellipsis"] += 1
+                        changed += 1
             # 2) fix verses
             for vi, v in enumerate(p["verses"]):
                 m = v.get("meaning")

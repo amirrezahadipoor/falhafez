@@ -45,10 +45,16 @@ for name in NAMES:
                 errors.append(f"{name} id {pid}: latin in {field}: {LATIN.search(t).group(0)!r}")
             if AI_RE.search(t):
                 errors.append(f"{name} id {pid}: AI label in {field}")
+            if "\n" in t:
+                errors.append(f"{name} id {pid}: newline in tafsir")
         for vi, v in enumerate(x.get("verses", [])):
             f = v.get("first") or ""
             if f.strip() == "***":
                 errors.append(f"{name} id {pid} v{vi}: *** placeholder verse")
+            # hemistiches must never contain line-breaks (only story prose may)
+            if x.get("collection") != "stories":
+                if "\n" in f or "\n" in (v.get("second") or ""):
+                    errors.append(f"{name} id {pid} v{vi}: newline in hemistich")
             for field in ("first", "second", "meaning"):
                 t = v.get(field) or ""
                 if CTRL.search(t):

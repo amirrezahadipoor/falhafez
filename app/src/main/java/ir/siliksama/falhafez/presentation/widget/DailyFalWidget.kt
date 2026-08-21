@@ -18,6 +18,7 @@ import androidx.work.WorkerParameters
 import java.util.concurrent.TimeUnit
 import ir.siliksama.falhafez.MainActivity
 import ir.siliksama.falhafez.R
+import ir.siliksama.falhafez.core.util.DayNumber
 import ir.siliksama.falhafez.data.local.FalDatabase
 import ir.siliksama.falhafez.domain.model.Collection
 import ir.siliksama.falhafez.domain.model.Poet
@@ -63,7 +64,8 @@ class DailyFalWidgetProvider : AppWidgetProvider() {
                 val poemDao = db.poemDao()
                 val count = poemDao.countForPoet("hafez")
                 if (count <= 0) return
-                val day = System.currentTimeMillis() / 86_400_000L
+                // همان «روزِ محلی» که فالِ روزِ داخل اپ از آن استفاده می‌کند — تا ویجت و اپ یکی باشند.
+                val day = DayNumber.local()
                 val poemId = poemDao.getPoemIdAtForPoet("hafez", (day % count.toLong()).toInt()) ?: return
                 val withVerses = poemDao.getPoemWithVerses(poemId) ?: return
                 val opening = withVerses.verses.sortedBy { it.position }

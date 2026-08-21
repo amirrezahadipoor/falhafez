@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ir.siliksama.falhafez.core.designsystem.FalPalette
 import ir.siliksama.falhafez.core.designsystem.FalText
+import ir.siliksama.falhafez.core.util.DayNumber
 import ir.siliksama.falhafez.core.util.PersianText
 import ir.siliksama.falhafez.domain.model.DrawEntry
 
@@ -24,8 +25,9 @@ fun StatsView(history: List<DrawEntry>, modifier: Modifier = Modifier) {
     if (history.isEmpty()) return
 
     val total = history.size
-    val dayNumbers = history.map { it.drawnAt / 86_400_000L }.distinct().sortedDescending()
-    val today = System.currentTimeMillis() / 86_400_000L
+    // روزِ محلی — تا زنجیرهٔ روزانه با «فالِ روز» و ویجت هم‌مرز باشد (نه نیمه‌شبِ UTC).
+    val dayNumbers = history.map { DayNumber.local(it.drawnAt) }.distinct().sortedDescending()
+    val today = DayNumber.local()
 
     // current streak (consecutive days up to today/yesterday)
     var streak = 0

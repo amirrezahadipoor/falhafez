@@ -35,19 +35,30 @@ interface PoemDao {
     @Query("SELECT id FROM poems")
     suspend fun getAllPoemIds(): List<Long>
 
-    @Query("SELECT id FROM poems WHERE collection != 'stories' AND id NOT IN (:exclude)")
+    // چهار شعرِ ملحقاتِ سعدی که متنِ دست‌نویسشان ناقص است (جایِ واژه‌ها «…» است)
+    // در فالگیری شرکت نمی‌کنند — فال باید همیشه از متنِ کامل باشد — ولی در کتابخانه می‌مانند.
+    @Query(
+        "SELECT id FROM poems WHERE collection != 'stories' AND id NOT IN (:exclude) " +
+            "AND id NOT IN (10716, 10717, 10724, 10729)"
+    )
     suspend fun getCandidateIds(exclude: List<Long>): List<Long>
 
-    @Query("SELECT id FROM poems WHERE poet = :poet AND collection != 'stories' AND id NOT IN (:exclude)")
+    @Query(
+        "SELECT id FROM poems WHERE poet = :poet AND collection != 'stories' AND id NOT IN (:exclude) " +
+            "AND id NOT IN (10716, 10717, 10724, 10729)"
+    )
     suspend fun getCandidateIdsForPoet(poet: String, exclude: List<Long>): List<Long>
 
-    @Query("SELECT id FROM poems WHERE poet = :poet AND collection != 'stories'")
+    @Query(
+        "SELECT id FROM poems WHERE poet = :poet AND collection != 'stories' " +
+            "AND id NOT IN (10716, 10717, 10724, 10729)"
+    )
     suspend fun getPoemIdsForPoet(poet: String): List<Long>
 
     @Query("SELECT id FROM poems WHERE poet = :poet AND collection != 'stories' ORDER BY id LIMIT 1 OFFSET :offset")
     suspend fun getPoemIdAtForPoet(poet: String, offset: Int): Long?
 
-    @Query("SELECT COUNT(*) FROM poems WHERE poet = :poet")
+    @Query("SELECT COUNT(*) FROM poems WHERE poet = :poet AND collection != 'stories'")
     suspend fun countForPoet(poet: String): Int
 
     @Query("SELECT COUNT(*) FROM poems")
