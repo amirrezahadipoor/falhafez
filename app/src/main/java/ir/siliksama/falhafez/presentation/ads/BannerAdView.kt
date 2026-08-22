@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
@@ -19,12 +18,9 @@ import ir.tapsell.mediation.ad.AdStateListener
 import ir.tapsell.mediation.ad.request.BannerSize
 import ir.tapsell.mediation.ad.request.RequestResultListener
 import ir.tapsell.mediation.ad.views.banner.BannerContainer
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 private const val TAG = "FalHafezAds"
 private const val MAX_ATTEMPTS = 3
-private val RETRY_DELAYS_MS = listOf(5000L, 15000L, 30000L)
 
 /** بنر استاندارد تپسل (320x50) — غیرمزاحم، فقط در صفحات آرام. */
 @Composable
@@ -37,23 +33,20 @@ fun BannerAdView(modifier: Modifier = Modifier) {
         Log.d(TAG, "banner skipped: ads removed (tier=${SupportStore.tier})")
         return
     }
-    val coroutineScope = rememberCoroutineScope()
 
     Box(modifier = modifier.fillMaxWidth().wrapContentHeight(), contentAlignment = Alignment.Center) {
         AndroidView(
             modifier = Modifier.fillMaxWidth(),
             factory = { ctx ->
                 val container = BannerContainer(ctx)
-                coroutineScope.launch {
-                    requestBannerWithRetry(ctx, container, attempt = 0)
-                }
+                requestBannerWithRetry(ctx, container, 0)
                 container
             }
         )
     }
 }
 
-private suspend fun requestBannerWithRetry(ctx: Context, container: BannerContainer, attempt: Int) {
+private fun requestBannerWithRetry(ctx: Context, container: BannerContainer, attempt: Int) {
     if (attempt >= MAX_ATTEMPTS) {
         Log.w(TAG, "banner: giving up after $MAX_ATTEMPTS attempts")
         return
@@ -61,10 +54,6 @@ private suspend fun requestBannerWithRetry(ctx: Context, container: BannerContai
     if (!isOnline(ctx)) {
         Log.d(TAG, "banner: offline — request skipped")
         return
-    }
-
-    runCatching {
-        Tapsell.initialize(ctx, AdConfig.TAPSELL_APP_KEY)
     }
 
     runCatching {

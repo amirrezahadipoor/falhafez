@@ -23,6 +23,7 @@ private const val TAG = "FalHafezAds"
 
 /**
  * شبکهٔ تبلیغاتی تپسل (Mediation SDK) — اصلی برای بازار ایران.
+ * SDK به‌صورت خودکار توسط ContentProvider با کلید موجود در مانیفست راه‌اندازی می‌شود.
  *
  * پیش‌بارگذاری (Preloading) تبلیغات ویدیویی و بین‌صفحه‌ای انجام می‌شود
  * تا هنگام کلیک کاربر، تبلیغ به‌صورت آنی و بدون تاخیر نمایش داده شود.
@@ -44,26 +45,11 @@ class TapsellAdManager @Inject constructor(
     @Volatile
     private var cachedRewardedId: String? = null
 
-    @Volatile
-    private var isInitializing = false
-
     override val enabled: Boolean get() = AdConfig.enabled
 
     init {
-        ensureInitialized()
         if (enabled && !SupportStore.tier.adsRemoved) {
             preloadAds()
-        }
-    }
-
-    private fun ensureInitialized() {
-        if (isInitializing) return
-        isInitializing = true
-        runCatching {
-            Tapsell.initialize(context, AdConfig.TAPSELL_APP_KEY)
-            Log.d(TAG, "Tapsell initialized with key: ${AdConfig.TAPSELL_APP_KEY}")
-        }.onFailure {
-            Log.w(TAG, "Tapsell explicit initialization notice", it)
         }
     }
 
@@ -118,8 +104,6 @@ class TapsellAdManager @Inject constructor(
             return false
         }
 
-        ensureInitialized()
-
         var adId = cachedInterstitialId
         if (adId != null) {
             cachedInterstitialId = null
@@ -169,8 +153,6 @@ class TapsellAdManager @Inject constructor(
             Log.d(TAG, "rewarded skipped: offline")
             return false
         }
-
-        ensureInitialized()
 
         var adId = cachedRewardedId
         if (adId != null) {

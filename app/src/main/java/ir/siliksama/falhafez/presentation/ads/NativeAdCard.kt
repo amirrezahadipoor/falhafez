@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import ir.siliksama.falhafez.R
@@ -17,7 +16,6 @@ import ir.tapsell.mediation.ad.AdStateListener
 import ir.tapsell.mediation.ad.request.RequestResultListener
 import ir.tapsell.mediation.ad.show.AdShowCompletionState
 import ir.tapsell.mediation.ad.views.ntv.NativeAdViewContainer
-import kotlinx.coroutines.launch
 
 private const val TAG = "FalHafezAds"
 private const val MAX_ATTEMPTS = 3
@@ -33,22 +31,19 @@ fun NativeAdCard(modifier: Modifier = Modifier) {
         Log.d(TAG, "native skipped: ads removed (tier=${SupportStore.tier})")
         return
     }
-    val coroutineScope = rememberCoroutineScope()
 
     AndroidView(
         modifier = modifier,
         factory = { ctx ->
             val container = NativeAdViewContainer(ctx)
             LayoutInflater.from(ctx).inflate(R.layout.ad_native, container, true)
-            coroutineScope.launch {
-                requestNativeWithRetry(ctx, container, attempt = 0)
-            }
+            requestNativeWithRetry(ctx, container, 0)
             container
         }
     )
 }
 
-private suspend fun requestNativeWithRetry(ctx: Context, container: NativeAdViewContainer, attempt: Int) {
+private fun requestNativeWithRetry(ctx: Context, container: NativeAdViewContainer, attempt: Int) {
     if (attempt >= MAX_ATTEMPTS) {
         Log.w(TAG, "native: giving up after $MAX_ATTEMPTS attempts")
         return
@@ -56,10 +51,6 @@ private suspend fun requestNativeWithRetry(ctx: Context, container: NativeAdView
     if (!isOnline(ctx)) {
         Log.d(TAG, "native: offline — request skipped")
         return
-    }
-
-    runCatching {
-        Tapsell.initialize(ctx, AdConfig.TAPSELL_APP_KEY)
     }
 
     runCatching {
