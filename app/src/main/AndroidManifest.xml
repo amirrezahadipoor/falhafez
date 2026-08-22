@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Offline-first: only ads and optional update checks use the network.
          حداقلِ مجوزهای واقعاً لازم: اینترنت (تبلیغات/بروزرسانی/پرداخت)،
@@ -7,6 +8,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- کتابخانهٔ تبلیغاتی تپسل این مجوز را اعلام می‌کند؛ ما آن را صریحاً حذف می‌کنیم
+         چون برای نمایش تبلیغات (برخلاف هدف‌گذاریِ تبلیغاتی) لازم نیست. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
 
     <!-- حریم خصوصی: داده (نیّت، تاریخچه، علاقه‌مندی‌ها) هرگز به فضای ابریِ گوگل منتقل نمی‌شود؛
          خروجی دستی از تنظیمات در دسترس است. -->
