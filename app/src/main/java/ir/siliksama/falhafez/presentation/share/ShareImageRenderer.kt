@@ -43,8 +43,7 @@ object ShareImageRenderer {
         poem: Poem,
         category: FalCategory,
         spec: FalThemeSpec,
-        channel: ChannelInfo? = null,
-        supporterBadge: Boolean = false
+        channel: ChannelInfo? = null
     ): Bitmap {
         val bitmap = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
@@ -209,7 +208,7 @@ object ShareImageRenderer {
             val footerY = H - 356f
             drawDividerOrnament(canvas, footerY - 30f, spec.accent.copy(alpha = 0.6f).toArgb(), softGold)
             val network = SocialNetwork.byKey(ch!!.network)
-            drawChannelFooter(canvas, context, ch, network, footerY, spec, gold = supporterBadge)
+            drawChannelFooter(canvas, context, ch, network, footerY, spec)
         } else {
             // تبلیغِ اپلیکیشن — دقیقاً روی پایین‌ترین خطِ قاب (تهِ فریم).
             val brand = "فال حافظ | تعبیر هوشمند"
@@ -403,7 +402,7 @@ object ShareImageRenderer {
 
     /**
      * کارتِ حامی — برجسته در پایینِ فالِ اشتراکی:
-     * قاب طلایی + آیکونِ شبکه + «با حمایتِ مالیِ» + نام + @شناسه + دعوت به دنبال‌کردن.
+     * قاب طلایی + آیکونِ شبکه + نام + @شناسه + دعوت به دنبال‌کردن.
      */
     private fun drawChannelFooter(
         canvas: Canvas,
@@ -411,8 +410,7 @@ object ShareImageRenderer {
         channel: ChannelInfo,
         network: SocialNetwork,
         y: Float,
-        spec: FalThemeSpec,
-        gold: Boolean
+        spec: FalThemeSpec
     ) {
         val icon = runCatching {
             BitmapFactory.decodeResource(context.resources, network.iconRes)
@@ -439,22 +437,16 @@ object ShareImageRenderer {
 
         val centerX = (W - textWidth) / 2f
 
-        var yy = y + 22f
-        val badge = if (gold) "پشتیبانِ همیشگی ♥" else "با حمایتِ مالیِ"
-        yy = drawText(
-            canvas, badge, 28f, vazirBold, spec.accent.toArgb(),
-            textWidth, centerX, yy, Layout.Alignment.ALIGN_CENTER, 1.0f
-        )
-
-        val size = 92f
+        // آیکون شبکه (بالای کارت)
+        val size = 96f
         val iconLeft = (W - size) / 2f
-        val iconTop = yy + 10f
+        val iconTop = y + 30f
         canvas.drawBitmap(
             icon, null,
             Rect(iconLeft.toInt(), iconTop.toInt(), (iconLeft + size).toInt(), (iconTop + size).toInt()),
             Paint(Paint.ANTI_ALIAS_FLAG).apply { isFilterBitmap = true }
         )
-        yy = iconTop + size + 12f
+        var yy = iconTop + size + 16f
 
         val name = if (channel.name.isNotBlank()) channel.name else network.label
         yy = drawText(

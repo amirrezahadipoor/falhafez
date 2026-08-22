@@ -45,7 +45,7 @@ class CorpusSeeder @Inject constructor(
             return@withLock
         }
 
-        // به‌روزرسانی: اگر بخشِ «عرفان روز» (collection='stories') خالی است،
+        // به‌روزرسانی: اگر بخشِ «جهان» (collection='stories') خالی است،
         // فقط همان را seed کن — تا نسخهٔ جدیدِ مطالب جایگزینِ داستان‌های قدیمی شود.
         if (poemDao.countByCollection("stories") == 0) {
             val n = seedFile("corpus/stories.dat")

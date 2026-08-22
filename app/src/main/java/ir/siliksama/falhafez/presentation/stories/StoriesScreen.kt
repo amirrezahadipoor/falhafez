@@ -42,7 +42,6 @@ import ir.siliksama.falhafez.core.designsystem.FalText
 import ir.siliksama.falhafez.core.designsystem.readingColor
 import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.core.util.Clipboard
-import ir.siliksama.falhafez.core.util.PersianText
 import ir.siliksama.falhafez.domain.model.Poem
 import ir.siliksama.falhafez.presentation.components.EmptyState
 import ir.siliksama.falhafez.presentation.components.GhostButton
@@ -78,7 +77,7 @@ fun StoriesScreen() {
             .background(Brush.verticalGradient(listOf(spec.backgroundTop, spec.backgroundBottom)))
     ) {
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader(title = "عرفان روز", titleColor = spec.onBackground)
+            ScreenHeader(title = "جهان", titleColor = spec.onBackground)
             if (stories.isEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -115,6 +114,8 @@ fun StoriesScreen() {
 @Composable
 private fun StoryTile(story: Poem, spec: FalThemeSpec, isRead: Boolean, onClick: () -> Unit) {
     val prose = story.verses.firstOrNull { !it.isCouplet }?.first ?: story.opening
+    val title = prose.substringBefore("\n\n").trim().ifBlank { "جهان" }
+    val body = prose.substringAfter("\n\n", prose)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -126,10 +127,12 @@ private fun StoryTile(story: Poem, spec: FalThemeSpec, isRead: Boolean, onClick:
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "مطلبِ ${PersianText.number(story.number)}",
+                text = title,
                 style = FalText.heading,
                 color = spec.accentSoft,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
             if (isRead) {
                 Icon(
@@ -141,7 +144,7 @@ private fun StoryTile(story: Poem, spec: FalThemeSpec, isRead: Boolean, onClick:
             }
         }
         Text(
-            text = prose,
+            text = body,
             style = FalText.caption,
             color = spec.onBackground,
             maxLines = 4,
@@ -159,13 +162,15 @@ private fun StoryDetail(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val prose = story.verses.filter { !it.isCouplet }.joinToString("\n\n") { it.first }
+    val proseFull = story.verses.filter { !it.isCouplet }.joinToString("\n\n") { it.first }
+    val title = proseFull.substringBefore("\n\n").trim().ifBlank { "جهان" }
+    val body = proseFull.substringAfter("\n\n", proseFull)
     val morals = story.verses.filter { it.isCouplet }
 
     RitualBackground(spec = spec, showParticles = false) {
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp)) {
             ScreenHeader(
-                title = "مطلبِ ${PersianText.number(story.number)}",
+                title = title,
                 onBack = onBack,
                 titleColor = spec.onBackground
             )
@@ -176,7 +181,7 @@ private fun StoryDetail(
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = prose, style = FalText.tafsir, color = readingColor(spec.onBackground), textAlign = TextAlign.Justify)
+                Text(text = body, style = FalText.tafsir, color = readingColor(spec.onBackground), textAlign = TextAlign.Justify)
 
                 if (morals.isNotEmpty()) {
                     Spacer(Modifier.height(16.dp))
@@ -221,7 +226,7 @@ private fun StoryDetail(
                     )
                 }
                 IconButton(onClick = {
-                    Clipboard.copy(context, "مطلب", "$prose\n\n${morals.joinToString("\n") { it.fullText }}")
+                    Clipboard.copy(context, "جهان", "$proseFull\n\n${morals.joinToString("\n") { it.fullText }}")
                 }) {
                     Icon(Icons.Outlined.ContentCopy, contentDescription = "کپی مطلب", tint = spec.onBackgroundMuted)
                 }

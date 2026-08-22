@@ -13,7 +13,6 @@ import androidx.core.content.FileProvider
 import ir.siliksama.falhafez.core.theme.FalThemeSpec
 import ir.siliksama.falhafez.core.util.ChannelStore
 import ir.siliksama.falhafez.core.util.SupportStore
-import ir.siliksama.falhafez.domain.model.SupportTier
 import ir.siliksama.falhafez.domain.model.FalCategory
 import ir.siliksama.falhafez.domain.model.Poem
 import java.io.File
@@ -27,8 +26,7 @@ object ShareManager {
         val channel = if (tier.showsChannel) ChannelStore.info else null
         val bitmap = ShareImageRenderer.render(
             context.applicationContext, poem, category, spec,
-            channel = channel,
-            supporterBadge = tier == SupportTier.GOLD
+            channel = channel
         )
         val dir = File(context.cacheDir, "share").apply { mkdirs() }
         val file = File(dir, "fal_${System.currentTimeMillis()}.png")

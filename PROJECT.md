@@ -16,7 +16,7 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 10 — Retention & monetization | ✅ | beit-by-beit meaning (4,548 beits), deterministic daily fal (فالِ روز), home-screen widget, personal stats/streak (کارنامه), theme filter + study mode, rewarded cooldown-skip & premium-theme unlock (نوروز + یلدا), haptics, copy-text, JSON export |
 | 11 — CI/CD + store | ✅ | GitHub Actions builds **debug + release APK** (release 6.5 MB, R8), emulator screenshot workflow, Cafe Bazaar assets (icon 512, descriptions, checklist), Persian privacy policy on GitHub Pages |
 | 12 — Compile pass | ✅ | First real compile on GitHub runners — fixed 8 Kotlin/Room issues (FTS4 rowid, imports, smart casts, signing types); CI is **green** |
-| 13 — Full divans + stories + sound | ✅ | **Complete Saadi (1,158) + Rumi (4,246)** — 6,177 poems total; **50 self-awareness & cosmos reads** («عرفان روز» — non-religious, sourced from world science books); 10 visual themes; synthesized ritual sounds (buttons/draw/reveal/ambient) + haptics toggles; release-only CI |
+| 13 — Full divans + stories + sound | ✅ | **Complete Saadi (1,158) + Rumi (4,246)** — 6,177 poems total; **50 self-awareness & cosmos reads** («جهان» — non-religious, sourced from world science books); 10 visual themes; synthesized ritual sounds (buttons/draw/reveal/ambient) + haptics toggles; release-only CI |
 | 14 — Scroll-free layout | ✅ | Whole-app redesign to minimize scrolling: single-screen niyyat ritual, pinned bottom action bars, 2-column grids, dense history, tabbed settings |
 | 15 — Polish + release | ✅ | Fal-source selector (حافظ/سعدی/مولانا/خیام/همه) with live poem counts; font size + font COLOR presets; complete Rumi rubaiyat (1,994) + Saadi minor collections — **8,368 poems**; generated release keystore + random secrets; CI signs release when secrets present |
 | 16 — Branding + Bazaar | ✅ | App name «فال حافظ | تعبیر هوشمند»; unique package `ir.siliksama.falhafez`; Tapsell registration guide + ready-to-copy info sheet |
@@ -39,8 +39,8 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 32 — Deep bug hunt | ✅ | back button no longer **exits the app during the Divan animation** (was unhandled); "همه" draw fallback can no longer return a story; source-count zero-guard at first launch; content scan 0 issues |
 
 ## Corpus (complete, offline) — 8,368 poems
-> Hafez 495 · Khayyam 178 · Saadi 1,355 (غزلیات 637 + گلستان 291 + بوستان 230 + رباعیات 146 + قطعات 20 + ملحقات 31) · Rumi 6,240 (مثنوی 972 + شمس 3,274 + رباعیات 1,994) · + ۵۰ مطلبِ «عرفان روز»
-> Saadi: غزلیات (637) + گلستان (291) + بوستان (230) · Rumi: مثنوی (972) + دیوان شمس (3,274) · Hafez 495 · Khayyam 178 · + ۵۰ مطلبِ «عرفان روز»
+> Hafez 495 · Khayyam 178 · Saadi 1,355 (غزلیات 637 + گلستان 291 + بوستان 230 + رباعیات 146 + قطعات 20 + ملحقات 31) · Rumi 6,240 (مثنوی 972 + شمس 3,274 + رباعیات 1,994) · + ۵۰ مطلبِ «جهان»
+> Saadi: غزلیات (637) + گلستان (291) + بوستان (230) · Rumi: مثنوی (972) + دیوان شمس (3,274) · Hafez 495 · Khayyam 178 · + ۵۰ مطلبِ «جهان»
 
 ## Corpus (previous) — for reference
 | Poet | Collection | Count | Beits |
