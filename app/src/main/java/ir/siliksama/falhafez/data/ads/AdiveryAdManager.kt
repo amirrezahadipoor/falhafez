@@ -123,7 +123,11 @@ class AdiveryAdManager @Inject constructor(
      * منتظرِ آماده‌شدنِ یک placement می‌ماند. اگر همین حالا آماده باشد فوراً
      * برمی‌گردد؛ وگرنه `prepare` می‌زند و تا [timeoutMs] صبر می‌کند.
      */
-    private suspend fun awaitLoaded(placement: String, prepare: () -> Unit, timeoutMs: Long = 6_000): Boolean {
+    private suspend fun awaitLoaded(
+        placement: String,
+        timeoutMs: Long = 6_000,
+        prepare: () -> Unit,
+    ): Boolean {
         if (placement.isBlank() || !AdiveryInit.isReady) return false
         if (AdiveryInit.isLoaded(placement)) return true
 
