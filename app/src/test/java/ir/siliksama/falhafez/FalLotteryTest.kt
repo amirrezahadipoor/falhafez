@@ -87,4 +87,73 @@ class FalLotteryTest {
             assertTrue("بیت=$it وزنِ صفر گرفت", FalLottery.sizeWeight(it) > 0.0)
         }
     }
+
+    // ── تطبیقِ فال با دستهٔ نیّتِ کاربر ──────────────────────────────────────
+
+    private fun themedPool(): List<FalLottery.Quad> {
+        var id = 1L
+        val out = mutableListOf<FalLottery.Quad>()
+        fun add(theme: String, n: Int) {
+            repeat(n) { out += FalLottery.Quad(id++, "hafez", theme, 8) }
+        }
+        // نسبت‌های واقعیِ استخر
+        add("love", 2_704); add("joy", 2_501); add("patience", 685)
+        add("effort", 652); add("wisdom", 493); add("faith", 392)
+        add("hope", 308); add("detachment", 191); add("travel", 179)
+        add("new-beginnings", 109); add("decision", 78); add("compassion", 55)
+        return out
+    }
+
+    private fun themeShare(category: String, theme: String, draws: Int = 12_000): Double {
+        val pool = themedPool()
+        val byId = pool.associateBy { it.id }
+        val rnd = Random(11)
+        var hits = 0
+        repeat(draws) {
+            val id = FalLottery.pickThemed(pool, weightByPoet = false, category = category, random = rnd)!!
+            if (byId[id]!!.theme == theme) hits++
+        }
+        return hits.toDouble() / draws
+    }
+
+    @Test
+    fun `travel category actually surfaces travel poems`() {
+        // «سفر» فقط ۲.۱٪ استخر است؛ بدونِ وزن‌دهی عملاً هرگز نمی‌آمد.
+        val share = themeShare("travel", "travel")
+        assertTrue("سهمِ سفر در فالِ سفر فقط ${"%.1f".format(share * 100)}%", share > 0.12)
+    }
+
+    @Test
+    fun `decision category surfaces wisdom and decision poems`() {
+        val wisdom = themeShare("decision", "wisdom")
+        assertTrue("خرد در فالِ تصمیم کم است: ${"%.1f".format(wisdom * 100)}%", wisdom > 0.20)
+    }
+
+    @Test
+    fun `love category is dominated by love poems`() {
+        assertTrue(themeShare("love", "love") > 0.55)
+    }
+
+    @Test
+    fun `crowded themes do not dominate unrelated categories`() {
+        // «عشق» ۳۲٪ استخر است. در فالِ تصمیم نباید موضوعِ غالب باشد.
+        val love = themeShare("decision", "love")
+        val wisdom = themeShare("decision", "wisdom")
+        assertTrue("عشق در فالِ تصمیم غالب شد ($love vs $wisdom)", love < wisdom)
+    }
+
+    @Test
+    fun `no category still returns a balanced spread`() {
+        val love = themeShare("none", "love")
+        assertTrue("بدونِ دسته، عشق بیش از حد غالب است: ${"%.1f".format(love * 100)}%", love < 0.32)
+    }
+
+    @Test
+    fun `unknown category behaves like none`() {
+        assertEquals(
+            FalLottery.categoryWeight("none", "wisdom"),
+            FalLottery.categoryWeight("something-odd", "wisdom"),
+            1e-9
+        )
+    }
 }

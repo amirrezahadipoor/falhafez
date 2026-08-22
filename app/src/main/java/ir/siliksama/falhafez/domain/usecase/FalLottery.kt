@@ -112,4 +112,104 @@ object FalLottery {
         }
         return items.last().first
     }
+
+    /**
+     * تناسبِ موضوعیِ هر تگ با دستهٔ نیّتِ کاربر.
+     *
+     * وزنِ ۱.۰ = بی‌ربط (ولی ممکن)، عددهای بزرگ‌تر = شانسِ بیشتر.
+     * عمداً «فیلتر» نیست بلکه «تمایل» است: اگر فقط شعرهای هم‌موضوع را نشان
+     * دهیم، استخر کوچک می‌شود، تکرار زیاد می‌شود و مهم‌تر اینکه فال از حالتِ
+     * قرعه درمی‌آید. با وزن‌دهی، شعرِ مرتبط محتمل‌تر است ولی قرعه قرعه می‌ماند.
+     */
+    private val CATEGORY_AFFINITY: Map<String, Map<String, Double>> = mapOf(
+        "love" to mapOf(
+            "love" to 6.0, "hope" to 2.0, "joy" to 1.6,
+            "patience" to 1.4, "compassion" to 1.5
+        ),
+        "career" to mapOf(
+            "effort" to 6.0, "wisdom" to 3.0, "patience" to 2.2,
+            "hope" to 1.8, "new-beginnings" to 1.6, "decision" to 1.5
+        ),
+        "travel" to mapOf(
+            "travel" to 7.0, "new-beginnings" to 2.5, "hope" to 1.8,
+            "effort" to 1.5, "detachment" to 1.4
+        ),
+        "health" to mapOf(
+            "patience" to 5.0, "hope" to 4.0, "faith" to 3.0,
+            "compassion" to 2.0, "detachment" to 1.6
+        ),
+        "decision" to mapOf(
+            "decision" to 7.0, "wisdom" to 5.0, "faith" to 2.0,
+            "patience" to 1.6, "new-beginnings" to 1.5
+        )
+    )
+
+    /**
+     * تگ‌هایی که به‌طور طبیعی پرجمعیت‌اند و اگر مهار نشوند، در هر دسته‌ای غالب
+     * می‌شوند. «عشق» ۲٬۷۰۴ شعر و «شادی» ۲٬۵۰۱ شعر از ۸٬۳۴۷ شعرِ استخر دارند؛
+     * بدونِ این ضریب، حتی در «فالِ تصمیم» هم بیشترین سهم مالِ عشق می‌شد.
+     */
+    private val THEME_BALANCE = mapOf(
+        "love" to 0.30,
+        "joy" to 0.35
+    )
+
+    /** وزنِ موضوعی برای دستهٔ [category] و تگِ [theme]. */
+    fun categoryWeight(category: String, theme: String): Double {
+        val balance = THEME_BALANCE[theme] ?: 1.0
+        if (category.isBlank() || category == "none") return balance
+        val affinity = CATEGORY_AFFINITY[category]?.get(theme)
+        return if (affinity != null) {
+            // وقتی تگ واقعاً به دستهٔ کاربر مربوط است، مهارِ جمعیتی اعمال نمی‌شود
+            // (در «فالِ عشق»، شعرِ عاشقانه باید غالب باشد).
+            affinity
+        } else {
+            balance
+        }
+    }
+
+    /**
+     * قرعهٔ کامل: وزنِ شاعر × وزنِ اندازه × تناسبِ موضوعی با نیّتِ کاربر.
+     *
+     * @param items (شناسه، شاعر، تگِ موضوعی، تعدادِ بیت)
+     * @param category کلیدِ دستهٔ فال («love»، «career»، … یا «none»)
+     */
+    fun pickThemed(
+        items: List<Quad>,
+        weightByPoet: Boolean,
+        category: String,
+        random: Random = Random.Default
+    ): Long? {
+        if (items.isEmpty()) return null
+        if (items.size == 1) return items[0].id
+
+        val perPoetCount: Map<String, Int> =
+            if (weightByPoet) items.groupingBy { it.poet }.eachCount() else emptyMap()
+
+        var total = 0.0
+        val weights = DoubleArray(items.size)
+        for (i in items.indices) {
+            val it0 = items[i]
+            val base = if (weightByPoet) poetWeight(it0.poet, perPoetCount[it0.poet] ?: 1) else 1.0
+            val w = base * sizeWeight(it0.beits) * categoryWeight(category, it0.theme)
+            weights[i] = w
+            total += w
+        }
+        if (total <= 0.0) return items.random(random).id
+
+        var r = random.nextDouble() * total
+        for (i in items.indices) {
+            r -= weights[i]
+            if (r <= 0.0) return items[i].id
+        }
+        return items.last().id
+    }
+
+    /** ردیفِ نامزد با تگِ موضوعی. */
+    data class Quad(
+        val id: Long,
+        val poet: String,
+        val theme: String,
+        val beits: Int
+    )
 }

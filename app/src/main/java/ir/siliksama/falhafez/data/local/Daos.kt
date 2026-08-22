@@ -69,6 +69,31 @@ interface PoemDao {
     )
     suspend fun getCandidatesWithSizeForPoet(poet: String, exclude: List<Long>): List<CandidatePoem>
 
+    /**
+     * نامزدها با تگِ موضوعی — پایهٔ تطبیقِ فال با نیّتِ کاربر.
+     *
+     * پیش‌تر دستهٔ انتخابیِ کاربر (عشق/کار/سفر/…) فقط در تاریخچه ذخیره می‌شد و
+     * هیچ اثری بر انتخابِ شعر نداشت؛ یعنی «فالِ عشق» و «فالِ سفر» دقیقاً یک
+     * قرعه بودند. این کوئری امکانِ وزن‌دهی بر پایهٔ موضوع را می‌دهد.
+     */
+    @Query(
+        "SELECT p.id AS id, p.poet AS poet, p.themeTag AS theme, COUNT(v.poemId) AS beits " +
+            "FROM poems p LEFT JOIN verses v ON v.poemId = p.id " +
+            "WHERE p.collection != 'stories' AND p.collection != 'attributed' " +
+            "AND p.id NOT IN (:exclude) AND p.id NOT IN (10716, 10717, 10724, 10729) " +
+            "GROUP BY p.id"
+    )
+    suspend fun getThemedCandidates(exclude: List<Long>): List<ThemedCandidate>
+
+    @Query(
+        "SELECT p.id AS id, p.poet AS poet, p.themeTag AS theme, COUNT(v.poemId) AS beits " +
+            "FROM poems p LEFT JOIN verses v ON v.poemId = p.id " +
+            "WHERE p.poet = :poet AND p.collection != 'stories' AND p.collection != 'attributed' " +
+            "AND p.id NOT IN (:exclude) AND p.id NOT IN (10716, 10717, 10724, 10729) " +
+            "GROUP BY p.id"
+    )
+    suspend fun getThemedCandidatesForPoet(poet: String, exclude: List<Long>): List<ThemedCandidate>
+
     @Query(
         "SELECT id FROM poems WHERE poet = :poet AND collection != 'stories' AND collection != 'attributed' " +
             "AND id NOT IN (:exclude) AND id NOT IN (10716, 10717, 10724, 10729)"
@@ -179,5 +204,13 @@ interface ReadDao {
 data class CandidatePoem(
     val id: Long,
     val poet: String,
+    val beits: Int
+)
+
+/** نامزدِ فال به‌همراه تگِ موضوعی — برای تطبیق با دستهٔ نیّتِ کاربر. */
+data class ThemedCandidate(
+    val id: Long,
+    val poet: String,
+    val theme: String,
     val beits: Int
 )

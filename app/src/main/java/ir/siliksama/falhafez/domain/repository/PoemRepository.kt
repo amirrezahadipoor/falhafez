@@ -1,6 +1,7 @@
 package ir.siliksama.falhafez.domain.repository
 
 import ir.siliksama.falhafez.domain.model.Collection
+import ir.siliksama.falhafez.domain.model.FalCategory
 import ir.siliksama.falhafez.domain.model.Poem
 import ir.siliksama.falhafez.domain.model.Poet
 import kotlinx.coroutines.flow.Flow
@@ -16,6 +17,18 @@ interface PoemRepository {
      */
     /** Null [poet] = draw from ALL collections (حافظ + سعدی + مولانا + خیام). */
     suspend fun getRandomPoem(excludeIds: List<Long> = emptyList(), poet: Poet? = Poet.HAFEZ): Poem?
+
+    /**
+     * قرعهٔ فال با در نظر گرفتنِ **دستهٔ نیّتِ کاربر**.
+     *
+     * دسته «فیلتر» نیست بلکه «تمایل» است: شعرِ هم‌موضوع شانسِ بیشتری می‌گیرد،
+     * ولی کلِ دیوان در دسترس می‌ماند تا فال، قرعه بماند و استخر کوچک نشود.
+     */
+    suspend fun getRandomPoemFor(
+        category: FalCategory,
+        excludeIds: List<Long> = emptyList(),
+        poet: Poet? = Poet.HAFEZ
+    ): Poem?
     /** Deterministic pick for فالِ روز — same poem for everyone on a given day (Hafez only). */
     suspend fun getPoemAt(poet: Poet, index: Int): Poem?
     suspend fun countForPoet(poet: Poet): Int

@@ -4,6 +4,7 @@ import ir.siliksama.falhafez.core.util.SearchSanitizer
 import ir.siliksama.falhafez.data.local.PoemDao
 import ir.siliksama.falhafez.data.local.PoemWithVerses
 import ir.siliksama.falhafez.domain.model.Collection
+import ir.siliksama.falhafez.domain.model.FalCategory
 import ir.siliksama.falhafez.domain.model.Poem
 import ir.siliksama.falhafez.domain.model.Poet
 import ir.siliksama.falhafez.domain.model.Verse
@@ -62,6 +63,35 @@ class PoemRepositoryImpl @Inject constructor(
         val chosen = FalLottery.pick(
             items = candidates.map { Triple(it.id, it.poet, it.beits) },
             weightByPoet = weightByPoet
+        ) ?: return null
+        return getPoem(chosen)
+    }
+
+    override suspend fun getRandomPoemFor(
+        category: FalCategory,
+        excludeIds: List<Long>,
+        poet: Poet?
+    ): Poem? {
+        val weightByPoet = poet == null
+
+        var candidates = if (weightByPoet) {
+            poemDao.getThemedCandidates(excludeIds)
+        } else {
+            poemDao.getThemedCandidatesForPoet(poet.key, excludeIds)
+        }
+        if (candidates.isEmpty()) {
+            candidates = if (weightByPoet) {
+                poemDao.getThemedCandidates(emptyList())
+            } else {
+                poemDao.getThemedCandidatesForPoet(poet.key, emptyList())
+            }
+        }
+        if (candidates.isEmpty()) return null
+
+        val chosen = FalLottery.pickThemed(
+            items = candidates.map { FalLottery.Quad(it.id, it.poet, it.theme, it.beits) },
+            weightByPoet = weightByPoet,
+            category = category.key
         ) ?: return null
         return getPoem(chosen)
     }

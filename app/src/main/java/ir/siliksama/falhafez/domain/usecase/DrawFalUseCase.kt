@@ -8,9 +8,16 @@ import ir.siliksama.falhafez.domain.repository.PoemRepository
 import javax.inject.Inject
 
 /**
- * Draws a random fal: picks a weighted-random poem (excluding recently drawn ones to
- * reduce immediate repeats) and records it in history. [source] = null draws from ALL
- * collections (حافظ + سعدی + مولانا + خیام); otherwise only that poet's divan.
+ * گرفتنِ فال: شعری با قرعهٔ **وزن‌دار** انتخاب و در تاریخچه ثبت می‌شود.
+ *
+ * وزن‌دهی سه عامل دارد ([FalLottery]):
+ *  ۱. سهمِ شاعر — تا حافظ در حالتِ «همه» گم نشود (پیش‌تر ۶.۹٪ بود).
+ *  ۲. اندازهٔ شعر — متنِ ۱۵۹ بیتی فالِ خوبی نیست.
+ *  ۳. **تناسب با دستهٔ نیّتِ کاربر** — پیش‌تر دسته فقط ذخیره می‌شد و هیچ اثری
+ *     بر انتخاب نداشت؛ یعنی «فالِ عشق» و «فالِ سفر» یک قرعهٔ یکسان بودند.
+ *
+ * ۳۰ فالِ اخیر کنار گذاشته می‌شوند تا تکرارِ فوری پیش نیاید.
+ * [source] = null یعنی از همهٔ دیوان‌ها؛ وگرنه فقط دیوانِ همان شاعر.
  */
 class DrawFalUseCase @Inject constructor(
     private val poemRepository: PoemRepository,
@@ -22,7 +29,11 @@ class DrawFalUseCase @Inject constructor(
         source: Poet? = Poet.HAFEZ
     ): DrawEntry? {
         val recentIds = drawRepository.recentPoemIds(limit = 30)
-        val poem = poemRepository.getRandomPoem(excludeIds = recentIds, poet = source) ?: return null
+        val poem = poemRepository.getRandomPoemFor(
+            category = category,
+            excludeIds = recentIds,
+            poet = source
+        ) ?: return null
         val drawId = drawRepository.record(poem.id, question, category)
         return DrawEntry(
             id = drawId,
