@@ -35,6 +35,11 @@ object AdiveryInit {
             return
         }
         runCatching {
+            // در نسخهٔ دیباگ لاگِ کاملِ ادیوری روشن می‌شود تا اگر تبلیغی نیامد،
+            // علتش در logcat پیدا باشد. در ریلیز خاموش است.
+            if (ir.siliksama.falhafez.BuildConfig.DEBUG) {
+                runCatching { Adivery.setLoggingEnabled(true) }
+            }
             Adivery.configure(app, AdConfig.ADIVERY_APP_KEY)
             configured = true
             Log.d(TAG, "adivery: configured ✓")

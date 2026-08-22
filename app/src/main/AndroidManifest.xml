@@ -71,12 +71,20 @@
             </intent-filter>
         </activity>
 
-        <!-- تپسل: کلید اپلیکیشن برای راه‌اندازی خودکار (Auto-Init).
-             فقط همین یک نام را SDK می‌خواند؛ دو متادیتای TAPSELL_APP_KEY و TAPSELL_KEY
-             مربوط به SDKهای منسوخ بودند و حذف شدند. -->
-        <meta-data
-            android:name="TapsellMediationAppKey"
-            android:value="${TapsellMediationAppKey}" />
+        <!-- تپ‌سل: کلیدِ اپلیکیشن برای راه‌اندازیِ خودکار (Auto-Init).
+
+             ⚠️ نامِ متادیتایی که SDK واقعاً می‌خواند
+             `ir.tapsell.mediation.APPLICATION_KEY` است — نه `TapsellMediationAppKey`.
+             این را از مانیفستِ خودِ AAR بیرون کشیدیم:
+
+                 <meta-data
+                     android:name="ir.tapsell.mediation.APPLICATION_KEY"
+                     android:value="${TapsellMediationAppKey}" />
+
+             یعنی `TapsellMediationAppKey` فقط نامِ **placeholder** است، و خودِ
+             کتابخانه متادیتای درست را می‌سازد. تعریفِ دستیِ آن اینجا فقط یک
+             متادیتای زائد با نامِ اشتباه اضافه می‌کرد که هیچ‌کس نمی‌خواندش.
+             مقدارِ کلید از manifestPlaceholders در app/build.gradle.kts می‌آید. -->
 
         <!-- بیتِ امروز home-screen widget (offline). -->
         <receiver

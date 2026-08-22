@@ -72,8 +72,16 @@ fun BannerAdView(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(),
             factory = { ctx ->
                 BannerContainer(ctx).also { container ->
-                    TapsellInit.whenReady {
-                        requestBannerWithRetry(ctx, container, 0) { id -> adIdHolder[0] = id }
+                    // اگر کلیدِ تپ‌سل معتبر نباشد، SDK هرگز راه نمی‌افتد و
+                    // whenReady فقط پس از مهلتِ ایمنیِ ۶ ثانیه آزاد می‌شود.
+                    // در آن حالت مستقیم سراغِ ادیوری می‌رویم تا کاربر بی‌جهت
+                    // منتظرِ شبکه‌ای نماند که قرار نیست جواب بدهد.
+                    if (AdConfig.tapsellEnabled) {
+                        TapsellInit.whenReady {
+                            requestBannerWithRetry(ctx, container, 0) { id -> adIdHolder[0] = id }
+                        }
+                    } else {
+                        requestAdiveryBanner(ctx, container)
                     }
                 }
             }

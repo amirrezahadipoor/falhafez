@@ -862,8 +862,19 @@ private fun AdDiagnosticsRows(spec: FalThemeSpec) {
     val adiveryReady = ir.siliksama.falhafez.data.ads.AdiveryInit.isReady
     val adiveryConfigured = ir.siliksama.falhafez.data.ads.AdConfig.adiveryEnabled
 
+    val tapsellKeyOk = ir.siliksama.falhafez.data.ads.AdConfig.tapsellKeyLooksValid
+
     row("اتصال به اینترنت", if (online) "برقرار" else "آفلاین", online)
-    row("راه‌اندازیِ تپ‌سل", if (sdkReady) "آماده ($reason)" else "در انتظار", sdkReady)
+    row(
+        "راه‌اندازیِ تپ‌سل",
+        when {
+            !tapsellKeyOk -> "کلید نامعتبر"
+            sdkReady && reason == "timeout" -> "بدونِ پاسخ (مهلت تمام شد)"
+            sdkReady -> "آماده"
+            else -> "در انتظار"
+        },
+        if (!tapsellKeyOk || reason == "timeout") false else sdkReady
+    )
     row(
         "راه‌اندازیِ ادیوری",
         when {
@@ -879,6 +890,16 @@ private fun AdDiagnosticsRows(spec: FalThemeSpec) {
         if (tier.adsRemoved) "حامی — تبلیغات حذف شده" else "رایگان",
         null
     )
+
+    if (!tapsellKeyOk) {
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "کلیدِ تپ‌سل قالبِ موردِ انتظارِ SDK را ندارد (باید ۲۴ نویسهٔ هگز یا " +
+                "یک UUID باشد)، پس تپ‌سل راه نمی‌افتد. تبلیغات از ادیوری سرو می‌شود.",
+            style = FalText.caption,
+            color = spec.onBackgroundMuted
+        )
+    }
 
     if (!online) {
         Spacer(Modifier.height(4.dp))

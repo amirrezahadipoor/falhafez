@@ -52,7 +52,15 @@ class TapsellAdManager @Inject constructor(
     @Volatile var lastError: String? = null
         private set
 
-    override val enabled: Boolean get() = AdConfig.enabled
+    /**
+     * ⚠️ `AdConfig.enabled` نیست، `tapsellEnabled`.
+     *
+     * `AdConfig.enabled` وقتی هم `true` است که فقط ادیوری پیکربندی شده باشد؛
+     * اگر اینجا از آن استفاده می‌کردیم، آبشار تپ‌سل را «فعال» می‌دید، هر بار
+     * ۸ ثانیه پشتِ `TapsellInit.await()` منتظر می‌ماند و تازه بعد سراغِ ادیوری
+     * می‌رفت — یعنی کاربر برای هر تبلیغ ۸ ثانیه تأخیرِ بی‌دلیل می‌دید.
+     */
+    override val enabled: Boolean get() = AdConfig.tapsellEnabled
 
     /** تبلیغات فقط وقتی معنا دارد که: پیکربندی درست باشد و کاربر مشترک نباشد. */
     private val adsAllowed: Boolean

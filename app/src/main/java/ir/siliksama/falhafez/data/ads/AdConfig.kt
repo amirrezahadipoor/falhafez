@@ -31,9 +31,40 @@ object AdConfig {
     /** بنر همسان (Native) */
     const val ZONE_NATIVE = "6a8738a2af056d371d5ba59b"
 
+    /**
+     * کلیدِ تپ‌سل که در مانیفست نشسته (از `manifestPlaceholders`).
+     * اینجا فقط برای **اعتبارسنجی** نگه داشته می‌شود، نه برای دادن به SDK.
+     */
+    const val TAPSELL_APP_KEY =
+        "tcgrrdhdhqmccrmqjeobdfsppktsqfhdqpijdkrfmkstiersqilbhfojrjblshbosqdkrb"
+
+    /**
+     * الگوهایی که خودِ SDK تپ‌سل کلید را با آن‌ها می‌سنجد.
+     *
+     * این دو regex را از بایت‌کدِ `ir.tapsell.mediation.MediatorInitializer`
+     * بیرون کشیدیم؛ اگر کلید هیچ‌کدام را نداشته باشد، SDK با پیامِ
+     * «Invalid mediation app key provided in application manifest» متوقف می‌شود
+     * و `onInitializationComplete` **هرگز** صدا زده نمی‌شود.
+     */
+    private val KEY_24_HEX = Regex("^[a-fA-F0-9]{24}$")
+    private val KEY_UUID = Regex(
+        "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    )
+
+    /**
+     * آیا کلیدِ تپ‌سل اصلاً شکلِ درستی دارد؟
+     *
+     * اگر `false` باشد، هیچ مقدار انتظار کشیدن یا تلاشِ مجدد کمکی نمی‌کند —
+     * SDK پیش از هر درخواستی کنار می‌کشد. کارتِ عیب‌یابی همین را نشان می‌دهد
+     * تا وقت صرفِ دنبال‌کردنِ علت‌های خیالی نشود.
+     */
+    val tapsellKeyLooksValid: Boolean
+        get() = KEY_24_HEX.matches(TAPSELL_APP_KEY) || KEY_UUID.matches(TAPSELL_APP_KEY)
+
     /** آیا zoneهای تپ‌سل پر شده‌اند؟ */
     val tapsellEnabled: Boolean
-        get() = ZONE_BANNER.isNotBlank() &&
+        get() = tapsellKeyLooksValid &&
+            ZONE_BANNER.isNotBlank() &&
             ZONE_INTERSTITIAL.isNotBlank() &&
             ZONE_REWARDED.isNotBlank() &&
             ZONE_NATIVE.isNotBlank()
