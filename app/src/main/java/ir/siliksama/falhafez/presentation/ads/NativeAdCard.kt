@@ -37,14 +37,17 @@ fun NativeAdCard(modifier: Modifier = Modifier) {
         // ارتفاعِ حداقلی — بدون آن ممکن است کانتینر ارتفاعِ صفر بگیرد و تبلیغ دیده نشود.
         modifier = modifier.fillMaxWidth().heightIn(min = 120.dp),
         factory = { ctx ->
-            NativeAdViewContainer(ctx).also { container ->
-                container.layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-                LayoutInflater.from(ctx).inflate(R.layout.ad_native, container, true)
-                TapsellInit.whenReady { requestNativeWithRetry(ctx, container, 0) }
-            }
+            // قالب خودش ریشهٔ NativeAdViewContainer دارد، پس همان را inflate می‌کنیم.
+            // پیش‌تر اینجا یک کانتینرِ دوم به‌صورت برنامه‌ای ساخته می‌شد و قالب داخلش
+            // می‌رفت؛ نتیجه دو کانتینرِ تودرتو بود که SDK با آن سردرگم می‌شود.
+            val container = LayoutInflater.from(ctx)
+                .inflate(R.layout.ad_native, null, false) as NativeAdViewContainer
+            container.layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            TapsellInit.whenReady { requestNativeWithRetry(ctx, container, 0) }
+            container
         }
     )
 }

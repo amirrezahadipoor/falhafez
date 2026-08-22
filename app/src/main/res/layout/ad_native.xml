@@ -1,70 +1,92 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="#131B2E"
-    android:padding="14dp">
+<?xml version="1.0" encoding="utf-8"?><!--
+    قالبِ تبلیغِ بومی (Native) تپ‌سل.
 
-    <!-- برچسبِ «تبلیغ» طبق قوانینِ تپسل و کافه‌بازار باید همیشه دیده شود.
-         متنِ پیش‌فرض اینجا تعیین می‌شود؛ اگر SDK متنِ خودش را بگذارد جایگزین می‌کند.
-         (پیش‌تر این TextView خالی می‌ماند و عملاً هیچ برچسبی نمایش داده نمی‌شد.) -->
-    <TextView
-        android:id="@+id/tapsell_native_ad_sponsored"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#33C9A24B"
-        android:paddingStart="6dp"
-        android:paddingEnd="6dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"
-        android:text="@string/ad_sponsored_label"
-        android:textColor="#B9A98C"
-        android:textSize="11sp" />
+    ریشه **باید** NativeAdViewContainer باشد. مستنداتِ تپ‌سل صریح است:
+    «تمام ویوهای تبلیغ باید فرزندِ ir.tapsell.mediation.ad.views.ntv.NativeAdViewContainer
+    باشند.» پیش‌تر ریشه یک LinearLayout ساده بود؛ در آن حالت SDK ظرف را
+    نمی‌شناسد، محتوایی داخلش نمی‌نشاند و کلیک/ایمپرشن ثبت نمی‌شود — یعنی
+    قالب بی‌صدا خالی می‌ماند بدون هیچ خطایی در لاگ.
+
+    شناسه‌ها هم ثابت و تحمیلیِ SDK هستند و نباید تغییر کنند:
+    tapsell_native_ad_logo / title / description / sponsored / cta / media
+-->
+<ir.tapsell.mediation.ad.views.ntv.NativeAdViewContainer
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:background="#131B2E"
+        android:orientation="vertical"
+        android:padding="14dp">
 
-        <ImageView
-            android:id="@+id/tapsell_native_ad_logo"
-            android:layout_width="36dp"
-            android:layout_height="36dp" />
+        <!-- برچسبِ «تبلیغ» طبق قوانینِ تپ‌سل و کافه‌بازار باید همیشه دیده شود.
+             متنِ پیش‌فرض اینجا تعیین می‌شود؛ اگر SDK متنِ خودش را بگذارد جایگزین می‌کند.
+             (پیش‌تر این TextView خالی می‌ماند و عملاً هیچ برچسبی نمایش داده نمی‌شد.) -->
+        <TextView
+            android:id="@+id/tapsell_native_ad_sponsored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#33C9A24B"
+            android:paddingStart="6dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="2dp"
+            android:text="@string/ad_sponsored_label"
+            android:textColor="#B9A98C"
+            android:textSize="11sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/tapsell_native_ad_logo"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:contentDescription="@string/ad_logo_desc" />
+
+            <TextView
+                android:id="@+id/tapsell_native_ad_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:textColor="#F3E9D2"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/tapsell_native_ad_media"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:layout_marginTop="10dp" />
 
         <TextView
-            android:id="@+id/tapsell_native_ad_title"
-            android:layout_width="0dp"
+            android:id="@+id/tapsell_native_ad_description"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_weight="1"
+            android:layout_marginTop="8dp"
+            android:maxLines="3"
+            android:ellipsize="end"
             android:textColor="#F3E9D2"
-            android:textSize="15sp" />
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/tapsell_native_ad_cta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#C9A24B"
+            android:textColor="#14100A"
+            android:textSize="12sp" />
     </LinearLayout>
-
-    <FrameLayout
-        android:id="@+id/tapsell_native_ad_media"
-        android:layout_width="match_parent"
-        android:layout_height="140dp"
-        android:layout_marginTop="10dp" />
-
-    <TextView
-        android:id="@+id/tapsell_native_ad_description"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textColor="#F3E9D2"
-        android:textSize="13sp" />
-
-    <Button
-        android:id="@+id/tapsell_native_ad_cta"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="#C9A24B"
-        android:textColor="#14100A"
-        android:textSize="12sp" />
-</LinearLayout>
+</ir.tapsell.mediation.ad.views.ntv.NativeAdViewContainer>

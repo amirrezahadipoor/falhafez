@@ -10,4 +10,5 @@
     <string name="niyyat_hint">نیت خود را بنویس…</string>
     <string name="ad_sponsored_label">حمایت‌شده</string>
     <string name="ad_media_desc">تصویر تبلیغ</string>
+    <string name="ad_logo_desc">نشان تبلیغ‌دهنده</string>
 </resources>

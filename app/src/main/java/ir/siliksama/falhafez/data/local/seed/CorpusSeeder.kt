@@ -12,7 +12,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.decodeToSequence
 import java.util.zip.GZIPInputStream
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -96,36 +96,56 @@ class CorpusSeeder @Inject constructor(
      */
     @OptIn(ExperimentalSerializationApi::class)
     private suspend fun seedFile(file: String): Int {
-        val batch = runCatching {
+        var inserted = 0
+
+        val ok = runCatching {
             context.assets.open(file).use { raw ->
                 GZIPInputStream(raw, 32 * 1024).use { gz ->
-                    json.decodeFromStream<List<SeedPoem>>(gz)
+                    // `decodeToSequence` عناصرِ آرایه را یکی‌یکی از استریم می‌خواند.
+                    // با `decodeFromStream<List<…>>` هر ۶٬۲۴۰ شعرِ مولانا هم‌زمان در
+                    // حافظه زنده می‌ماندند (~۲۶ مگابایت متن + درختِ اشیاء) و همین
+                    // largeHeap را لازم می‌کرد. حالا در هر لحظه فقط یک دسته زنده است.
+                    val buffer = ArrayList<SeedPoem>(CHUNK)
+                    json.decodeToSequence<SeedPoem>(gz).forEach { poem ->
+                        buffer += poem
+                        if (buffer.size >= CHUNK) {
+                            inserted += flush(buffer, file)
+                            buffer.clear()
+                        }
+                    }
+                    if (buffer.isNotEmpty()) {
+                        inserted += flush(buffer, file)
+                        buffer.clear()
+                    }
                 }
             }
+            true
         }.getOrElse {
             Log.e(TAG, "Seeding: failed to read $file", it)
-            emptyList()
+            false
         }
 
-        if (batch.isEmpty()) {
+        if (!ok || inserted == 0) {
             Log.w(TAG, "Seeding: no poems loaded from $file")
-            return 0
-        }
-
-        var inserted = 0
-        // درجِ تکه‌تکه: به‌جای یک تراکنشِ غول‌آسا برای ۸٬۵۱۵ شعر و ۸۴٬۵۰۶ بیت،
-        // دسته‌های کوچک — اوجِ مصرفِ حافظه پایین می‌آید و اگر چیزی خطا داد،
-        // فقط همان دسته از دست می‌رود نه کلِ فایل.
-        batch.chunked(CHUNK).forEach { chunk ->
-            runCatching {
-                poemDao.insertPoems(chunk.map { it.toEntity() })
-                poemDao.insertVerses(chunk.flatMap { it.toVerses() })
-                poemDao.insertFts(chunk.map { it.toFts() })
-                inserted += chunk.size
-            }.onFailure { Log.e(TAG, "Seeding chunk failed for $file", it) }
         }
         return inserted
     }
+
+    /**
+     * درجِ یک دسته. به‌جای یک تراکنشِ غول‌آسا برای ۸٬۵۱۵ شعر و ۸۴٬۵۰۶ بیت،
+     * دسته‌های کوچک — اوجِ مصرفِ حافظه پایین می‌آید و اگر چیزی خطا داد،
+     * فقط همان دسته از دست می‌رود نه کلِ فایل.
+     */
+    private suspend fun flush(chunk: List<SeedPoem>, file: String): Int =
+        runCatching {
+            poemDao.insertPoems(chunk.map { it.toEntity() })
+            poemDao.insertVerses(chunk.flatMap { it.toVerses() })
+            poemDao.insertFts(chunk.map { it.toFts() })
+            chunk.size
+        }.getOrElse {
+            Log.e(TAG, "Seeding chunk failed for $file", it)
+            0
+        }
 
     companion object {
         private const val TAG = "FalHafez"
