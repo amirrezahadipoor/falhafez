@@ -130,6 +130,10 @@ dependencies {
     implementation(libs.tapsell)
     implementation(libs.tapsell.legacy.adapter)
 
+    // ادیوری — شبکهٔ دومِ تبلیغات (سرویسِ نمایشِ یکتانت).
+    // برخلافِ تپ‌سل، کلیدش را در زمانِ اجرا می‌گیرد: Adivery.configure(app, key)
+    implementation(libs.adivery)
+
     // Poolakey — پرداخت درون‌برنامه‌ای کافه‌بازار
     implementation(libs.poolakey)
 

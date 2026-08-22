@@ -859,8 +859,20 @@ private fun AdDiagnosticsRows(spec: FalThemeSpec) {
         Spacer(Modifier.height(3.dp))
     }
 
+    val adiveryReady = ir.siliksama.falhafez.data.ads.AdiveryInit.isReady
+    val adiveryConfigured = ir.siliksama.falhafez.data.ads.AdConfig.adiveryEnabled
+
     row("اتصال به اینترنت", if (online) "برقرار" else "آفلاین", online)
     row("راه‌اندازیِ تپ‌سل", if (sdkReady) "آماده ($reason)" else "در انتظار", sdkReady)
+    row(
+        "راه‌اندازیِ ادیوری",
+        when {
+            !adiveryConfigured -> "پیکربندی نشده"
+            adiveryReady -> "آماده"
+            else -> "در انتظار"
+        },
+        if (!adiveryConfigured) null else adiveryReady
+    )
     if (queued > 0) row("درخواست‌های در صف", PersianText.number(queued))
     row(
         "وضعیتِ حمایت",

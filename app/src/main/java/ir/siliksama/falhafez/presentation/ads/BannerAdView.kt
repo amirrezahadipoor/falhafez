@@ -1,6 +1,8 @@
 package ir.siliksama.falhafez.presentation.ads
 
 import android.content.Context
+import android.view.View
+import android.view.ViewGroup
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -19,7 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import ir.siliksama.falhafez.core.util.SupportStore
 import ir.siliksama.falhafez.core.util.findActivity
+import com.adivery.sdk.Adivery
+import com.adivery.sdk.AdiveryBannerCallback
+// ⚠️ هر دو SDK کلاسی به نامِ BannerSize دارند — با alias از هم جدا می‌شوند.
+import com.adivery.sdk.BannerSize as AdiveryBannerSize
 import ir.siliksama.falhafez.data.ads.AdConfig
+import ir.siliksama.falhafez.data.ads.AdiveryInit
 import ir.siliksama.falhafez.data.ads.TapsellInit
 import ir.siliksama.falhafez.data.ads.isOnline
 import ir.tapsell.mediation.Tapsell
@@ -81,7 +88,8 @@ private fun requestBannerWithRetry(
     onLoaded: (String) -> Unit
 ) {
     if (attempt >= MAX_ATTEMPTS) {
-        Log.w(TAG, "banner: giving up after $MAX_ATTEMPTS attempts")
+        Log.w(TAG, "banner: tapsell gave up after $MAX_ATTEMPTS attempts — falling back to adivery")
+        requestAdiveryBanner(ctx, container)
         return
     }
     if (!isOnline(ctx)) {
@@ -95,6 +103,11 @@ private fun requestBannerWithRetry(
     val activity = ctx.findActivity()
     if (activity == null || activity.isFinishing || activity.isDestroyed) {
         Log.w(TAG, "banner: no usable activity — request skipped")
+        return
+    }
+
+    if (!AdConfig.tapsellEnabled) {
+        requestAdiveryBanner(ctx, container)
         return
     }
 
@@ -132,4 +145,46 @@ private fun requestBannerWithRetry(
             }
         )
     }.onFailure { Log.w(TAG, "banner request threw", it) }
+}
+
+/**
+ * بنرِ ادیوری — پلهٔ دومِ آبشار.
+ *
+ * وقتی صدا زده می‌شود که تپ‌سل بعد از چند تلاش بنری نداشته باشد. ادیوری بنر را
+ * به‌صورتِ یک `View` آماده تحویل می‌دهد، پس کافی است داخلِ همان container بگذاریمش.
+ */
+private fun requestAdiveryBanner(ctx: Context, container: ViewGroup) {
+    val placement = AdConfig.ADIVERY_BANNER
+    if (placement.isBlank() || !AdiveryInit.isReady) {
+        Log.d(TAG, "banner: adivery not configured — no banner to show")
+        return
+    }
+    if (!isOnline(ctx)) return
+
+    runCatching {
+        Adivery.requestBannerAd(
+            ctx,
+            placement,
+            AdiveryBannerSize.BANNER,
+            object : AdiveryBannerCallback() {
+                override fun onAdLoaded(adView: View) {
+                    Log.d(TAG, "banner: adivery loaded ✓")
+                    Handler(Looper.getMainLooper()).post {
+                        runCatching {
+                            container.removeAllViews()
+                            container.addView(adView)
+                        }
+                    }
+                }
+
+                override fun onAdLoadFailed(reason: String) {
+                    Log.w(TAG, "banner: adivery load failed: $reason")
+                }
+
+                override fun onAdShowFailed(reason: String) {
+                    Log.w(TAG, "banner: adivery show failed: $reason")
+                }
+            }
+        )
+    }.onFailure { Log.w(TAG, "banner: adivery request threw", it) }
 }

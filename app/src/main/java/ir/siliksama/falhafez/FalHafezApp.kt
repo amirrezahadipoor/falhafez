@@ -6,6 +6,7 @@ import android.util.Log
 import ir.siliksama.falhafez.core.sound.Sounds
 import ir.siliksama.falhafez.core.util.SupportStore
 import ir.siliksama.falhafez.data.ads.AdManager
+import ir.siliksama.falhafez.data.ads.AdiveryInit
 import ir.siliksama.falhafez.data.ads.TapsellInit
 import ir.siliksama.falhafez.data.local.seed.CorpusSeeder
 import ir.siliksama.falhafez.domain.repository.SupportRepository
@@ -47,6 +48,11 @@ class FalHafezApp : Application() {
         // درخواست دارد. بدونِ آن، اولین درخواست‌ها پیش از آماده‌شدنِ SDK می‌رفتند
         // و همیشه شکست می‌خوردند — علتِ «هیچ تبلیغی نمایش داده نمی‌شود».
         TapsellInit.install()
+
+        // ادیوری (سرویسِ نمایشِ یکتانت) — شبکهٔ دوم. برخلافِ تپ‌سل کلیدش را در
+        // زمانِ اجرا می‌گیرد، پس باید صریح راه‌اندازی شود. اگر placementهایش
+        // پیکربندی نشده باشند، خودش کنار می‌کشد و چیزی نمی‌شکند.
+        AdiveryInit.install(this)
 
         // سطح حمایت را زود بارگذاری کن تا اگر کاربر خرید کرده، از همان لحظهٔ اول تبلیغی نمایش داده نشود.
         appScope.launch {
