@@ -95,11 +95,11 @@ import kotlinx.coroutines.delay
 /* ------------------------------------------------------------------ */
 object CategoryAngles {
     private val map = mapOf(
-        FalCategory.LOVE to "نگاهِ این فال به «عشق»: اگر نیّتت دل است، پیامِ شعر آن است که مهرِ واقعی با صبوری و بخشندگی می‌ماند؛ دلت را ساده بگیر و از ابرازِ آن نترس.",
-        FalCategory.CAREER to "نگاهِ این فال به «کار و پیشه»: آنچه در پیِ آنی با کوششِ آرام و پرهیز از شتاب به دست می‌آید؛ راهِ پیشِ رو باز است، فقط قدمِ بعدی را بردار.",
-        FalCategory.TRAVEL to "نگاهِ این فال به «سفر»: جابه‌جایی در زندگی‌ات در پیش است؛ مقصد همان‌جاست که دلت آن را می‌شناسد، و راه، خودش بخشی از پاسخ است.",
-        FalCategory.HEALTH to "نگاهِ این فال به «سلامتی»: آرامشِ دل بزرگ‌ترین داروست؛ اندوه را سبک کن و به روندِ بهبود اعتماد کن؛ نیروی شفا در خودِ توست.",
-        FalCategory.DECISION to "نگاهِ این فال به «تصمیم»: دلِ تو از پیش انتخابش را کرده است؛ آنچه می‌ماند شجاعتِ اعلامِ آن است؛ با آرامش قدم بردار."
+        FalCategory.LOVE to "با نیّتِ «عشق» که در دل داری، این فال چنین می‌گوید: مهرِ واقعی از صبوری و بخشندگی می‌ماند، نه از شتاب و آزمون‌گرفتن. دلت را ساده بگیر، ابرازش کن و بدان آنچه با خلوص می‌کاری، دیر یا زود به خودت بازمی‌گردد.",
+        FalCategory.CAREER to "با نیّتِ «کار و پیشه»، پیامِ این فال روشن است: آنچه در پیِ آنی با کوششِ آرام و پرهیز از شتاب به دست می‌آید. راهِ پیشِ رو باز است؛ لازم نیست همهٔ نقشه را بدانی، فقط قدمِ بعدی را محکم بردار.",
+        FalCategory.TRAVEL to "با نیّتِ «سفر»، این فال می‌گوید: جابه‌جایی‌ای در زندگی‌ات در پیش است؛ شاید سفرِ تن باشد، شاید سفرِ دل. مقصد همان‌جاست که دلت آن را می‌شناسد؛ نگرانِ راه نباش، خودِ راه بخشی از پاسخ است.",
+        FalCategory.HEALTH to "با نیّتِ «سلامتی»، این فال یادآوری می‌کند: آرامشِ دل بزرگ‌ترین داروست. اندوه را سبک کن، به روندِ بهبود اعتماد کن و بدان نیروی شفا پیش از هر درمانی، در خودِ توست.",
+        FalCategory.DECISION to "با نیّتِ «تصمیم»، این فال می‌گوید: دلِ تو از پیش انتخابش را کرده است؛ آنچه مانده شجاعتِ اعلامِ آن است. میانِ «می‌شود یا نمی‌شود» معطل نمان؛ با آرامش گام بردار و خودت را رها کن."
     )
 
     fun text(category: FalCategory): String? = map[category]
@@ -413,6 +413,7 @@ fun RevealContent(
 fun InterpretationContent(
     spec: FalThemeSpec,
     poem: Poem,
+    question: String? = null,
     category: FalCategory,
     isFavorite: Boolean,
     cooldownActive: Boolean,
@@ -426,6 +427,7 @@ fun InterpretationContent(
     onDismiss: () -> Unit
 ) {
     val categoryAngle = CategoryAngles.text(category)
+    val trimmedQuestion = question?.trim()
 
     Column(
         modifier = Modifier
@@ -459,6 +461,17 @@ fun InterpretationContent(
                     modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    if (!trimmedQuestion.isNullOrBlank()) {
+                        Text(
+                            text = "نیّتِ تو: «${trimmedQuestion}»",
+                            style = FalText.caption,
+                            color = spec.accentSoft,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        OrnamentalDivider(color = spec.accent.copy(alpha = 0.7f), modifier = Modifier.fillMaxWidth(0.4f))
+                        Spacer(Modifier.height(10.dp))
+                    }
                     Text(text = poem.tafsir, style = FalText.tafsir, color = readingColor(spec.onBackground))
                     if (categoryAngle != null) {
                         Spacer(Modifier.height(12.dp))

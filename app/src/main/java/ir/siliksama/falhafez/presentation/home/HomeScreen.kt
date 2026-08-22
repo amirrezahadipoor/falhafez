@@ -144,6 +144,7 @@ fun HomeScreen(
                     InterpretationContent(
                         spec = spec,
                         poem = entry.poem,
+                        question = entry.question,
                         category = entry.category,
                         isFavorite = isFavorite,
                         cooldownActive = state.cooldownActive,
