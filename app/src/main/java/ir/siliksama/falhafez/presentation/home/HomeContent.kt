@@ -79,6 +79,7 @@ import ir.siliksama.falhafez.domain.model.FalCategory
 import ir.siliksama.falhafez.domain.model.ChannelInfo
 import ir.siliksama.falhafez.domain.model.Poem
 import ir.siliksama.falhafez.domain.model.Poet
+import ir.siliksama.falhafez.domain.model.DrawAccess
 import ir.siliksama.falhafez.domain.model.SupportTier
 import ir.siliksama.falhafez.domain.model.Verse
 import ir.siliksama.falhafez.presentation.ads.BannerAdView
@@ -250,9 +251,10 @@ fun NiyyatContent(
         // ---- fixed bottom: CTA + daily fal + banner ----
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             BreathingRosette(tint = spec.accent, size = 130.dp)
-            if (state.remainingToday <= 0 && onRewardedDraw != null && !adsRemoved) {
+            if (state.needsUnlock && onRewardedDraw != null) {
+                // متنِ دکمه هرگز «ویدیو» را تبلیغ نمی‌کند؛ زبانِ اپ، زبانِ فال است.
                 GoldButton(
-                    text = "فال با تماشای ویدئو",
+                    text = "گشودنِ فالِ دیگر",
                     onClick = onRewardedDraw,
                     glow = true
                 )
@@ -267,9 +269,15 @@ fun NiyyatContent(
         }
 
         // نشانِ سهمیهٔ رایگان روزانه (فقط برای کاربران عادی)
-        if (!adsRemoved && state.remainingToday < Int.MAX_VALUE) {
+        if (state.showsQuota) {
             Text(
-                text = "فالِ رایگانِ امروز: ${PersianText.number(state.remainingToday)} از ${PersianText.number(1)}",
+                text = "فالِ رایگانِ امروز: ${PersianText.number(state.remainingToday)} از ${PersianText.number(DAILY_FREE_LIMIT)}",
+                style = FalText.caption,
+                color = spec.onBackgroundMuted
+            )
+        } else if (state.access == DrawAccess.UNLIMITED_OFFLINE) {
+            Text(
+                text = "بی‌نیاز از اینترنت — فالِ نامحدود",
                 style = FalText.caption,
                 color = spec.onBackgroundMuted
             )
@@ -418,6 +426,11 @@ fun InterpretationContent(
     isFavorite: Boolean,
     cooldownActive: Boolean,
     remainingToday: Int,
+    /**
+     * تفسیرِ شخصی‌شده برای همین فال (نیّت + دستهٔ کاربر).
+     * اگر null باشد، تفسیرِ اصیلِ شعر نمایش داده می‌شود.
+     */
+    personalTafsir: String? = null,
     onToggleFavorite: () -> Unit,
     onDrawAgain: () -> Unit,
     onRewarded: (() -> Unit)? = null,
@@ -472,7 +485,11 @@ fun InterpretationContent(
                         OrnamentalDivider(color = spec.accent.copy(alpha = 0.7f), modifier = Modifier.fillMaxWidth(0.4f))
                         Spacer(Modifier.height(10.dp))
                     }
-                    Text(text = poem.tafsir, style = FalText.tafsir, color = readingColor(spec.onBackground))
+                    Text(
+                        text = personalTafsir?.takeIf { it.isNotBlank() } ?: poem.tafsir,
+                        style = FalText.tafsir,
+                        color = readingColor(spec.onBackground)
+                    )
                     if (categoryAngle != null) {
                         Spacer(Modifier.height(12.dp))
                         OrnamentalDivider(color = spec.accent, modifier = Modifier.fillMaxWidth(0.5f))
@@ -515,7 +532,7 @@ fun InterpretationContent(
                     text = "فالِ فوری", onClick = onDrawAgain, glow = true
                 )
                 cooldownActive && onRewarded != null && !adsRemoved -> GoldButton(
-                    text = "فال فوری — تماشای ویدئو", onClick = onRewarded, glow = true
+                    text = "بی‌درنگ، فالِ دیگر", onClick = onRewarded, glow = true
                 )
                 cooldownActive -> GoldButton(
                     text = "لحظه‌ای درنگ…", onClick = onDrawAgain, enabled = false
@@ -524,7 +541,7 @@ fun InterpretationContent(
                     text = "فال دوباره", onClick = onDrawAgain, glow = true
                 )
                 onRewarded != null -> GoldButton(
-                    text = "فال دوباره — تماشای ویدئو", onClick = onRewarded, glow = true
+                    text = "گشودنِ فالِ دیگر", onClick = onRewarded, glow = true
                 )
                 else -> GoldButton(
                     text = "فال دوباره", onClick = onDrawAgain, enabled = false

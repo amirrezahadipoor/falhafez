@@ -1,15 +1,22 @@
 package ir.siliksama.falhafez.presentation.ads
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import ir.siliksama.falhafez.R
 import ir.siliksama.falhafez.core.util.SupportStore
 import ir.siliksama.falhafez.core.util.findActivity
 import ir.siliksama.falhafez.data.ads.AdConfig
+import ir.siliksama.falhafez.data.ads.TapsellInit
 import ir.siliksama.falhafez.data.ads.isOnline
 import ir.tapsell.mediation.Tapsell
 import ir.tapsell.mediation.ad.AdStateListener
@@ -23,22 +30,21 @@ private const val MAX_ATTEMPTS = 3
 /** تبلیغ همسان تپسل — داخل فهرست دیوان، هم‌شکل با کارت‌های اپ. */
 @Composable
 fun NativeAdCard(modifier: Modifier = Modifier) {
-    if (!AdConfig.enabled) {
-        Log.w(TAG, "native skipped: AdConfig.enabled=false")
-        return
-    }
-    if (SupportStore.tier.adsRemoved) {
-        Log.d(TAG, "native skipped: ads removed (tier=${SupportStore.tier})")
-        return
-    }
+    if (!AdConfig.enabled) return
+    if (SupportStore.tier.adsRemoved) return
 
     AndroidView(
-        modifier = modifier,
+        // ارتفاعِ حداقلی — بدون آن ممکن است کانتینر ارتفاعِ صفر بگیرد و تبلیغ دیده نشود.
+        modifier = modifier.fillMaxWidth().heightIn(min = 120.dp),
         factory = { ctx ->
-            val container = NativeAdViewContainer(ctx)
-            LayoutInflater.from(ctx).inflate(R.layout.ad_native, container, true)
-            requestNativeWithRetry(ctx, container, 0)
-            container
+            NativeAdViewContainer(ctx).also { container ->
+                container.layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                LayoutInflater.from(ctx).inflate(R.layout.ad_native, container, true)
+                TapsellInit.whenReady { requestNativeWithRetry(ctx, container, 0) }
+            }
         }
     )
 }
@@ -74,6 +80,10 @@ private fun requestNativeWithRetry(ctx: Context, container: NativeAdViewContaine
 
             override fun onFailure(message: String) {
                 Log.w(TAG, "native request failed (attempt ${attempt + 1}/$MAX_ATTEMPTS): $message")
+                Handler(Looper.getMainLooper()).postDelayed(
+                    { requestNativeWithRetry(ctx, container, attempt + 1) },
+                    2_000L * (attempt + 1)
+                )
             }
         })
     }.onFailure { Log.w(TAG, "native request threw", it) }

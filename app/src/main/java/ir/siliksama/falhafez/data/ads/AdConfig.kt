@@ -3,11 +3,13 @@ package ir.siliksama.falhafez.data.ads
 /**
  * پیکربندی تپسل.
  *
- * کلید اپلیکیشن در app/build.gradle.kts (manifestPlaceholders) قرار دارد و SDK به‌صورت
- * خودکار آن را می‌خواند (auto-init). جایگاه‌های تبلیغاتی (Zone ID) از پنل تپسل.
+ * کلیدِ اپلیکیشن **فقط** در `app/build.gradle.kts` (manifestPlaceholders) تعریف می‌شود و
+ * SDK آن را از مانیفست می‌خواند (auto-init). اینجا کلید تکرار نمی‌شود تا «تنها یک منبعِ
+ * حقیقت» داشته باشیم.
+ *
+ * جایگاه‌های تبلیغاتی (Zone ID) از پنل تپسل: app.tapsell.ir
  */
 object AdConfig {
-    const val TAPSELL_APP_KEY = "tcgrrdhdhqmccrmqjeobdfsppktsqfhdqpijdkrfmkstiersqilbhfojrjblshbosqdkrb"
 
     // بنر استاندارد
     const val ZONE_BANNER = "6a8738de5c9b7478ba5bf130"
@@ -21,8 +23,13 @@ object AdConfig {
     // بنر همسان (Native)
     const val ZONE_NATIVE = "6a8738a2af056d371d5ba59b"
 
-    // ویدیوی پیش‌نمایش (Preroll) — برای آینده
-    const val ZONE_PREROLL = "6a8738fa5c9b7478ba5bf131"
-
-    val enabled: Boolean get() = TAPSELL_APP_KEY.isNotBlank()
+    /**
+     * تبلیغات وقتی فعال است که همهٔ zoneها پر باشند.
+     * (کلید در مانیفست است؛ اگر کلید نامعتبر باشد SDK خودش لاگ می‌دهد.)
+     */
+    val enabled: Boolean
+        get() = ZONE_BANNER.isNotBlank() &&
+            ZONE_INTERSTITIAL.isNotBlank() &&
+            ZONE_REWARDED.isNotBlank() &&
+            ZONE_NATIVE.isNotBlank()
 }

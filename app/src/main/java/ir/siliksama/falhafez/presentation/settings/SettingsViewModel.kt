@@ -3,6 +3,7 @@ package ir.siliksama.falhafez.presentation.settings
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -77,6 +78,10 @@ class SettingsViewModel @Inject constructor(
     private val _purchasing = MutableStateFlow(false)
     val purchasing: StateFlow<Boolean> = _purchasing.asStateFlow()
 
+    /** در جریان بودنِ «بازیابی خرید» — برای غیرفعال‌کردنِ دکمه. */
+    private val _restoring = MutableStateFlow(false)
+    val restoring: StateFlow<Boolean> = _restoring.asStateFlow()
+
     private val _updateResult = MutableStateFlow<UpdateCheckResult?>(null)
     val updateResult: StateFlow<UpdateCheckResult?> = _updateResult.asStateFlow()
 
@@ -132,6 +137,40 @@ class SettingsViewModel @Inject constructor(
             }
         }
         if (!started) _purchasing.value = false
+    }
+
+    /**
+     * بازیابیِ خریدِ پیشین از کافه‌بازار.
+     *
+     * برای کاربری که اپ را دوباره نصب کرده یا گوشی عوض کرده **ضروری** است —
+     * بدونِ آن، حمایتی که پول داده از بین می‌رفت. همچنین اگر سطحِ ذخیره‌شده روی
+     * دستگاه با واقعیتِ بازار نخوانَد، اینجا اصلاح می‌شود.
+     */
+    fun restorePurchases(context: android.content.Context) {
+        if (_restoring.value) return
+        _restoring.value = true
+        paymentGateway.restorePurchases(context) { restored ->
+            viewModelScope.launch {
+                when {
+                    // null یعنی بررسی ممکن نشد (بازار نصب نیست/آفلاین) → وضعیت را دست نمی‌زنیم.
+                    restored == null ->
+                        Toast.makeText(context, "بررسی خرید ممکن نشد — اتصال یا نصبِ بازار را بررسی کنید", Toast.LENGTH_LONG).show()
+
+                    restored == SupportTier.NONE -> {
+                        if (supportRepository.tier.first() != SupportTier.NONE) {
+                            supportRepository.clearTier()
+                        }
+                        Toast.makeText(context, "خریدی برای این حساب یافت نشد", Toast.LENGTH_SHORT).show()
+                    }
+
+                    else -> {
+                        supportRepository.setTier(restored)
+                        Toast.makeText(context, "حمایتِ شما بازیابی شد: ${restored.faName}", Toast.LENGTH_LONG).show()
+                    }
+                }
+                _restoring.value = false
+            }
+        }
     }
 
     // ---- کانال اجتماعی ----

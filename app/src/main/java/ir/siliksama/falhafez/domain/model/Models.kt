@@ -4,10 +4,24 @@ enum class Poet(val key: String, val faName: String) {
     HAFEZ("hafez", "حافظ"),
     SAADI("saadi", "سعدی"),
     RUMI("rumi", "مولانا"),
-    KHAYYAM("khayyam", "خیام");
+    KHAYYAM("khayyam", "خیام"),
+
+    /**
+     * بخشِ «جهان»: متن‌های کوتاهِ اندیشه از سراسر دنیا (کارل سیگن، سنکا، …).
+     * پیش‌تر این ۵۰ متن به‌غلط با برچسبِ `saadi` ذخیره می‌شدند — یعنی نثرِ مدرنِ
+     * غربی به نامِ سعدی ثبت شده بود. این مقدارِ جداگانه آن انتساب را اصلاح می‌کند.
+     * در قرعهٔ فال شرکت داده نمی‌شود (کوئری‌های DAO آن را کنار می‌گذارند).
+     */
+    WORLD("world", "اندیشهٔ جهان");
+
+    /** شاعرانِ کلاسیکِ فارسی — منبعِ فال. */
+    val isClassical: Boolean get() = this != WORLD
 
     companion object {
         fun fromKey(key: String): Poet = entries.firstOrNull { it.key == key } ?: HAFEZ
+
+        /** فهرستِ منابعِ قابلِ انتخاب برای گرفتنِ فال. */
+        val falSources: List<Poet> get() = entries.filter { it.isClassical }
     }
 }
 
@@ -23,7 +37,7 @@ enum class Collection(val key: String, val faName: String, val poet: Poet) {
     SAADI_ROBAEE("saadi-robaee", "رباعیات", Poet.SAADI),
     SAADI_GHETE("saadi-ghete", "قطعات", Poet.SAADI),
     SAADI_MOLHAGHAT("saadi-molhaghat", "ملحقات", Poet.SAADI),
-    STORIES("stories", "جهان", Poet.SAADI),
+    STORIES("stories", "جهان", Poet.WORLD),
     RUMI_MASNAVI("masnavi", "مثنوی معنوی", Poet.RUMI),
     RUMI_SHAMS("shams", "دیوان شمس", Poet.RUMI),
     RUMI_ROBAEE("robaee", "رباعیات", Poet.RUMI),

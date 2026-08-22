@@ -189,8 +189,8 @@ private fun PoetsList(onOpen: (Poet) -> Unit, spec: FalThemeSpec) {
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(Poet.entries.size) { index ->
-            val poet = Poet.entries[index]
+        items(Poet.falSources.size) { index ->
+            val poet = Poet.falSources[index]
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

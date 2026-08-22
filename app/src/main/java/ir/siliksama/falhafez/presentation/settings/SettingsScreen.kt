@@ -100,6 +100,7 @@ fun SettingsScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit = {}) {
     val fontColor by viewModel.fontColor.collectAsStateWithLifecycle()
     val supportTier by viewModel.supportTier.collectAsStateWithLifecycle()
     val purchasing by viewModel.purchasing.collectAsStateWithLifecycle()
+    val restoring by viewModel.restoring.collectAsStateWithLifecycle()
     val channelNetwork by viewModel.channelNetwork.collectAsStateWithLifecycle()
     val channelHandle by viewModel.channelHandle.collectAsStateWithLifecycle()
     val channelName by viewModel.channelName.collectAsStateWithLifecycle()
@@ -300,7 +301,9 @@ fun SettingsScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit = {}) {
                     SettingsTab.SUPPORT -> SupportTab(
                         currentTier = supportTier,
                         purchasing = purchasing,
+                        restoring = restoring,
                         onPurchase = { tier -> activity?.let { viewModel.purchase(it, tier) } },
+                        onRestore = { viewModel.restorePurchases(context) },
                         spec = spec
                     )
                     SettingsTab.CHANNEL -> ChannelTab(
@@ -420,7 +423,9 @@ fun SettingsScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit = {}) {
 private fun SupportTab(
     currentTier: SupportTier,
     purchasing: Boolean,
+    restoring: Boolean,
     onPurchase: (SupportTier) -> Unit,
+    onRestore: () -> Unit,
     spec: FalThemeSpec
 ) {
     ScrollableColumn(
@@ -481,6 +486,33 @@ private fun SupportTab(
                 }
             }
         }
+
+        // بازیابیِ خرید — برای کاربری که اپ را دوباره نصب کرده یا گوشی عوض کرده.
+        // کافه‌بازار هم وجودِ چنین مسیری را برای اپ‌های دارای خریدِ درون‌برنامه‌ای لازم می‌داند.
+        CardBox(spec = spec) {
+            Text("قبلاً حمایت کرده‌اید؟", style = FalText.heading, color = spec.accentSoft)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "اگر برنامه را دوباره نصب کرده‌اید یا گوشی‌تان را عوض کرده‌اید، " +
+                    "حمایتِ خریداری‌شده را از همین‌جا برگردانید.",
+                style = FalText.bodyMuted, color = spec.onBackgroundMuted
+            )
+            Spacer(Modifier.height(10.dp))
+            TextButton(
+                onClick = onRestore,
+                enabled = !restoring,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.5.dp, spec.accent.copy(alpha = 0.7f), RoundedCornerShape(14.dp))
+            ) {
+                Text(
+                    text = if (restoring) "در حال بررسی…" else "بازیابیِ خرید",
+                    style = FalText.button,
+                    color = spec.accent
+                )
+            }
+        }
+
         Spacer(Modifier.height(8.dp))
     }
 }

@@ -1,17 +1,26 @@
 package ir.siliksama.falhafez.presentation.ads
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import ir.siliksama.falhafez.core.util.SupportStore
 import ir.siliksama.falhafez.core.util.findActivity
 import ir.siliksama.falhafez.data.ads.AdConfig
+import ir.siliksama.falhafez.data.ads.TapsellInit
 import ir.siliksama.falhafez.data.ads.isOnline
 import ir.tapsell.mediation.Tapsell
 import ir.tapsell.mediation.ad.AdStateListener
@@ -22,31 +31,55 @@ import ir.tapsell.mediation.ad.views.banner.BannerContainer
 private const val TAG = "FalHafezAds"
 private const val MAX_ATTEMPTS = 3
 
-/** بنر استاندارد تپسل (320x50) — غیرمزاحم، فقط در صفحات آرام. */
+/**
+ * بنر استاندارد تپسل (320x50) — غیرمزاحم، فقط در صفحاتِ آرام.
+ *
+ * درست‌شده‌ها نسبت به نسخهٔ قبل:
+ *  - درخواست پشتِ [TapsellInit] صف می‌شود (قبلاً پیش از آماده‌شدنِ SDK می‌رفت و شکست می‌خورد).
+ *  - `destroyBannerAd` در [DisposableEffect] — جلوگیری از نشتِ حافظه با هر تعویضِ تب.
+ *  - تلاشِ مجدد واقعاً اجرا می‌شود.
+ */
 @Composable
 fun BannerAdView(modifier: Modifier = Modifier) {
-    if (!AdConfig.enabled) {
-        Log.w(TAG, "banner skipped: AdConfig.enabled=false")
-        return
-    }
-    if (SupportStore.tier.adsRemoved) {
-        Log.d(TAG, "banner skipped: ads removed (tier=${SupportStore.tier})")
-        return
+    if (!AdConfig.enabled) return
+    if (SupportStore.tier.adsRemoved) return
+
+    // adId را نگه می‌داریم تا هنگام خروج، destroy شود.
+    val adIdHolder = remember { arrayOfNulls<String>(1) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            adIdHolder[0]?.let { id ->
+                runCatching { Tapsell.destroyBannerAd(id) }
+                    .onSuccess { Log.d(TAG, "banner destroyed: $id") }
+            }
+            adIdHolder[0] = null
+        }
     }
 
-    Box(modifier = modifier.fillMaxWidth().wrapContentHeight(), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = modifier.fillMaxWidth().heightIn(min = 50.dp),
+        contentAlignment = Alignment.Center
+    ) {
         AndroidView(
             modifier = Modifier.fillMaxWidth(),
             factory = { ctx ->
-                val container = BannerContainer(ctx)
-                requestBannerWithRetry(ctx, container, 0)
-                container
+                BannerContainer(ctx).also { container ->
+                    TapsellInit.whenReady {
+                        requestBannerWithRetry(ctx, container, 0) { id -> adIdHolder[0] = id }
+                    }
+                }
             }
         )
     }
 }
 
-private fun requestBannerWithRetry(ctx: Context, container: BannerContainer, attempt: Int) {
+private fun requestBannerWithRetry(
+    ctx: Context,
+    container: BannerContainer,
+    attempt: Int,
+    onLoaded: (String) -> Unit
+) {
     if (attempt >= MAX_ATTEMPTS) {
         Log.w(TAG, "banner: giving up after $MAX_ATTEMPTS attempts")
         return
@@ -62,6 +95,7 @@ private fun requestBannerWithRetry(ctx: Context, container: BannerContainer, att
             BannerSize.BANNER_320_50,
             object : RequestResultListener {
                 override fun onSuccess(adId: String) {
+                    onLoaded(adId)
                     val act = ctx.findActivity()
                     if (act != null && !act.isFinishing && !act.isDestroyed) {
                         Log.d(TAG, "banner: adId=$adId — showing")
@@ -79,6 +113,11 @@ private fun requestBannerWithRetry(ctx: Context, container: BannerContainer, att
 
                 override fun onFailure(message: String) {
                     Log.w(TAG, "banner request failed (attempt ${attempt + 1}/$MAX_ATTEMPTS): $message")
+                    // تلاشِ مجدد با backoff — این بخش قبلاً وجود نداشت.
+                    Handler(Looper.getMainLooper()).postDelayed(
+                        { requestBannerWithRetry(ctx, container, attempt + 1, onLoaded) },
+                        2_000L * (attempt + 1)
+                    )
                 }
             }
         )

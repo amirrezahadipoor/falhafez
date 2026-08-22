@@ -53,6 +53,9 @@ enum class MainTab(val faName: String, val icon: ImageVector) {
 @Composable
 fun MainScreen(onOpenSettings: () -> Unit) {
     val mainViewModel: MainViewModel = hiltViewModel()
+    // وضعیتِ اشتراک را واکنشی می‌خوانیم تا بلافاصله پس از خرید/بازیابی،
+    // بنر بدونِ نیاز به راه‌اندازیِ دوبارهٔ اپ ناپدید شود.
+    val adsRemoved by mainViewModel.adsRemoved.collectAsStateWithLifecycle()
     val pendingUpdate by mainViewModel.pendingUpdate.collectAsStateWithLifecycle()
     val themeId by mainViewModel.themeId.collectAsStateWithLifecycle()
     val spec = FalThemeSpec.byId(themeId)
@@ -104,9 +107,11 @@ fun MainScreen(onOpenSettings: () -> Unit) {
         contentWindowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
         bottomBar = {
             Column {
-                // Persistent banner on History & Library only (Home has its own on the
-                // niyyat screen; the draw ritual and reveal stay completely ad-free).
-                if (selected == MainTab.HISTORY || selected == MainTab.LIBRARY) {
+                // بنر فقط در «تاریخچه» و «دیوان» — صفحاتِ آرامِ مرور.
+                // آیینِ فال (نیّت، گشودن، رونمایی، تفسیر) کاملاً بدونِ تبلیغ می‌مانَد.
+                // برای حمایت‌کننده و در حالتِ آفلاین هم چیزی نمایش داده نمی‌شود
+                // (خودِ BannerAdView هم این دو شرط را بررسی می‌کند).
+                if ((selected == MainTab.HISTORY || selected == MainTab.LIBRARY) && !adsRemoved) {
                     BannerAdView()
                 }
                 NavigationBar(containerColor = spec.backgroundTop) {

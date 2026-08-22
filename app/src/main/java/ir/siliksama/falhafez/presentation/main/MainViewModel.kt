@@ -31,7 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     settingsRepository: SettingsRepository,
-    supportRepository: SupportRepository,
+    private val supportRepository: SupportRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -47,6 +47,11 @@ class MainViewModel @Inject constructor(
     val fontColor: StateFlow<Color?> = settingsRepository.fontColor
         .map { FalFontColors.toColor(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    /** حمایت‌کننده؟ → هیچ تبلیغی، در هیچ صفحه‌ای. */
+    val adsRemoved: StateFlow<Boolean> = supportRepository.tier
+        .map { it.adsRemoved }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     private val _pendingUpdate = MutableStateFlow<UpdateCheckResult.Available?>(null)
     val pendingUpdate: StateFlow<UpdateCheckResult.Available?> = _pendingUpdate.asStateFlow()

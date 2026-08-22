@@ -8,7 +8,7 @@ A Persian-language **native Android** app for the centuries-old Iranian traditio
 
 ## Highlights
 
-- **100% offline** core functionality — 702 poems (4,885 beits), interpretations, fonts, artwork and logic all bundled at install time. Only ads and optional update-checks may touch the network.
+- **100% offline** core functionality — 8,515 poems (84,506 beits), interpretations, fonts, artwork and logic all bundled at install time. Only ads and optional update-checks may touch the network.
 - **Native Kotlin + Jetpack Compose (Material 3)**, MVVM + Unidirectional Data Flow, Clean Architecture (data / domain / presentation), Room, Hilt.
 - **Full RTL + Persian typography** (Vazirmatn for reading, Nastaliq-style display face for verses).
 - A genuine **draw ritual**: نیّت → animated "opening of the Divan" → line-by-line verse reveal → interpretation reveal.

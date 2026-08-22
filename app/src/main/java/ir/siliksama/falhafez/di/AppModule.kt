@@ -36,10 +36,14 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): FalDatabase =
         Room.databaseBuilder(context, FalDatabase::class.java, "falhafez.db")
-            .addMigrations(FalDatabase.MIGRATION_1_2, FalDatabase.MIGRATION_2_3, FalDatabase.MIGRATION_3_4)
-            // حفاظِ کراش: اگر روزی اسکیمای دیگری آمد، به‌جای کراش، جدول‌ها بازسازی می‌شوند
-            // و کورپوسِ داخلِ APK دوباره seed می‌شود (تاریخچه/علاقه‌مندی‌ها از دست می‌رود ولی اپ می‌ماند).
-            .fallbackToDestructiveMigration()
+            .addMigrations(*FalDatabase.ALL_MIGRATIONS)
+            // ⚠️ fallbackToDestructiveMigration() عمداً حذف شد.
+            //
+            // آن گزینه هر بار که یک مهاجرت جا می‌افتاد، **بی‌صدا کلِ پایگاه‌داده را پاک
+            // می‌کرد**: تاریخچهٔ فال‌ها، علاقه‌مندی‌ها و نشانه‌های خوانده‌شده — یعنی تنها
+            // داده‌هایی که کاربر واقعاً از دست‌دادنشان را حس می‌کند و هیچ‌جا پشتیبان ندارند.
+            // اکنون اگر مهاجرتی نبود، Room خطا می‌دهد و ما در تست می‌فهمیم؛
+            // کاربر داده‌اش را از دست نمی‌دهد.
             .build()
 
     @Provides

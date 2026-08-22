@@ -12,6 +12,31 @@
     <!-- شناسه تبلیغاتی گوگل برای تپسل و شبکه‌های تبلیغاتی (الزامی برای پر شدن تبلیغ در اندروید ۱۳+) -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
+    <!-- اندروید ۱۱ (API 30) به بعد دیدِ بسته‌ها محدود است: بدونِ این بخش،
+         queryIntentActivities/getPackageInfo برای این اپ‌ها خالی برمی‌گردد و
+         دکمه‌های اشتراک‌گذاری «نصب نیست» نشان می‌دادند. -->
+    <queries>
+        <package android:name="org.telegram.messenger" />
+        <package android:name="com.whatsapp" />
+        <package android:name="app.rbmain.a" />
+        <package android:name="ir.nasim" />
+        <package android:name="com.instagram.android" />
+        <package android:name="ir.eitaa.messenger" />
+        <package android:name="ir.soroush.app" />
+        <!-- کافه‌بازار: پرداخت درون‌برنامه‌ای (Poolakey) و بررسی بروزرسانی -->
+        <package android:name="com.farsitel.bazaar" />
+
+        <!-- اشتراک‌گذاریِ عمومی متن/تصویر و بازکردنِ لینک در مرورگر -->
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="*/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <!-- حریم خصوصی: داده (نیّت، تاریخچه، علاقه‌مندی‌ها) هرگز به فضای ابریِ گوگل منتقل نمی‌شود؛
          خروجی دستی از تنظیمات در دسترس است. -->
     <application
@@ -36,15 +61,11 @@
             </intent-filter>
         </activity>
 
-        <!-- تپسل: کلیدهای اپلیکیشن برای راه‌اندازی خودکار (Auto-Init) -->
+        <!-- تپسل: کلید اپلیکیشن برای راه‌اندازی خودکار (Auto-Init).
+             فقط همین یک نام را SDK می‌خواند؛ دو متادیتای TAPSELL_APP_KEY و TAPSELL_KEY
+             مربوط به SDKهای منسوخ بودند و حذف شدند. -->
         <meta-data
             android:name="TapsellMediationAppKey"
-            android:value="${TapsellMediationAppKey}" />
-        <meta-data
-            android:name="TAPSELL_APP_KEY"
-            android:value="${TapsellMediationAppKey}" />
-        <meta-data
-            android:name="TAPSELL_KEY"
             android:value="${TapsellMediationAppKey}" />
 
         <!-- بیتِ امروز home-screen widget (offline). -->

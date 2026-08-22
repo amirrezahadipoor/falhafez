@@ -18,10 +18,10 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        // ساختِ آزمایشی با تمام قابلیت‌های پرمیوم (فقط برای تستِ سازنده):
-        // در CI با PREMIUM_UNLOCKED=true بیلد می‌شود؛ نسخهٔ عادی همیشه false است.
-        val premiumUnlocked = (System.getenv("PREMIUM_UNLOCKED") ?: "false").equals("true", ignoreCase = true)
-        buildConfigField("boolean", "PREMIUM_UNLOCKED", premiumUnlocked.toString())
+        // ⚠️ پرچمِ PREMIUM_UNLOCKED حذف شد.
+        // این پرچم از متغیرِ محیطیِ CI خوانده می‌شد و اگر روی true بیلد می‌شد،
+        // همهٔ کاربران سطحِ GOLD می‌گرفتند و در نتیجه تمامِ تبلیغات خاموش می‌شد.
+        // سطحِ حمایت اکنون فقط از خریدِ واقعی/بازیابیِ خرید می‌آید.
 
         // کلید اپلیکیشن تپسل — توسط SDK از مانیفست خوانده می‌شود (auto-init).
         addManifestPlaceholders(mapOf("TapsellMediationAppKey" to "tcgrrdhdhqmccrmqjeobdfsppktsqfhdqpijdkrfmkstiersqilbhfojrjblshbosqdkrb"))

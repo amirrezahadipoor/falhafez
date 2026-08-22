@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -41,10 +42,17 @@ fun HomeScreen(
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
 
-    // هر بار که اپ به پیش‌زمینه برمی‌گردد، سهمیهٔ روزانه تازه‌سازی می‌شود (مثلاً بعد از نیمه‌شب).
+    // هر بار که اپ به پیش‌زمینه برمی‌گردد: سهمیهٔ روزانه + وضعیتِ شبکه دوباره سنجیده می‌شود
+    // (تغییرِ روز بعد از نیمه‌شب، و جابه‌جاییِ آفلاین↔آنلاین).
     LifecycleResumeEffect(Unit) {
         viewModel.refreshQuota()
         onPauseOrDispose { }
+    }
+
+    // بازیابیِ خاموشِ خرید در شروعِ اپ: حمایتِ کاربری که اپ را دوباره نصب کرده برمی‌گردد،
+    // و سطحِ نادرستِ جامانده روی دستگاه هم اصلاح می‌شود.
+    LaunchedEffect(Unit) {
+        viewModel.restorePurchases(context)
     }
 
     // دکمه/حرکتِ بازگشتِ سیستم — گام‌به‌گام به حالتِ نیّت برمی‌گردد.
@@ -149,6 +157,7 @@ fun HomeScreen(
                         isFavorite = isFavorite,
                         cooldownActive = state.cooldownActive,
                         remainingToday = state.remainingToday,
+                        personalTafsir = state.personalTafsir,
                         onToggleFavorite = viewModel::onToggleFavorite,
                         onDrawAgain = viewModel::draw,
                         onRewarded = if (activity != null) { { viewModel.requestSkipCooldown(activity) } } else null,

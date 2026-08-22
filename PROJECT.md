@@ -18,7 +18,7 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 12 — Compile pass | ✅ | First real compile on GitHub runners — fixed 8 Kotlin/Room issues (FTS4 rowid, imports, smart casts, signing types); CI is **green** |
 | 13 — Full divans + stories + sound | ✅ | **Complete Saadi (1,158) + Rumi (4,246)** — 6,177 poems total; **50 self-awareness & cosmos reads** («جهان» — non-religious, sourced from world science books); 10 visual themes; synthesized ritual sounds (buttons/draw/reveal/ambient) + haptics toggles; release-only CI |
 | 14 — Scroll-free layout | ✅ | Whole-app redesign to minimize scrolling: single-screen niyyat ritual, pinned bottom action bars, 2-column grids, dense history, tabbed settings |
-| 15 — Polish + release | ✅ | Fal-source selector (حافظ/سعدی/مولانا/خیام/همه) with live poem counts; font size + font COLOR presets; complete Rumi rubaiyat (1,994) + Saadi minor collections — **8,368 poems**; generated release keystore + random secrets; CI signs release when secrets present |
+| 15 — Polish + release | ✅ | Fal-source selector (حافظ/سعدی/مولانا/خیام/همه) with live poem counts; font size + font COLOR presets; complete Rumi rubaiyat (1,994) + Saadi minor collections — **8,515 poems**; generated release keystore + random secrets; CI signs release when secrets present |
 | 16 — Branding + Bazaar | ✅ | App name «فال حافظ | تعبیر هوشمند»; unique package `ir.siliksama.falhafez`; Tapsell registration guide + ready-to-copy info sheet |
 
 | 17 — Support + channel + Tapsell | ✅ | 3 financial-support tiers (100/300/490k Toman) → permanent ad removal + perks; user social-channel (icon + link + promo-image generator) promoted on every shared fal; "other apps by developer" banners in Settings; **AdMob fully removed**, Tapsell prepared |
@@ -38,24 +38,27 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 31 — Read marks + fixes | ✅ | **«خوانده‌شده» markers** (Room v3) — auto-mark + toggle + badges; **stories/library empty bug fixed** (load retry); **draw sound louder**; **فال دوباره centered** |
 | 32 — Deep bug hunt | ✅ | back button no longer **exits the app during the Divan animation** (was unhandled); "همه" draw fallback can no longer return a story; source-count zero-guard at first launch; content scan 0 issues |
 
-## Corpus (complete, offline) — 8,368 poems
+## Corpus (complete, offline) — 8,515 poems / 84,506 beits
 > Hafez 692 (غزل 495 + قطعه 34 + رباعی 42 + قصیده 3 + منتسب 118) · Khayyam 178 · Saadi 1,355 (غزلیات 637 + گلستان 291 + بوستان 230 + رباعیات 146 + قطعات 20 + ملحقات 31) · Rumi 6,240 (مثنوی 972 + شمس 3,274 + رباعیات 1,994) · + ۵۰ مطلبِ «جهان»
 > Saadi: غزلیات (637) + گلستان (291) + بوستان (230) · Rumi: مثنوی (972) + دیوان شمس (3,274) · Hafez 692 · Khayyam 178 · + ۵۰ مطلبِ «جهان»
 
-## Corpus (previous) — for reference
-| Poet | Collection | Count | Beits |
-|------|------------|-------|-------|
-| حافظ | غزلیات — **کامل** | 495 | 4,193 |
-| خیام | رباعیات — **کامل** | 178 | 356 |
-| سعدی | گلستان + بوستان + غزلیات (گزیده) | 21 | 224 |
-| مولانا | مثنوی + دیوان شمس (گزیده) | 8 | 112 |
-| **جمع** | | **702** | **4,885** |
+## Corpus — measured (tools/validate_content.py)
+| Poet | Poems | Beits |
+|------|-------|-------|
+| حافظ | 692 | 5,179 |
+| خیام | 178 | 356 |
+| سعدی | 1,355 | 12,917 |
+| مولانا | 6,240 | 65,954 |
+| «جهان» | 50 | 100 |
+| **جمع** | **8,515** | **84,506** |
 
 ## Content provenance
 - Poem texts: **Ganjoor** (public-domain classical Persian corpus), fetched verbatim — verse text,
   numbering and eraab are Ganjoor's scholarly editions, not hand-typed.
-- Interpretations (tafsir): original — **hand-written for the famous poems**, and theme-aware
-  generated prose (warm, varied, non-horoscope tone) for the rest, so every poem has one.
+- Interpretations (tafsir): original. Hand-written for the famous poems; for the rest, composed by
+  `tools/tafsir_engine.py` **from each poem's own focal verse, motifs and detected theme** — every
+  one of the 8,515 interpretations is unique (verified in CI). The earlier three-slot template
+  (872 unique bodies across 8,465 poems) has been fully retired.
 - Artwork: original, AI-generated for this app (no copyrighted/museum/historical-manuscript imagery).
 - Fonts: **Vazirmatn** + **Noto Nastaliq Urdu** (both OFL).
 

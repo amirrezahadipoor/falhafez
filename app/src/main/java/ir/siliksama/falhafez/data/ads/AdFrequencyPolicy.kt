@@ -12,8 +12,8 @@ import javax.inject.Singleton
 private val Context.adPolicyDataStore by preferencesDataStore(name = "ad_policy")
 
 /**
- * Locally hardcoded frequency capping (no remote config, per the offline-first
- * requirement). Shows an interstitial at most once every [INTERSTITIAL_EVERY] draws.
+ * سقفِ فرکانسِ محلی (بدون remote config — مطابق اصلِ آفلاین‌بودنِ اپ).
+ * بین‌صفحه‌ای حداکثر هر [INTERSTITIAL_EVERY] فال یک‌بار.
  */
 @Singleton
 class AdFrequencyPolicy @Inject constructor(
@@ -25,7 +25,10 @@ class AdFrequencyPolicy @Inject constructor(
 
     suspend fun onDrawCompleted() {
         context.adPolicyDataStore.edit { prefs ->
-            prefs[Keys.DRAWS_SINCE_LAST] = (prefs[Keys.DRAWS_SINCE_LAST] ?: 0) + 1
+            val current = prefs[Keys.DRAWS_SINCE_LAST] ?: 0
+            // سقف‌گذاری: کاربری که ۲۰ فالِ آفلاین گرفته، هنگام آنلاین‌شدن
+            // نباید پشتِ‌سرِ هم تبلیغ ببیند.
+            prefs[Keys.DRAWS_SINCE_LAST] = (current + 1).coerceAtMost(INTERSTITIAL_EVERY + 2)
         }
     }
 
@@ -39,6 +42,6 @@ class AdFrequencyPolicy @Inject constructor(
     }
 
     companion object {
-        const val INTERSTITIAL_EVERY = 4
+        const val INTERSTITIAL_EVERY = 3
     }
 }

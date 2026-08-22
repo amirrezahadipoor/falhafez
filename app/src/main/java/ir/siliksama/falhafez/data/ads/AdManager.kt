@@ -3,32 +3,38 @@ package ir.siliksama.falhafez.data.ads
 import android.app.Activity
 
 /**
- * Ad abstraction layer — the UI never touches a concrete SDK. Swapping or
- * mediating Tapsell/AdMob only means replacing the implementation in
- * [ir.siliksama.falhafez.di.AdModule], not touching any screen.
+ * لایهٔ انتزاعیِ تبلیغات — UI هرگز مستقیم با SDK کار نمی‌کند.
+ * تعویض یا واسطه‌گریِ شبکه فقط در [ir.siliksama.falhafez.di.AdModule] عوض می‌شود.
  *
- * The app is offline-first: ads simply do not show when there is no network.
+ * اپ آفلاین-محور است: بدون شبکه هیچ تبلیغی نمایش داده نمی‌شود و
+ * **هیچ قابلیتی هم پشتِ تبلیغ قفل نمی‌ماند**.
  */
 interface AdManager {
 
-    /** True when an ad network is configured and could serve. */
+    /** وقتی true است که شبکهٔ تبلیغاتی پیکربندی شده و می‌تواند تبلیغ بدهد. */
     val enabled: Boolean
 
     suspend fun isNetworkAvailable(): Boolean
 
     /**
-     * Occasionally shows a full-screen interstitial (frequency-capped). Called
-     * only AFTER the user finishes reading a fal and returns home — never during
-     * the draw ritual or reveal. Returns true when an ad was actually shown.
+     * تبلیغ تمام‌صفحه (با سقفِ فرکانس). فقط **بعد از** خواندنِ کاملِ فال و هنگام بازگشت
+     * به خانه صدا زده می‌شود — هرگز حینِ آیینِ فال. true یعنی واقعاً نمایش داده شد.
      */
     suspend fun showInterstitial(activity: Activity): Boolean
 
     /**
-     * Rewarded video. The caller passes [onReward], invoked exactly once if the
-     * user watches the full ad and earns the reward. Returns true if shown.
+     * ویدیوی جایزه‌ای. [onReward] دقیقاً یک‌بار و فقط در صورتِ تماشای کامل صدا زده می‌شود.
+     * true یعنی تبلیغ نمایش داده شد.
      */
     suspend fun showRewarded(activity: Activity, onReward: () -> Unit): Boolean
 
-    /** Notify the ad layer that a draw completed (drives frequency capping). */
+    /** به لایهٔ تبلیغات خبر می‌دهد که یک فال کامل شد (مبنای سقفِ فرکانس). */
     suspend fun onDrawCompleted()
+
+    /**
+     * گرم‌کردنِ لایهٔ تبلیغات (preload).
+     * باید **بعد از** بارگذاریِ سطحِ حمایتِ کاربر صدا زده شود تا برای مشترکان
+     * حتی یک درخواستِ بی‌مورد هم فرستاده نشود.
+     */
+    fun warmUp()
 }

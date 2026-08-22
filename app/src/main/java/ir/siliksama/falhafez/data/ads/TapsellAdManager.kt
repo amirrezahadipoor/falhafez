@@ -12,6 +12,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -20,16 +21,17 @@ import javax.inject.Singleton
 import kotlin.coroutines.resume
 
 private const val TAG = "FalHafezAds"
+private const val MAX_REQUEST_ATTEMPTS = 3
 
 /**
- * شبکهٔ تبلیغاتی تپسل (Mediation SDK) — اصلی برای بازار ایران.
- * SDK به‌صورت خودکار توسط ContentProvider با کلید موجود در مانیفست راه‌اندازی می‌شود.
+ * شبکهٔ تبلیغاتی تپسل (Mediation SDK).
  *
- * پیش‌بارگذاری (Preloading) تبلیغات ویدیویی و بین‌صفحه‌ای انجام می‌شود
- * تا هنگام کلیک کاربر، تبلیغ به‌صورت آنی و بدون تاخیر نمایش داده شود.
- *
- * اگر کاربر یکی از سطح‌های حمایت مالی را خریده باشد (تبلیغات حذف‌شده)،
- * هیچ تبلیغی نمایش داده نمی‌شود — برای همیشه.
+ * نکات کلیدیِ درست‌شده نسبت به نسخهٔ قبل:
+ *  1. هیچ درخواستی پیش از آماده‌شدنِ SDK فرستاده نمی‌شود ([TapsellInit.await]) —
+ *     علتِ اصلیِ «تبلیغ نمایش داده نمی‌شود» همین بود.
+ *  2. preload به‌جای سازنده، در [warmUp] انجام می‌شود؛ یعنی **بعد از** خوانده‌شدنِ
+ *     سطحِ حمایت، تا برای مشترکان هیچ درخواستی نرود.
+ *  3. تلاشِ مجدد (retry با backoff) واقعاً کار می‌کند.
  */
 @Singleton
 class TapsellAdManager @Inject constructor(
@@ -39,44 +41,49 @@ class TapsellAdManager @Inject constructor(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    @Volatile
-    private var cachedInterstitialId: String? = null
-
-    @Volatile
-    private var cachedRewardedId: String? = null
+    @Volatile private var cachedInterstitialId: String? = null
+    @Volatile private var cachedRewardedId: String? = null
+    @Volatile private var warmedUp = false
 
     override val enabled: Boolean get() = AdConfig.enabled
 
-    init {
-        if (enabled && !SupportStore.tier.adsRemoved) {
-            preloadAds()
-        }
-    }
+    /** تبلیغات فقط وقتی معنا دارد که: پیکربندی درست باشد و کاربر مشترک نباشد. */
+    private val adsAllowed: Boolean
+        get() = enabled && !SupportStore.tier.adsRemoved
 
-    private fun preloadAds() {
+    override fun warmUp() {
+        if (warmedUp || !adsAllowed) return
+        warmedUp = true
         scope.launch {
-            if (isNetworkAvailable()) {
-                if (cachedInterstitialId == null) preloadInterstitial()
-                if (cachedRewardedId == null) preloadRewarded()
+            TapsellInit.await()
+            if (!isNetworkAvailable()) {
+                Log.d(TAG, "warmUp skipped: offline")
+                return@launch
             }
+            preloadInterstitial()
+            preloadRewarded()
         }
     }
 
     private suspend fun preloadInterstitial() {
-        if (SupportStore.tier.adsRemoved) return
-        val adId = request("interstitial-preload") { Tapsell.requestInterstitialAd(AdConfig.ZONE_INTERSTITIAL, it) }
+        if (!adsAllowed || cachedInterstitialId != null) return
+        val adId = request("interstitial-preload") {
+            Tapsell.requestInterstitialAd(AdConfig.ZONE_INTERSTITIAL, it)
+        }
         if (adId != null) {
             cachedInterstitialId = adId
-            Log.d(TAG, "interstitial preloaded successfully: adId=$adId")
+            Log.d(TAG, "interstitial preloaded ✓ adId=$adId")
         }
     }
 
     private suspend fun preloadRewarded() {
-        if (SupportStore.tier.adsRemoved) return
-        val adId = request("rewarded-preload") { Tapsell.requestRewardedAd(AdConfig.ZONE_REWARDED, it) }
+        if (!adsAllowed || cachedRewardedId != null) return
+        val adId = request("rewarded-preload") {
+            Tapsell.requestRewardedAd(AdConfig.ZONE_REWARDED, it)
+        }
         if (adId != null) {
             cachedRewardedId = adId
-            Log.d(TAG, "rewarded preloaded successfully: adId=$adId")
+            Log.d(TAG, "rewarded preloaded ✓ adId=$adId")
         }
     }
 
@@ -87,12 +94,8 @@ class TapsellAdManager @Inject constructor(
     }
 
     override suspend fun showInterstitial(activity: Activity): Boolean {
-        if (!enabled) {
-            Log.w(TAG, "interstitial skipped: AdConfig.enabled=false")
-            return false
-        }
-        if (SupportStore.tier.adsRemoved) {
-            Log.d(TAG, "interstitial skipped: ads removed (tier=${SupportStore.tier})")
+        if (!adsAllowed) {
+            Log.d(TAG, "interstitial skipped: ads not allowed (tier=${SupportStore.tier})")
             return false
         }
         if (!isNetworkAvailable()) {
@@ -104,17 +107,14 @@ class TapsellAdManager @Inject constructor(
             return false
         }
 
-        var adId = cachedInterstitialId
-        if (adId != null) {
-            cachedInterstitialId = null
-            Log.d(TAG, "using preloaded interstitial adId=$adId")
-        } else {
-            Log.d(TAG, "no preloaded interstitial, requesting on-demand...")
-            adId = request("interstitial") { Tapsell.requestInterstitialAd(AdConfig.ZONE_INTERSTITIAL, it) }
-        }
+        TapsellInit.await()
+
+        val adId = cachedInterstitialId?.also { cachedInterstitialId = null }
+            ?: request("interstitial") { Tapsell.requestInterstitialAd(AdConfig.ZONE_INTERSTITIAL, it) }
 
         if (adId == null) {
-            Log.w(TAG, "interstitial request/preload returned null adId")
+            Log.w(TAG, "interstitial: no ad available")
+            scope.launch { preloadInterstitial() }
             return false
         }
 
@@ -130,23 +130,14 @@ class TapsellAdManager @Inject constructor(
             }.isSuccess
         }
 
-        if (shown) {
-            frequencyPolicy.recordShown()
-        }
-
-        // Trigger next preload in background
+        if (shown) frequencyPolicy.recordShown()
         scope.launch { preloadInterstitial() }
-
         return shown
     }
 
     override suspend fun showRewarded(activity: Activity, onReward: () -> Unit): Boolean {
-        if (!enabled) {
-            Log.w(TAG, "rewarded skipped: AdConfig.enabled=false")
-            return false
-        }
-        if (SupportStore.tier.adsRemoved) {
-            Log.d(TAG, "rewarded skipped: ads removed (tier=${SupportStore.tier})")
+        if (!adsAllowed) {
+            Log.d(TAG, "rewarded skipped: ads not allowed (tier=${SupportStore.tier})")
             return false
         }
         if (!isNetworkAvailable()) {
@@ -154,17 +145,14 @@ class TapsellAdManager @Inject constructor(
             return false
         }
 
-        var adId = cachedRewardedId
-        if (adId != null) {
-            cachedRewardedId = null
-            Log.d(TAG, "using preloaded rewarded adId=$adId")
-        } else {
-            Log.d(TAG, "no preloaded rewarded, requesting on-demand...")
-            adId = request("rewarded") { Tapsell.requestRewardedAd(AdConfig.ZONE_REWARDED, it) }
-        }
+        TapsellInit.await()
+
+        val adId = cachedRewardedId?.also { cachedRewardedId = null }
+            ?: request("rewarded") { Tapsell.requestRewardedAd(AdConfig.ZONE_REWARDED, it) }
 
         if (adId == null) {
-            Log.w(TAG, "rewarded request/preload returned null adId")
+            Log.w(TAG, "rewarded: no ad available")
+            scope.launch { preloadRewarded() }
             return false
         }
 
@@ -181,26 +169,43 @@ class TapsellAdManager @Inject constructor(
             }.isSuccess
         }
 
-        // Trigger next preload in background
         scope.launch { preloadRewarded() }
-
         return shown
     }
 
-    /** درخواست تبلیغ با zone و لاگِ علتِ شکست. */
+    /**
+     * درخواستِ تبلیغ با تلاشِ مجدد و backoff.
+     * (نسخهٔ قبل حلقهٔ retry داشت ولی هرگز خودش را دوباره صدا نمی‌زد.)
+     */
     private suspend fun request(
         kind: String,
+        call: (RequestResultListener) -> Unit
+    ): String? {
+        repeat(MAX_REQUEST_ATTEMPTS) { attempt ->
+            val id = requestOnce(kind, attempt, call)
+            if (id != null) return id
+            if (attempt < MAX_REQUEST_ATTEMPTS - 1) {
+                delay(1_500L * (attempt + 1))
+            }
+        }
+        Log.w(TAG, "$kind: giving up after $MAX_REQUEST_ATTEMPTS attempts")
+        return null
+    }
+
+    private suspend fun requestOnce(
+        kind: String,
+        attempt: Int,
         call: (RequestResultListener) -> Unit
     ): String? = suspendCancellableCoroutine { cont ->
         runCatching {
             call(object : RequestResultListener {
                 override fun onSuccess(adId: String) {
-                    Log.d(TAG, "$kind: adId=$adId")
+                    Log.d(TAG, "$kind: adId=$adId (attempt ${attempt + 1})")
                     if (cont.isActive) cont.resume(adId)
                 }
 
                 override fun onFailure(message: String) {
-                    Log.w(TAG, "$kind request failed: $message")
+                    Log.w(TAG, "$kind failed (attempt ${attempt + 1}/$MAX_REQUEST_ATTEMPTS): $message")
                     if (cont.isActive) cont.resume(null)
                 }
             })

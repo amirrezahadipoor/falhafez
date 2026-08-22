@@ -6,10 +6,19 @@
     android:background="#131B2E"
     android:padding="14dp">
 
+    <!-- برچسبِ «تبلیغ» طبق قوانینِ تپسل و کافه‌بازار باید همیشه دیده شود.
+         متنِ پیش‌فرض اینجا تعیین می‌شود؛ اگر SDK متنِ خودش را بگذارد جایگزین می‌کند.
+         (پیش‌تر این TextView خالی می‌ماند و عملاً هیچ برچسبی نمایش داده نمی‌شد.) -->
     <TextView
         android:id="@+id/tapsell_native_ad_sponsored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="#33C9A24B"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:text="@string/ad_sponsored_label"
         android:textColor="#B9A98C"
         android:textSize="11sp" />
 

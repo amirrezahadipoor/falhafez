@@ -28,6 +28,11 @@ jobs:
       - name: Validate corpus assets
         run: python3 tools/validate_corpus.py
 
+      # دروازهٔ کیفیتِ محتوا: تفسیرِ قالبی، متنِ تکراری، شرحِ بریده،
+      # نویزِ ویرایشی و انتسابِ نادرستِ شاعر را می‌گیرد.
+      - name: Validate content quality
+        run: python3 tools/validate_content.py
+
       - name: Run unit tests
         run: chmod +x gradlew && ./gradlew testReleaseUnitTest --no-daemon
 

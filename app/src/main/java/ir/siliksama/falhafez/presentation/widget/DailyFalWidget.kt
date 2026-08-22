@@ -7,7 +7,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import androidx.room.Room
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
@@ -19,7 +18,11 @@ import java.util.concurrent.TimeUnit
 import ir.siliksama.falhafez.MainActivity
 import ir.siliksama.falhafez.R
 import ir.siliksama.falhafez.core.util.DayNumber
-import ir.siliksama.falhafez.data.local.FalDatabase
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import ir.siliksama.falhafez.data.local.PoemDao
 import ir.siliksama.falhafez.domain.model.Collection
 import ir.siliksama.falhafez.domain.model.Poet
 
@@ -64,41 +67,47 @@ class DailyFalWidgetProvider : AppWidgetProvider() {
             val ids = manager.getAppWidgetIds(ComponentName(context, DailyFalWidgetProvider::class.java))
             if (ids.isEmpty()) return
 
-            val db = Room.databaseBuilder(context, FalDatabase::class.java, "falhafez.db")
-                .addMigrations(FalDatabase.MIGRATION_1_2, FalDatabase.MIGRATION_2_3, FalDatabase.MIGRATION_3_4)
-                .fallbackToDestructiveMigration()
-                .build()
-            try {
-                val poemDao = db.poemDao()
-                val count = poemDao.countForPoetCollection("hafez", "ghazal")
-                if (count <= 0) return
-                // همان «روزِ محلی» که فالِ روزِ داخل اپ از آن استفاده می‌کند — تا ویجت و اپ یکی باشند.
-                val day = DayNumber.local()
-                val poemId = poemDao.getPoemIdAtForPoetCollection("hafez", "ghazal", (day % count.toLong()).toInt()) ?: return
-                val withVerses = poemDao.getPoemWithVerses(poemId) ?: return
-                val opening = withVerses.verses.sortedBy { it.position }
-                    .take(3)
-                    .joinToString("\n") { v -> v.first + if (v.second != null) " — " + v.second else "" }
+            // ⚠️ اینجا قبلاً یک نمونهٔ **دومِ** Room ساخته می‌شد (خارج از Hilt) با
+            // fallbackToDestructiveMigration. یعنی ویجت می‌توانست در پس‌زمینه کلِ
+            // پایگاه‌داده — تاریخچه و علاقه‌مندی‌های کاربر — را پاک کند، بدونِ آنکه
+            // اپ اصلاً باز شده باشد. حالا همان نمونهٔ Singleton اپ استفاده می‌شود.
+            val poemDao = EntryPointAccessors
+                .fromApplication(context.applicationContext, WidgetEntryPoint::class.java)
+                .poemDao()
 
-                val intent = PendingIntent.getActivity(
-                    context, 0, Intent(context, MainActivity::class.java),
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                )
-                val poetFa = Poet.fromKey(withVerses.poem.poet).faName
-                val collFa = Collection.fromKey(withVerses.poem.collection)?.faName ?: ""
-                for (id in ids) {
-                    val views = RemoteViews(context.packageName, R.layout.widget_fal).apply {
-                        setTextViewText(R.id.widget_title, "فالِ امروز")
-                        setTextViewText(R.id.widget_verse, opening)
-                        setTextViewText(R.id.widget_meta, "$poetFa — $collFa")
-                        setOnClickPendingIntent(R.id.widget_root, intent)
-                    }
-                    manager.updateAppWidget(id, views)
+            val count = poemDao.countForPoetCollection("hafez", "ghazal")
+            if (count <= 0) return
+            // همان «روزِ محلی» که فالِ روزِ داخل اپ از آن استفاده می‌کند — تا ویجت و اپ یکی باشند.
+            val day = DayNumber.local()
+            val poemId = poemDao.getPoemIdAtForPoetCollection("hafez", "ghazal", (day % count.toLong()).toInt()) ?: return
+            val withVerses = poemDao.getPoemWithVerses(poemId) ?: return
+            val opening = withVerses.verses.sortedBy { it.position }
+                .take(3)
+                .joinToString("\n") { v -> v.first + if (v.second != null) " — " + v.second else "" }
+
+            val intent = PendingIntent.getActivity(
+                context, 0, Intent(context, MainActivity::class.java),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            val poetFa = Poet.fromKey(withVerses.poem.poet).faName
+            val collFa = Collection.fromKey(withVerses.poem.collection)?.faName ?: ""
+            for (id in ids) {
+                val views = RemoteViews(context.packageName, R.layout.widget_fal).apply {
+                    setTextViewText(R.id.widget_title, "فالِ امروز")
+                    setTextViewText(R.id.widget_verse, opening)
+                    setTextViewText(R.id.widget_meta, "$poetFa — $collFa")
+                    setOnClickPendingIntent(R.id.widget_root, intent)
                 }
-            } finally {
-                db.close()
+                manager.updateAppWidget(id, views)
             }
         }
+    }
+
+    /** دسترسیِ ویجت به گرافِ Hilt (Provider خودش تزریق‌پذیر نیست). */
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface WidgetEntryPoint {
+        fun poemDao(): PoemDao
     }
 }
 

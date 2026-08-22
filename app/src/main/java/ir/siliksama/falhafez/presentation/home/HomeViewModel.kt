@@ -5,12 +5,14 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ir.siliksama.falhafez.core.sound.Sounds
+import ir.siliksama.falhafez.core.util.SupportStore
 import ir.siliksama.falhafez.core.theme.FalThemeId
 import ir.siliksama.falhafez.data.ads.AdManager
 import ir.siliksama.falhafez.data.payments.PaymentGateway
 import ir.siliksama.falhafez.domain.model.DrawEntry
 import ir.siliksama.falhafez.domain.model.FalCategory
 import ir.siliksama.falhafez.domain.model.ChannelInfo
+import ir.siliksama.falhafez.domain.model.DrawAccess
 import ir.siliksama.falhafez.domain.model.Poem
 import ir.siliksama.falhafez.domain.model.Poet
 import ir.siliksama.falhafez.domain.model.SupportTier
@@ -21,6 +23,7 @@ import ir.siliksama.falhafez.domain.repository.SettingsRepository
 import ir.siliksama.falhafez.domain.repository.SupportRepository
 import ir.siliksama.falhafez.domain.usecase.DailyFalUseCase
 import ir.siliksama.falhafez.domain.usecase.DrawFalUseCase
+import ir.siliksama.falhafez.domain.usecase.PersonalizeTafsir
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -39,8 +42,12 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
-/** یک فالِ رایگان در روز — بدون نیاز به دیدن ویدیو؛ فالِ بیشتر با ویدیوی جایزه‌ای. */
-private const val DAILY_FREE_LIMIT = 1
+/**
+ * دو فالِ رایگان در هر روز.
+ * پس از آن، فالِ بیشتر با «گشودنِ فال» ممکن است (پشتِ صحنه: ویدیوی جایزه‌ای).
+ * آفلاین و حمایت‌کننده: نامحدود و بدونِ هیچ شرطی.
+ */
+const val DAILY_FREE_LIMIT = 2
 private const val COOLDOWN_MS = 8_000L
 
 enum class DrawStage { NIYYAT, DRAWING, REVEAL, INTERPRETATION }
@@ -52,14 +59,27 @@ data class HomeUiState(
     val sourceCount: Int = 495,
     val stage: DrawStage = DrawStage.NIYYAT,
     val lastDraw: DrawEntry? = null,
+    /** تفسیرِ شخصی‌شدهٔ فالِ جاری — معنای اصیلِ شعر به‌علاوهٔ قابِ متناسب با نیّت. */
+    val personalTafsir: String? = null,
     val dailyFal: Poem? = null,
     val cooldownActive: Boolean = false,
     val remainingToday: Int = DAILY_FREE_LIMIT,
+    val access: DrawAccess = DrawAccess.FREE_QUOTA,
     val busy: Boolean = false,
     val supportOpen: Boolean = false
 ) {
+    /** آفلاین یا حمایت‌کننده → هیچ سقفی در کار نیست. */
+    val unlimited: Boolean get() = access.isUnlimited
+
     val canDraw: Boolean
-        get() = !busy && !cooldownActive && remainingToday > 0 && stage != DrawStage.DRAWING
+        get() = !busy && stage != DrawStage.DRAWING && !cooldownActive &&
+            (unlimited || remainingToday > 0)
+
+    /** سهمیه تمام شده و کاربر باید فال را «بگشاید». */
+    val needsUnlock: Boolean get() = access == DrawAccess.NEEDS_UNLOCK
+
+    /** آیا اصلاً نشانگرِ سهمیه را نشان بدهیم؟ */
+    val showsQuota: Boolean get() = !unlimited
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -72,6 +92,7 @@ class HomeViewModel @Inject constructor(
     private val favoriteRepository: FavoriteRepository,
     private val settingsRepository: SettingsRepository,
     private val supportRepository: SupportRepository,
+    private val personalizeTafsir: PersonalizeTafsir,
     private val adManager: AdManager,
     private val paymentGateway: PaymentGateway
 ) : ViewModel() {
@@ -114,9 +135,15 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            // سطحِ حمایت را پیش از هر چیز بخوان تا لایهٔ تبلیغات با مقدارِ درست گرم شود.
+            SupportStore.tier = supportRepository.tier.first()
             recomputeRemaining()
+
+            // گرم‌کردنِ تبلیغات فقط پس از دانستنِ وضعیتِ اشتراک (رفعِ شرطِ رقابتی).
+            adManager.warmUp()
+
             counts = runCatching {
-                Poet.entries.associateWith { poemRepository.countForPoet(it) }
+                Poet.falSources.associateWith { poemRepository.countForPoet(it) }
             }.getOrDefault(emptyMap())
             _uiState.update { it.copy(sourceCount = counts[it.falSource]?.takeIf { c -> c > 0 } ?: 495) }
         }
@@ -133,7 +160,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             // شمارنده‌ها را تازه بگیر (در اولین اجرا ممکن است هنوز کامل seed نشده باشند)
             counts = runCatching {
-                Poet.entries.associateWith { poemRepository.countForPoet(it) }
+                Poet.falSources.associateWith { poemRepository.countForPoet(it) }
             }.getOrDefault(counts)
             val count = when (source) {
                 null -> counts.values.sum()
@@ -143,7 +170,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /** سهمیهٔ روزانه را تازه‌سازی کن (هنگام برگشت اپ به پیش‌زمینه — مثلاً بعد از نیمه‌شب). */
+    /**
+     * تازه‌سازیِ سهمیه هنگام برگشتِ اپ به پیش‌زمینه.
+     * مهم است چون هم روز ممکن است عوض شده باشد و هم وضعیتِ شبکه
+     * (آفلاین→آنلاین) که مستقیماً حالتِ دسترسی را تغییر می‌دهد.
+     */
     fun refreshQuota() {
         viewModelScope.launch { recomputeRemaining() }
     }
@@ -154,32 +185,50 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch { performDraw(bypassCooldown = false) }
     }
 
-    /** فالِ بعد از سهمیهٔ رایگان — با تماشای ویدیوی پاداشی (هر ویدیو = یک فال). */
+    /**
+     * «گشودنِ فالِ دیگر» پس از پایانِ سهمیهٔ روزانه.
+     *
+     * منطق به ترتیبِ اولویت:
+     *  1. حمایت‌کننده یا آفلاین → مستقیم فال می‌گیرد (اصلاً به اینجا نمی‌رسد، ولی محکم‌کاری).
+     *  2. آنلاین → ویدیوی جایزه‌ای؛ فال پس از دریافتِ پاداش باز می‌شود.
+     *  3. اگر تبلیغی در دسترس نبود → **فال را به کاربر می‌دهیم.**
+     *     نبودنِ موجودیِ تبلیغ مشکلِ ماست، نه کاربر؛ او نباید پشتِ درِ بسته بماند.
+     */
     fun requestExtraDraw(activity: Activity) {
         viewModelScope.launch {
+            if (currentAccess().isUnlimited) {
+                performDraw(bypassCooldown = true)
+                return@launch
+            }
             val shown = adManager.showRewarded(activity) {
-                viewModelScope.launch { performDraw(bypassCooldown = true) }
+                viewModelScope.launch { grantUnlockedDraw() }
             }
             if (!shown) {
-                Toast.makeText(activity, "تبلیغ در دسترس نیست — اینترنت را چک کنید", Toast.LENGTH_SHORT).show()
+                // هیچ تبلیغی نبود → فال را رایگان باز کن.
+                grantUnlockedDraw()
             }
         }
     }
 
-    /** Rewarded hook — skips the 8s repeat cooldown and draws immediately (GOLD: free). */
+    /** رد کردنِ درنگِ کوتاهِ بینِ دو فال. */
     fun requestSkipCooldown(activity: Activity) {
         viewModelScope.launch {
-            if (supportRepository.tier.first().instantDraw) {
+            val access = currentAccess()
+            if (access.isUnlimited || supportRepository.tier.first().instantDraw) {
                 performDraw(bypassCooldown = true)
-            } else {
-                val shown = adManager.showRewarded(activity) {
-                    viewModelScope.launch { performDraw(bypassCooldown = true) }
-                }
-                if (!shown) {
-                    Toast.makeText(activity, "تبلیغ در دسترس نیست — اینترنت را چک کنید", Toast.LENGTH_SHORT).show()
-                }
+                return@launch
             }
+            val shown = adManager.showRewarded(activity) {
+                viewModelScope.launch { performDraw(bypassCooldown = true) }
+            }
+            if (!shown) performDraw(bypassCooldown = true)
         }
+    }
+
+    /** یک فالِ اضافه که خارج از سهمیه حساب می‌شود. */
+    private suspend fun grantUnlockedDraw() {
+        bonusDraws += 1
+        performDraw(bypassCooldown = true)
     }
 
     private suspend fun performDraw(bypassCooldown: Boolean) {
@@ -198,8 +247,25 @@ class HomeViewModel @Inject constructor(
         }
         favoriteTargetId.value = result.poem.id
         val instant = supportRepository.tier.first().instantDraw
+
+        // تفسیر را به نیّت و دستهٔ کاربر گره می‌زنیم — بدونِ تغییرِ معنای اصیلِ شعر.
+        val personal = runCatching {
+            personalizeTafsir(
+                poem = result.poem,
+                question = result.question,
+                category = result.category,
+                seed = result.id
+            )
+        }.getOrNull()
+
         _uiState.update {
-            it.copy(lastDraw = result, dailyFal = null, cooldownActive = !instant, busy = false)
+            it.copy(
+                lastDraw = result,
+                personalTafsir = personal,
+                dailyFal = null,
+                cooldownActive = !instant,
+                busy = false
+            )
         }
         recomputeRemaining()
         adManager.onDrawCompleted()
@@ -210,15 +276,30 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    /**
+     * فال‌هایی که با «گشودن» گرفته شده‌اند و نباید از سهمیهٔ رایگان کم شوند.
+     * فقط در طولِ همین نشست معتبر است (با بستنِ اپ صفر می‌شود).
+     */
+    private var bonusDraws: Int = 0
+
+    /** وضعیتِ فعلیِ دسترسی: حمایت < آفلاین < سهمیه < نیاز به گشودن. */
+    private suspend fun currentAccess(): DrawAccess {
+        if (supportRepository.tier.first().adsRemoved) return DrawAccess.UNLIMITED_SUPPORTER
+        // آفلاین = نامحدود. دیوان روی خودِ دستگاه است؛ نبودِ اینترنت نباید فال را ببندد.
+        if (!adManager.isNetworkAvailable()) return DrawAccess.UNLIMITED_OFFLINE
+        val used = (drawRepository.countSince(startOfToday()) - bonusDraws).coerceAtLeast(0)
+        return if (used < DAILY_FREE_LIMIT) DrawAccess.FREE_QUOTA else DrawAccess.NEEDS_UNLOCK
+    }
+
     private suspend fun recomputeRemaining() {
-        val subscribed = supportRepository.tier.first().adsRemoved
-        val remaining = if (subscribed) {
+        val access = currentAccess()
+        val remaining = if (access.isUnlimited) {
             Int.MAX_VALUE
         } else {
-            val used = drawRepository.countSince(startOfToday())
+            val used = (drawRepository.countSince(startOfToday()) - bonusDraws).coerceAtLeast(0)
             (DAILY_FREE_LIMIT - used).coerceAtLeast(0)
         }
-        _uiState.update { it.copy(remainingToday = remaining) }
+        _uiState.update { it.copy(remainingToday = remaining, access = access) }
     }
 
     private fun startOfToday(): Long {
@@ -256,7 +337,7 @@ class HomeViewModel @Inject constructor(
                 true
             }
             s.stage == DrawStage.INTERPRETATION || s.stage == DrawStage.REVEAL -> {
-                _uiState.update { it.copy(stage = DrawStage.NIYYAT, lastDraw = null) }
+                _uiState.update { it.copy(stage = DrawStage.NIYYAT, lastDraw = null, personalTafsir = null) }
                 favoriteTargetId.value = null
                 true
             }
@@ -269,6 +350,39 @@ class HomeViewModel @Inject constructor(
     fun closeSupport() {
         _purchasing.value = false
         _uiState.update { it.copy(supportOpen = false) }
+    }
+
+    /**
+     * بازیابیِ خریدِ پیشین از کافه‌بازار.
+     * هنگام شروعِ اپ و نیز با دکمهٔ «بازیابی خرید» صدا زده می‌شود؛ هم حمایتِ ازدست‌رفته را
+     * برمی‌گرداند و هم سطحِ نادرستِ باقی‌مانده روی دستگاه را اصلاح می‌کند.
+     */
+    fun restorePurchases(context: android.content.Context, notify: Boolean = false) {
+        paymentGateway.restorePurchases(context) { restored ->
+            viewModelScope.launch {
+                when {
+                    // null یعنی «نتوانستیم بررسی کنیم» → وضعیت را دست نمی‌زنیم.
+                    restored == null ->
+                        if (notify) Toast.makeText(context, "بررسی خرید ممکن نشد", Toast.LENGTH_SHORT).show()
+
+                    restored == SupportTier.NONE -> {
+                        if (supportRepository.tier.first() != SupportTier.NONE) {
+                            supportRepository.clearTier()
+                            recomputeRemaining()
+                        }
+                        if (notify) Toast.makeText(context, "خریدی یافت نشد", Toast.LENGTH_SHORT).show()
+                    }
+
+                    else -> {
+                        supportRepository.setTier(restored)
+                        recomputeRemaining()
+                        if (notify) {
+                            Toast.makeText(context, "حمایتِ شما بازیابی شد: ${restored.faName}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /** خرید حمایت مالی (Poolakey/کافه‌بازار) — تبلیغات را برای همیشه حذف می‌کند. */
@@ -307,16 +421,17 @@ class HomeViewModel @Inject constructor(
     }
 
     fun dismissAndMaybeAd(activity: Activity) {
-        _uiState.update { it.copy(stage = DrawStage.NIYYAT, lastDraw = null) }
+        _uiState.update { it.copy(stage = DrawStage.NIYYAT, lastDraw = null, personalTafsir = null) }
         favoriteTargetId.value = null
         viewModelScope.launch {
-            // با حمایت مالی، هرگز تبلیغ بین‌صفحه‌ای نمایش داده نمی‌شود.
-            if (!supportRepository.tier.first().adsRemoved) adManager.showInterstitial(activity)
+            // تبلیغِ بین‌صفحه‌ای فقط وقتی: حمایت‌کننده نیست و آنلاین است.
+            // (AdManager هم خودش دوباره همین دو شرط را بررسی می‌کند — دفاع در عمق.)
+            if (currentAccess().adsApply) adManager.showInterstitial(activity)
         }
     }
 
     fun dismissOnly() {
-        _uiState.update { it.copy(stage = DrawStage.NIYYAT, lastDraw = null) }
+        _uiState.update { it.copy(stage = DrawStage.NIYYAT, lastDraw = null, personalTafsir = null) }
         favoriteTargetId.value = null
     }
 }

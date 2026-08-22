@@ -5,6 +5,8 @@ import android.util.Log
 
 import ir.siliksama.falhafez.core.sound.Sounds
 import ir.siliksama.falhafez.core.util.SupportStore
+import ir.siliksama.falhafez.data.ads.AdManager
+import ir.siliksama.falhafez.data.ads.TapsellInit
 import ir.siliksama.falhafez.data.local.seed.CorpusSeeder
 import ir.siliksama.falhafez.domain.repository.SupportRepository
 import dagger.hilt.android.HiltAndroidApp
@@ -30,17 +32,28 @@ class FalHafezApp : Application() {
     @Inject
     lateinit var supportRepository: SupportRepository
 
+    @Inject
+    lateinit var adManager: AdManager
+
     override fun onCreate() {
         super.onCreate()
         installCrashGuard()
         // Seed the bundled poem corpus on first launch (fully offline).
         appScope.launch { corpusSeeder.seedIfNeeded() }
         Sounds.init(this)
+
+        // تپسل خودش با ContentProvider راه می‌افتد، اما راه‌اندازی **آنی نیست**.
+        // این listener را همین اول ثبت می‌کنیم تا لایهٔ تبلیغات بداند کِی اجازهٔ
+        // درخواست دارد. بدونِ آن، اولین درخواست‌ها پیش از آماده‌شدنِ SDK می‌رفتند
+        // و همیشه شکست می‌خوردند — علتِ «هیچ تبلیغی نمایش داده نمی‌شود».
+        TapsellInit.install()
+
         // سطح حمایت را زود بارگذاری کن تا اگر کاربر خرید کرده، از همان لحظهٔ اول تبلیغی نمایش داده نشود.
         appScope.launch {
             runCatching { SupportStore.tier = supportRepository.tier.first() }
+            // گرم‌کردنِ تبلیغات فقط پس از دانستنِ سطحِ حمایت (رفعِ شرطِ رقابتی).
+            runCatching { adManager.warmUp() }
         }
-        // تپسل به‌صورت خودکار (ContentProvider) با کلیدِ موجود در مانیفست راه‌اندازی می‌شود.
     }
 
     /**
