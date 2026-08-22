@@ -107,11 +107,13 @@ fun MainScreen(onOpenSettings: () -> Unit) {
         contentWindowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
         bottomBar = {
             Column {
-                // بنر فقط در «تاریخچه» و «دیوان» — صفحاتِ آرامِ مرور.
+                // بنر در «جهان»، «تاریخچه» و «دیوان» — صفحاتِ آرامِ مرور که
+                // کاربر در آن‌ها می‌مانَد و می‌خوانَد.
                 // آیینِ فال (نیّت، گشودن، رونمایی، تفسیر) کاملاً بدونِ تبلیغ می‌مانَد.
                 // برای حمایت‌کننده و در حالتِ آفلاین هم چیزی نمایش داده نمی‌شود
                 // (خودِ BannerAdView هم این دو شرط را بررسی می‌کند).
-                if ((selected == MainTab.HISTORY || selected == MainTab.LIBRARY) && !adsRemoved) {
+                val bannerTabs = setOf(MainTab.STORIES, MainTab.HISTORY, MainTab.LIBRARY)
+                if (selected in bannerTabs && !adsRemoved) {
                     BannerAdView()
                 }
                 NavigationBar(containerColor = spec.backgroundTop) {
