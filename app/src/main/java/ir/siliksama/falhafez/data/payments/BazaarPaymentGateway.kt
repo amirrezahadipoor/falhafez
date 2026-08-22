@@ -166,6 +166,38 @@ class BazaarPaymentGateway @Inject constructor() : PaymentGateway {
         }
     }
 
+    override fun fetchPrices(context: Context, onResult: (Map<String, String>) -> Unit) {
+        val p = paymentOf(context)
+        if (p == null) {
+            onResult(emptyMap())
+            return
+        }
+        val skus = SupportTier.entries.map { it.sku }.filter { it.isNotBlank() }
+        if (skus.isEmpty()) {
+            onResult(emptyMap())
+            return
+        }
+
+        withConnection(context = context, payment = p, onFailed = { onResult(emptyMap()) }) {
+            runCatching {
+                p.getInAppSkuDetails(skuIds = skus) {
+                    getSkuDetailsSucceed { details ->
+                        val map = details.associate { it.sku to it.price }
+                        Log.d(TAG, "prices: $map")
+                        onResult(map)
+                    }
+                    getSkuDetailsFailed {
+                        Log.w(TAG, "sku details failed", it)
+                        onResult(emptyMap())
+                    }
+                }
+            }.onFailure {
+                Log.w(TAG, "getInAppSkuDetails threw", it)
+                onResult(emptyMap())
+            }
+        }
+    }
+
     /** بالاترین سطحِ خریداری‌شده و تأییدشده. */
     private fun highestTierOf(purchases: List<PurchaseInfo>): SupportTier {
         val owned = purchases

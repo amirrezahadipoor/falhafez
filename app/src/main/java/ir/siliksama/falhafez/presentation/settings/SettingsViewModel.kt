@@ -208,10 +208,26 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * قیمتِ واقعیِ محصولات از بازار (sku → متنِ آمادهٔ نمایش).
+     *
+     * تا وقتی خالی باشد، رابط به قیمتِ محلیِ [SupportTier.priceToman] برمی‌گردد.
+     * دلیلِ وجودش: قیمتِ هاردکد ممکن است با قیمتِ پنلِ بازار یکی نباشد و کاربر
+     * در صفحهٔ پرداخت عددِ دیگری ببیند.
+     */
+    private val _prices = MutableStateFlow<Map<String, String>>(emptyMap())
+    val prices: StateFlow<Map<String, String>> = _prices.asStateFlow()
+
+    fun refreshPrices() {
+        paymentGateway.fetchPrices(context) { map ->
+            if (map.isNotEmpty()) _prices.value = map
+        }
+    }
+
     // ---- بروزرسانی ----
     fun checkForUpdate() {
         viewModelScope.launch {
-            _updateResult.value = UpdateChecker.check()
+            _updateResult.value = UpdateChecker.check(context)
         }
     }
 

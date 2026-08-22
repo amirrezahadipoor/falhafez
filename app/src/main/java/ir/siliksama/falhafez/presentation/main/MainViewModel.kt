@@ -10,9 +10,7 @@ import ir.siliksama.falhafez.core.designsystem.FalFontColors
 import ir.siliksama.falhafez.core.sound.Sounds
 import ir.siliksama.falhafez.core.theme.FalThemeId
 import ir.siliksama.falhafez.core.util.ChannelStore
-import ir.siliksama.falhafez.core.util.DayNumber
 import ir.siliksama.falhafez.core.util.SupportStore
-import ir.siliksama.falhafez.data.updates.UpdateChecker
 import ir.siliksama.falhafez.domain.model.ChannelInfo
 import ir.siliksama.falhafez.domain.model.SupportTier
 import ir.siliksama.falhafez.domain.model.UpdateCheckResult
@@ -70,18 +68,15 @@ class MainViewModel @Inject constructor(
             val name = settingsRepository.channelName.first()
             ChannelStore.info = ChannelInfo(network, handle, name)
         }
-        // چک خودکار بروزرسانی — فقط یک‌بار در روز، کاملاً بی‌صدا (آفلاین = هیچ)
-        viewModelScope.launch {
-            val today = DayNumber.local()
-            val last = settingsRepository.lastUpdateCheckDay.first()
-            if (today > last) {
-                settingsRepository.setLastUpdateCheckDay(today)
-                val result = UpdateChecker.check()
-                if (result is UpdateCheckResult.Available) {
-                    _pendingUpdate.value = result
-                }
-            }
-        }
+        // چکِ خودکارِ بروزرسانی برداشته شد.
+        //
+        // پیش‌تر روزی یک‌بار به یک API غیرمستندِ بازار درخواست می‌رفت که خودش را
+        // جای اپلیکیشنِ بازار جا می‌زد. آن روش هم شکننده بود هم ناقضِ شرایطِ
+        // استفاده. خودِ بازار بروزرسانی‌ها را به کاربر اطلاع می‌دهد؛ لازم نیست
+        // ما هم موازیِ آن کاری بکنیم. کاربر هر وقت خواست، از تنظیمات صفحهٔ اپ
+        // را در بازار باز می‌کند.
+        //
+        // فایدهٔ جانبی: یک درخواستِ شبکه در هر روز از استارتاپ حذف شد.
     }
 
     fun dismissUpdate() {

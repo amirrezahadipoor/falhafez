@@ -25,6 +25,20 @@ android {
 
         // کلید اپلیکیشن تپسل — توسط SDK از مانیفست خوانده می‌شود (auto-init).
         addManifestPlaceholders(mapOf("TapsellMediationAppKey" to "tcgrrdhdhqmccrmqjeobdfsppktsqfhdqpijdkrfmkstiersqilbhfojrjblshbosqdkrb"))
+
+        // کلیدِ عمومیِ RSA برای راستی‌آزماییِ رسیدِ خریدِ کافه‌بازار.
+        //
+        // این کلید عمومی است و طبق طراحیِ Poolakey باید داخلِ APK باشد؛ پس اینکه
+        // در مخزن دیده شود مشکلِ امنیتی نیست. قابلِ پیکربندی شدنش برای forkهاست:
+        // هرکس نسخهٔ خودش را منتشر می‌کند باید کلیدِ برنامهٔ خودش را بدهد، بدونِ
+        // دست‌زدن به کدِ کاتلین.
+        //
+        //   ./gradlew assembleRelease -PbazaarRsaKey=...
+        //   یا متغیرِ محیطیِ BAZAAR_RSA_KEY
+        val bazaarRsaKey = (project.findProperty("bazaarRsaKey") as String?)
+            ?: System.getenv("BAZAAR_RSA_KEY")
+            ?: "MIHNMA0GCSqGSIb3DQEBAQUAA4G7ADCBtwKBrwClfrm71TFwAJKBSejSzOG00paeF8NlWzH2jkJwzNZ4fKoVB2kExuQKlspndvbGx8CD//ZduyEX0gwhNp8l8U3jBHnPJ8Bs/vI3nlVZeQcS3sj3nqbMB49Pw2g+0tr3NqwHe/Rx2z/Dg1FfcNLojZ/6MVFd6tDei9yeKfdm9iAEJR4vWc0Vq/zTbYtvSsY2ZKqfqD8EVUFNo7oY1HgknhIb8IpEVKHozrFqOMy9Dh8CAwEAAQ=="
+        buildConfigField("String", "BAZAAR_RSA_KEY", "\"$bazaarRsaKey\"")
     }
 
     signingConfigs {

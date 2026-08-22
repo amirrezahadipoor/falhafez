@@ -105,6 +105,7 @@ fun SettingsScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit = {}) {
     val channelHandle by viewModel.channelHandle.collectAsStateWithLifecycle()
     val channelName by viewModel.channelName.collectAsStateWithLifecycle()
     val updateResult by viewModel.updateResult.collectAsStateWithLifecycle()
+    val prices by viewModel.prices.collectAsStateWithLifecycle()
     val showSupport by viewModel.showSupport.collectAsStateWithLifecycle()
     val spec = FalThemeSpec.byId(themeId)
 
@@ -145,14 +146,32 @@ fun SettingsScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit = {}) {
         }
     }
 
+    // قیمت‌های واقعیِ بازار فقط وقتی تبِ حمایت باز است پرسیده می‌شوند —
+    // نه در استارتاپ، تا اتصال به سرویسِ بازار بی‌دلیل برقرار نشود.
+    LaunchedEffect(tab) {
+        if (SettingsTab.entries.getOrNull(tab) == SettingsTab.SUPPORT) {
+            viewModel.refreshPrices()
+        }
+    }
+
     LaunchedEffect(updateResult) {
         when (val r = updateResult) {
             is UpdateCheckResult.UpToDate -> {
-                Toast.makeText(context, "نسخهٔ شما به‌روز است ✓", Toast.LENGTH_SHORT).show()
+                // بازار نصب است ⇒ خودش بروزرسانی را اطلاع می‌دهد.
+                Toast.makeText(
+                    context,
+                    "بروزرسانی از طریق کافه‌بازار انجام می‌شود",
+                    Toast.LENGTH_SHORT
+                ).show()
                 viewModel.clearUpdateResult()
             }
             is UpdateCheckResult.Failed -> {
-                Toast.makeText(context, "بررسی نشد — اینترنت را چک کنید", Toast.LENGTH_SHORT).show()
+                // بازار روی دستگاه نیست.
+                Toast.makeText(
+                    context,
+                    "کافه‌بازار روی دستگاه نصب نیست",
+                    Toast.LENGTH_SHORT
+                ).show()
                 viewModel.clearUpdateResult()
             }
             else -> Unit
@@ -302,6 +321,7 @@ fun SettingsScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit = {}) {
                         currentTier = supportTier,
                         purchasing = purchasing,
                         restoring = restoring,
+                        prices = prices,
                         onPurchase = { tier -> activity?.let { viewModel.purchase(it, tier) } },
                         onRestore = { viewModel.restorePurchases(context) },
                         spec = spec
@@ -424,6 +444,8 @@ private fun SupportTab(
     currentTier: SupportTier,
     purchasing: Boolean,
     restoring: Boolean,
+    /** قیمتِ واقعیِ بازار (sku → متن). خالی ⇒ قیمتِ محلی نمایش داده می‌شود. */
+    prices: Map<String, String> = emptyMap(),
     onPurchase: (SupportTier) -> Unit,
     onRestore: () -> Unit,
     spec: FalThemeSpec
@@ -461,7 +483,12 @@ private fun SupportTab(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(tier.faName, style = FalText.heading, color = spec.accentSoft, modifier = Modifier.weight(1f))
-                    Text("${formatPrice(tier.priceToman)} تومان", style = FalText.heading, color = spec.onBackground)
+                    // قیمتِ واقعیِ بازار مقدم است؛ اگر در دسترس نبود، قیمتِ محلی.
+                    // این عدد باید دقیقاً همانی باشد که در صفحهٔ پرداخت می‌آید.
+                    val shown = prices[tier.sku]?.takeIf { it.isNotBlank() }
+                        ?.let { PersianText.digits(it) }
+                        ?: "${formatPrice(tier.priceToman)} تومان"
+                    Text(shown, style = FalText.heading, color = spec.onBackground)
                 }
                 Text(tier.perks, style = FalText.bodyMuted, color = spec.onBackgroundMuted)
                 TextButton(
