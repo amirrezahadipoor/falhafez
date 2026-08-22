@@ -45,16 +45,37 @@ class PersonalizeTafsir @Inject constructor() {
     ): String {
         val q = question?.trim().orEmpty()
         val rnd = java.util.Random(seed * 31 + poem.id)
+        val pick: (List<String>) -> String = { it[abs(rnd.nextInt()) % it.size] }
 
-        val opening = openingFor(category, q, poem, rnd)
-        val closing = closingFor(category, q, poem, rnd)
+        // خوانشِ پرسش: شکل (دوراهی/زمان/آری‌ونه/…)، لحن، و دستهٔ حدس‌زده‌شده.
+        // اگر کاربر دسته انتخاب نکرده باشد ولی متنِ پرسش گویا باشد، دسته از
+        // خودِ متن استنباط می‌شود — «می‌خواهم مهاجرت کنم» یعنی فالِ سفر.
+        val insight = QuestionInsight.analyze(q, category)
+        val effective = insight.category
+
+        val opening = openingFor(effective, q, poem, rnd)
+        val readQuestion = QuestionInsight.acknowledgement(insight, pick)
+        val guidance = QuestionInsight.guidance(insight, pick)
+        val closing = closingFor(effective, q, poem, rnd)
 
         return buildString {
             if (opening.isNotBlank()) {
                 append(opening)
                 append("\n\n")
             }
+            // نشان می‌دهد پرسش خوانده شده، نه فقط نقل‌قول شده
+            if (readQuestion.isNotBlank()) {
+                append(readQuestion)
+                append("\n\n")
+            }
+
             append(poem.tafsir.trim())   // ← معنای اصیل، بی‌کم‌وکاست
+
+            // راهنماییِ متناسب با شکلِ پرسش، بعد جمعِ‌بندیِ موضوعی
+            if (guidance.isNotBlank()) {
+                append("\n\n")
+                append(guidance)
+            }
             if (closing.isNotBlank()) {
                 append("\n\n")
                 append(closing)

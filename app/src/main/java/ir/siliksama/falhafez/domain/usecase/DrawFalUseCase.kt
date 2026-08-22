@@ -16,6 +16,8 @@ import javax.inject.Inject
  *  ۳. **تناسب با دستهٔ نیّتِ کاربر** — پیش‌تر دسته فقط ذخیره می‌شد و هیچ اثری
  *     بر انتخاب نداشت؛ یعنی «فالِ عشق» و «فالِ سفر» یک قرعهٔ یکسان بودند.
  *
+ * اگر کاربر دسته انتخاب نکرده باشد، [QuestionInsight] آن را از متنِ پرسش حدس می‌زند.
+ *
  * ۳۰ فالِ اخیر کنار گذاشته می‌شوند تا تکرارِ فوری پیش نیاید.
  * [source] = null یعنی از همهٔ دیوان‌ها؛ وگرنه فقط دیوانِ همان شاعر.
  */
@@ -29,8 +31,13 @@ class DrawFalUseCase @Inject constructor(
         source: Poet? = Poet.HAFEZ
     ): DrawEntry? {
         val recentIds = drawRepository.recentPoemIds(limit = 30)
+
+        // اگر کاربر دسته‌ای انتخاب نکرده اما نیّتش را نوشته، دسته از متنِ پرسش
+        // استنباط می‌شود؛ «می‌خواهم مهاجرت کنم» بدونِ هیچ انتخابی، فالِ سفر است.
+        val effectiveCategory = QuestionInsight.analyze(question, category).category
+
         val poem = poemRepository.getRandomPoemFor(
-            category = category,
+            category = effectiveCategory,
             excludeIds = recentIds,
             poet = source
         ) ?: return null
