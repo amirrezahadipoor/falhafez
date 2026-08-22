@@ -196,11 +196,12 @@ private fun StoryDetail(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("چکیدهٔ کلیدی", style = FalText.caption, color = spec.accentSoft)
                             Spacer(Modifier.height(8.dp))
+                            // چکیده با فونتِ وزیرمتن (نه نستعلیق) — خوانا و جدای از متنِ شعرگونه.
                             morals.forEach { m ->
-                                Text(m.first, style = FalText.verse, color = readingColor(spec.onBackground))
+                                Text(m.first, style = FalText.body, color = readingColor(spec.onBackground))
                                 if (m.isCouplet) {
-                                    Spacer(Modifier.height(3.dp))
-                                    Text(m.second!!, style = FalText.verse, color = readingColor(spec.onBackground))
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(m.second!!, style = FalText.caption, color = readingColor(spec.onBackgroundMuted))
                                 }
                             }
                         }
