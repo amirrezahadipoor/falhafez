@@ -44,6 +44,31 @@ interface PoemDao {
     )
     suspend fun getCandidateIds(exclude: List<Long>): List<Long>
 
+    /**
+     * شناسه‌های نامزدِ فال به تفکیکِ شاعر، همراه با تعدادِ بیت.
+     *
+     * برای قرعهٔ وزن‌دار لازم است: بدونِ آن، حالتِ «همهٔ مجموعه‌ها» عملاً فقط
+     * مولانا می‌داد (۷۴.۸٪ از ۸٬۳۴۷ شعرِ استخر) و سهمِ حافظ ۶.۹٪ می‌شد —
+     * در اپی به نامِ «فال حافظ».
+     */
+    @Query(
+        "SELECT p.id AS id, p.poet AS poet, COUNT(v.poemId) AS beits " +
+            "FROM poems p LEFT JOIN verses v ON v.poemId = p.id " +
+            "WHERE p.collection != 'stories' AND p.collection != 'attributed' " +
+            "AND p.id NOT IN (:exclude) AND p.id NOT IN (10716, 10717, 10724, 10729) " +
+            "GROUP BY p.id"
+    )
+    suspend fun getCandidatesWithSize(exclude: List<Long>): List<CandidatePoem>
+
+    @Query(
+        "SELECT p.id AS id, p.poet AS poet, COUNT(v.poemId) AS beits " +
+            "FROM poems p LEFT JOIN verses v ON v.poemId = p.id " +
+            "WHERE p.poet = :poet AND p.collection != 'stories' AND p.collection != 'attributed' " +
+            "AND p.id NOT IN (:exclude) AND p.id NOT IN (10716, 10717, 10724, 10729) " +
+            "GROUP BY p.id"
+    )
+    suspend fun getCandidatesWithSizeForPoet(poet: String, exclude: List<Long>): List<CandidatePoem>
+
     @Query(
         "SELECT id FROM poems WHERE poet = :poet AND collection != 'stories' AND collection != 'attributed' " +
             "AND id NOT IN (:exclude) AND id NOT IN (10716, 10717, 10724, 10729)"
@@ -146,3 +171,13 @@ interface ReadDao {
     @Query("SELECT poemId FROM read_poems")
     fun observeIds(): Flow<List<Long>>
 }
+
+/**
+ * ردیفِ سبکِ نامزدِ فال — فقط چیزی که قرعهٔ وزن‌دار لازم دارد.
+ * (خواندنِ کلِ شعر برای ۸٬۳۴۷ نامزد اسراف است.)
+ */
+data class CandidatePoem(
+    val id: Long,
+    val poet: String,
+    val beits: Int
+)

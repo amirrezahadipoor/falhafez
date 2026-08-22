@@ -8,6 +8,7 @@ import ir.siliksama.falhafez.domain.model.Poem
 import ir.siliksama.falhafez.domain.model.Poet
 import ir.siliksama.falhafez.domain.model.Verse
 import ir.siliksama.falhafez.domain.repository.PoemRepository
+import ir.siliksama.falhafez.domain.usecase.FalLottery
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -33,18 +34,35 @@ class PoemRepositoryImpl @Inject constructor(
         return runCatching { poemDao.search(matchQuery).mapWithVerses() }.getOrDefault(emptyList())
     }
 
+    /**
+     * قرعهٔ فال — وزن‌دار، نه کاملاً تصادفی. منطقِ وزن‌دهی در [FalLottery].
+     *
+     * `poet == null` یعنی «همهٔ مجموعه‌ها»؛ در این حالت سهمِ شاعران متعادل می‌شود،
+     * وگرنه انتخابِ تصادفیِ ساده عملاً فقط مولانا می‌داد (۷۴.۸٪ استخر).
+     */
     override suspend fun getRandomPoem(excludeIds: List<Long>, poet: Poet?): Poem? {
-        // null poet = draw from every collection; otherwise only that poet's divan.
-        val candidates = if (poet == null) {
-            poemDao.getCandidateIds(excludeIds)
+        val weightByPoet = poet == null
+
+        var candidates = if (weightByPoet) {
+            poemDao.getCandidatesWithSize(excludeIds)
         } else {
-            poemDao.getCandidateIdsForPoet(poet.key, excludeIds)
+            poemDao.getCandidatesWithSizeForPoet(poet.key, excludeIds)
         }
-        val pool = if (candidates.isNotEmpty()) candidates else {
-            // fallback امن: بدون هیچ حذفی، اما باز هم بدون داستان‌ها
-            if (poet == null) poemDao.getCandidateIds(emptyList()) else poemDao.getPoemIdsForPoet(poet.key)
+
+        // اگر حذفِ فال‌های اخیر استخر را خالی کرد، بدونِ حذف دوباره تلاش می‌کنیم.
+        if (candidates.isEmpty()) {
+            candidates = if (weightByPoet) {
+                poemDao.getCandidatesWithSize(emptyList())
+            } else {
+                poemDao.getCandidatesWithSizeForPoet(poet.key, emptyList())
+            }
         }
-        val chosen = pool.randomOrNull() ?: return null
+        if (candidates.isEmpty()) return null
+
+        val chosen = FalLottery.pick(
+            items = candidates.map { Triple(it.id, it.poet, it.beits) },
+            weightByPoet = weightByPoet
+        ) ?: return null
         return getPoem(chosen)
     }
 

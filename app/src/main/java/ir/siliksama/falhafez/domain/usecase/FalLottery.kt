@@ -1,0 +1,115 @@
+package ir.siliksama.falhafez.domain.usecase
+
+import kotlin.random.Random
+
+/**
+ * قرعهٔ فال — وزن‌دهیِ آگاهانه به‌جای انتخابِ کاملاً تصادفی.
+ *
+ * ## دو مشکلی که حل می‌کند
+ *
+ * ### ۱. حافظ در «فال حافظ» گم شده بود
+ * استخرِ فال ۸٬۳۴۷ شعر دارد، اما توزیعش این است:
+ *
+ * | شاعر  | تعداد | سهم از انتخابِ تصادفی |
+ * |-------|-------|------------------------|
+ * | مولانا| 6,240 | **۷۴.۸٪** |
+ * | سعدی  | 1,355 | ۱۶.۲٪ |
+ * | حافظ  |   574 | **۶.۹٪** |
+ * | خیام  |   178 | ۲.۱٪ |
+ *
+ * یعنی در حالتِ «همهٔ مجموعه‌ها»، از هر ۱۴ فال تنها یکی حافظ بود — در اپی که
+ * نامش «فال حافظ» است و کاربر با انتظارِ حافظ می‌آید. علتش هم کیفیت نبود، صرفاً
+ * این بود که دیوان شمس شعرِ بیشتری دارد.
+ *
+ * ### ۲. شعرهای بسیار بلند
+ * ۱۵ شعر بیش از ۱۰۰ بیت دارند (بلندترین ۱۵۹ بیت). آمدنِ چنین متنی به‌عنوان «فال»
+ * تجربه را خراب می‌کند: کاربر می‌خواهد پاسخِ نیّتش را بخواند، نه ۱۵۹ بیت را پیمایش
+ * کند. از سوی دیگر تک‌بیتی‌ها (۲٬۴۴۵ مورد) هم برای فال کم‌مایه‌اند.
+ *
+ * ## راهکار
+ * وزنِ نهاییِ هر شعر = وزنِ شاعر × وزنِ اندازه. انتخاب با چرخِ رولت.
+ * هیچ شعری حذف نمی‌شود — فقط شانسِ نسبی تنظیم می‌شود؛ پس کلِ دیوان همچنان
+ * در دسترس است و «کمبودِ محتوا» ایجاد نمی‌شود.
+ */
+object FalLottery {
+
+    /**
+     * سهمِ هدف برای هر شاعر در حالتِ «همهٔ مجموعه‌ها».
+     *
+     * حافظ بیشترین سهم را دارد چون هویتِ اپ است و کاربر با نیّتِ حافظ می‌آید؛
+     * بقیه سهمِ معناداری دارند تا تنوع حفظ شود و گنجینهٔ ۸ هزار شعری هدر نرود.
+     */
+    private val POET_SHARE = mapOf(
+        "hafez" to 0.40,
+        "rumi" to 0.25,
+        "saadi" to 0.22,
+        "khayyam" to 0.13
+    )
+
+    /** محدودهٔ آرمانیِ طولِ یک فال (بیت). */
+    private const val IDEAL_MIN = 5
+    private const val IDEAL_MAX = 20
+
+    /**
+     * وزنِ اندازه: شعرهای خیلی کوتاه و خیلی بلند شانسِ کمتری می‌گیرند، ولی
+     * هرگز صفر نمی‌شوند (کفِ ۰.۱۵) تا هیچ بخشی از دیوان از دسترس خارج نشود.
+     */
+    fun sizeWeight(beits: Int): Double = when {
+        beits <= 0 -> 0.15
+        beits < IDEAL_MIN -> 0.35 + 0.13 * beits      // ۱ بیت → ۰.۴۸ ، ۴ بیت → ۰.۸۷
+        beits <= IDEAL_MAX -> 1.0                      // محدودهٔ آرمانی
+        beits <= 40 -> 0.65
+        beits <= 70 -> 0.35
+        else -> 0.15                                   // مثنویِ بلند: کمیاب، نه ناممکن
+    }
+
+    /**
+     * وزنِ هر شعر از یک شاعر.
+     *
+     * سهمِ هدفِ شاعر بر تعدادِ شعرهایش تقسیم می‌شود؛ در نتیجه مجموعِ وزنِ شعرهای
+     * هر شاعر برابرِ سهمِ هدفش می‌شود — مستقل از اینکه چند شعر دارد.
+     */
+    fun poetWeight(poet: String, poemsOfThatPoet: Int): Double {
+        if (poemsOfThatPoet <= 0) return 0.0
+        val share = POET_SHARE[poet] ?: 0.05
+        return share / poemsOfThatPoet
+    }
+
+    /**
+     * انتخابِ وزن‌دار.
+     *
+     * @param items نامزدها: (شناسه، کلیدِ شاعر، تعدادِ بیت)
+     * @param weightByPoet وقتی true است سهمِ شاعران متعادل می‌شود (حالتِ «همه»).
+     *        در حالتِ تک‌شاعر بی‌معناست و فقط وزنِ اندازه اعمال می‌شود.
+     */
+    fun pick(
+        items: List<Triple<Long, String, Int>>,
+        weightByPoet: Boolean,
+        random: Random = Random.Default
+    ): Long? {
+        if (items.isEmpty()) return null
+        if (items.size == 1) return items[0].first
+
+        val perPoetCount: Map<String, Int> =
+            if (weightByPoet) items.groupingBy { it.second }.eachCount() else emptyMap()
+
+        var total = 0.0
+        val weights = DoubleArray(items.size)
+        for (i in items.indices) {
+            val (_, poet, beits) = items[i]
+            val base = if (weightByPoet) poetWeight(poet, perPoetCount[poet] ?: 1) else 1.0
+            val w = base * sizeWeight(beits)
+            weights[i] = w
+            total += w
+        }
+        if (total <= 0.0) return items.random(random).first
+
+        // چرخِ رولت
+        var r = random.nextDouble() * total
+        for (i in items.indices) {
+            r -= weights[i]
+            if (r <= 0.0) return items[i].first
+        }
+        return items.last().first
+    }
+}
