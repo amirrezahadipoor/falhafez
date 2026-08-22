@@ -62,6 +62,11 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew clean assembleRelease --no-daemon --no-build-cache --stacktrace
 
+      - name: Print resolved Tapsell/Adivery versions
+        run: |
+          ./gradlew :app:dependencies --configuration releaseRuntimeClasspath --no-daemon \
+            | grep -iE "tapsell|adivery" || true
+
       - name: Inspect assets (diagnostic)
         run: |
           echo "=== source assets ==="
