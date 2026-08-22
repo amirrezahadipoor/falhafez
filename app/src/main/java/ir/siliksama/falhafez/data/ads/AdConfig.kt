@@ -44,16 +44,22 @@ object AdConfig {
     const val ADIVERY_APP_KEY = "9e59a668-464f-4836-a0d9-995b19c4cef7"
 
     /**
-     * Placement IDهای ادیوری.
+     * Placement IDهای ادیوری — از پنلِ ادیوری (panel.adivery.com).
      *
-     * ⚠️ این‌ها باید از پنلِ ادیوری (panel.adivery.com) برداشته و اینجا گذاشته شوند.
-     * تا وقتی خالی‌اند، ادیوری به‌طورِ خودکار از آبشار کنار می‌ماند و همه‌چیز
-     * روی تپ‌سل کار می‌کند — یعنی خالی‌بودنشان چیزی را نمی‌شکند.
+     * اگر روزی یکی از این‌ها خالی شود، همان قالب به‌تنهایی از آبشار کنار می‌رود
+     * و بقیه سرِ جای خود کار می‌کنند.
      */
-    const val ADIVERY_BANNER = ""
-    const val ADIVERY_INTERSTITIAL = ""
-    const val ADIVERY_REWARDED = ""
-    const val ADIVERY_NATIVE = ""
+    /** بنر استاندارد */
+    const val ADIVERY_BANNER = "661cc465-86ad-4384-8dbf-234ce70d632d"
+
+    /** تمام‌صفحهٔ میانه‌ای (Interstitial) */
+    const val ADIVERY_INTERSTITIAL = "11bc0de5-45c8-45e3-b988-5f45c6effff8"
+
+    /** ویدیوی جایزه‌ای (Rewarded) */
+    const val ADIVERY_REWARDED = "68edeb4e-0149-4d93-805f-694eef5349b8"
+
+    /** بنر همسان (Native) */
+    const val ADIVERY_NATIVE = "15bcc548-0a62-4fda-8856-652b02293ea8"
 
     /**
      * ادیوری وقتی فعال است که کلید **و** دستِ‌کم یک placement پر باشد.

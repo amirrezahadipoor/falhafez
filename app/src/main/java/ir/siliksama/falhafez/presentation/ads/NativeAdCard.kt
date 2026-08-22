@@ -6,6 +6,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
@@ -15,7 +16,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import ir.siliksama.falhafez.R
 import ir.siliksama.falhafez.core.util.SupportStore
 import ir.siliksama.falhafez.core.util.findActivity
+import com.adivery.sdk.AdiveryAdListener
+import com.adivery.sdk.AdiveryNativeAdView
 import ir.siliksama.falhafez.data.ads.AdConfig
+import ir.siliksama.falhafez.data.ads.AdiveryInit
 import ir.siliksama.falhafez.data.ads.TapsellInit
 import ir.siliksama.falhafez.data.ads.isOnline
 import ir.tapsell.mediation.Tapsell
@@ -37,24 +41,74 @@ fun NativeAdCard(modifier: Modifier = Modifier) {
         // ارتفاعِ حداقلی — بدون آن ممکن است کانتینر ارتفاعِ صفر بگیرد و تبلیغ دیده نشود.
         modifier = modifier.fillMaxWidth().heightIn(min = 120.dp),
         factory = { ctx ->
-            // قالب خودش ریشهٔ NativeAdViewContainer دارد، پس همان را inflate می‌کنیم.
-            // پیش‌تر اینجا یک کانتینرِ دوم به‌صورت برنامه‌ای ساخته می‌شد و قالب داخلش
-            // می‌رفت؛ نتیجه دو کانتینرِ تودرتو بود که SDK با آن سردرگم می‌شود.
-            val container = LayoutInflater.from(ctx)
-                .inflate(R.layout.ad_native, null, false) as NativeAdViewContainer
-            container.layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            TapsellInit.whenReady { requestNativeWithRetry(ctx, container, 0) }
-            container
+            // یک میزبانِ خالی که هر دو شبکه می‌توانند داخلش بنشینند. بدونِ آن،
+            // ریشهٔ ویو از نوعِ کانتینرِ تپ‌سل می‌شد و جایگزینی با ادیوری ممکن نبود.
+            val host = FrameLayout(ctx).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            }
+
+            if (AdConfig.tapsellEnabled) {
+                val container = LayoutInflater.from(ctx)
+                    .inflate(R.layout.ad_native, host, false) as NativeAdViewContainer
+                host.addView(container)
+                TapsellInit.whenReady { requestNativeWithRetry(ctx, host, container, 0) }
+            } else {
+                showAdiveryNative(ctx, host)
+            }
+            host
         }
     )
 }
 
-private fun requestNativeWithRetry(ctx: Context, container: NativeAdViewContainer, attempt: Int) {
+/**
+ * تبلیغِ همسانِ ادیوری — پلهٔ دومِ آبشار.
+ *
+ * `AdiveryNativeAdView` خودش هم ویو است و هم بارگذارنده: قالب را می‌گیرد،
+ * درخواست می‌فرستد و ویوها را پر می‌کند. پس کافی است جایگزینِ کانتینرِ تپ‌سل شود.
+ */
+private fun showAdiveryNative(ctx: Context, host: ViewGroup) {
+    val placement = AdConfig.ADIVERY_NATIVE
+    if (placement.isBlank() || !AdiveryInit.isReady) {
+        Log.d(TAG, "native: adivery not configured")
+        return
+    }
+    if (!isOnline(ctx)) return
+
+    runCatching {
+        val view = AdiveryNativeAdView(ctx).apply {
+            setNativeAdLayout(R.layout.ad_native_adivery)
+            setPlacementId(placement)
+            setListener(object : AdiveryAdListener() {
+                override fun onAdLoaded() { Log.d(TAG, "native: adivery loaded ✓") }
+                override fun onAdShown() { Log.d(TAG, "native: adivery impression ✓") }
+                override fun onError(reason: String) {
+                    Log.w(TAG, "native: adivery error: $reason")
+                    // چیزی برای نمایش نیست — میزبان را جمع می‌کنیم تا فضای
+                    // خالیِ بی‌دلیل در فهرست نماند.
+                    Handler(Looper.getMainLooper()).post { host.removeAllViews() }
+                }
+            })
+        }
+        Handler(Looper.getMainLooper()).post {
+            host.removeAllViews()
+            host.addView(view)
+            view.loadAd()
+        }
+    }.onFailure { Log.w(TAG, "native: adivery request threw", it) }
+}
+
+private fun requestNativeWithRetry(
+    ctx: Context,
+    host: ViewGroup,
+    container: NativeAdViewContainer,
+    attempt: Int,
+) {
     if (attempt >= MAX_ATTEMPTS) {
-        Log.w(TAG, "native: giving up after $MAX_ATTEMPTS attempts")
+        Log.w(TAG, "native: tapsell gave up after $MAX_ATTEMPTS attempts — falling back to adivery")
+        showAdiveryNative(ctx, host)
         return
     }
     if (!isOnline(ctx)) {
@@ -81,7 +135,8 @@ private fun requestNativeWithRetry(ctx: Context, container: NativeAdViewContaine
                         override fun onAdClicked() { Log.d(TAG, "native: clicked") }
                         override fun onAdClosed(completionState: AdShowCompletionState) {}
                         override fun onAdFailed(message: String) {
-                            Log.w(TAG, "native show failed: $message")
+                            Log.w(TAG, "native show failed: $message — falling back to adivery")
+                            showAdiveryNative(ctx, host)
                         }
                     })
                 } else {
@@ -92,7 +147,7 @@ private fun requestNativeWithRetry(ctx: Context, container: NativeAdViewContaine
             override fun onFailure(message: String) {
                 Log.w(TAG, "native request failed (attempt ${attempt + 1}/$MAX_ATTEMPTS): $message")
                 Handler(Looper.getMainLooper()).postDelayed(
-                    { requestNativeWithRetry(ctx, container, attempt + 1) },
+                    { requestNativeWithRetry(ctx, host, container, attempt + 1) },
                     2_000L * (attempt + 1)
                 )
             }

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+    قالبِ تبلیغِ همسان (Native) ادیوری.
+
+    این قالب به AdiveryNativeAdView داده می‌شود (setNativeAdLayout) و SDK خودش
+    ویوها را با شناسه پیدا و پر می‌کند. برخلافِ تپ‌سل، ریشه یک ViewGroup ساده
+    است و نیازی به کلاسِ ظرفِ اختصاصی ندارد.
+
+    شناسه‌ها تحمیلیِ SDK ادیوری‌اند و نباید تغییر کنند:
+    adivery_headline / adivery_description / adivery_call_to_action /
+    adivery_advertiser / adivery_image
+
+    ظاهر عمداً همان زبانِ بصریِ ad_native.xml است تا تبلیغِ دو شبکه در فهرستِ
+    دیوان یک‌شکل دیده شود و کاربر تفاوتی حس نکند.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#131B2E"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <!-- برچسبِ «تبلیغ» — طبق قوانینِ کافه‌بازار باید همیشه دیده شود. -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#33C9A24B"
+        android:paddingStart="6dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="2dp"
+        android:text="@string/ad_sponsored_label"
+        android:textColor="#B9A98C"
+        android:textSize="11sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/adivery_image"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:contentDescription="@string/ad_logo_desc" />
+
+        <TextView
+            android:id="@+id/adivery_headline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="#F3E9D2"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/adivery_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:maxLines="3"
+        android:textColor="#F3E9D2"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/adivery_advertiser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="#B9A98C"
+        android:textSize="11sp" />
+
+    <Button
+        android:id="@+id/adivery_call_to_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="#C9A24B"
+        android:textColor="#14100A"
+        android:textSize="12sp" />
+</LinearLayout>
