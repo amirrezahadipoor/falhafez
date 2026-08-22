@@ -70,11 +70,11 @@ class DailyFalWidgetProvider : AppWidgetProvider() {
                 .build()
             try {
                 val poemDao = db.poemDao()
-                val count = poemDao.countForPoet("hafez")
+                val count = poemDao.countForPoetCollection("hafez", "ghazal")
                 if (count <= 0) return
                 // همان «روزِ محلی» که فالِ روزِ داخل اپ از آن استفاده می‌کند — تا ویجت و اپ یکی باشند.
                 val day = DayNumber.local()
-                val poemId = poemDao.getPoemIdAtForPoet("hafez", (day % count.toLong()).toInt()) ?: return
+                val poemId = poemDao.getPoemIdAtForPoetCollection("hafez", "ghazal", (day % count.toLong()).toInt()) ?: return
                 val withVerses = poemDao.getPoemWithVerses(poemId) ?: return
                 val opening = withVerses.verses.sortedBy { it.position }
                     .take(3)

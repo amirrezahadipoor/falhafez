@@ -21,4 +21,8 @@ interface PoemRepository {
     suspend fun countForPoet(poet: Poet): Int
     suspend fun count(): Int
     fun observeCount(): Flow<Int>
+
+    /** فالِ روز: فقط از غزلیات (مجموعهٔ مشخص) — تا شعرِ روز با افزوده‌شدنِ بخش‌های دیگر ثابت بماند. */
+    suspend fun countForPoetCollection(poet: Poet, collection: Collection): Int
+    suspend fun getPoemAtForCollection(poet: Poet, collection: Collection, index: Int): Poem?
 }

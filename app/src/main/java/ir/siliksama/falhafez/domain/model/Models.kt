@@ -13,6 +13,10 @@ enum class Poet(val key: String, val faName: String) {
 
 enum class Collection(val key: String, val faName: String, val poet: Poet) {
     HAFEZ_GHAZAL("ghazal", "غزلیات", Poet.HAFEZ),
+    HAFEZ_GHETE("qete", "قطعات", Poet.HAFEZ),
+    HAFEZ_ROBAEE("hafez-robaee", "رباعیات", Poet.HAFEZ),
+    HAFEZ_QASIDE("qaside", "قصاید", Poet.HAFEZ),
+    HAFEZ_ATTRIBUTED("attributed", "اشعار منتسب", Poet.HAFEZ),
     SAADI_GOLESTAN("golestan", "گلستان", Poet.SAADI),
     SAADI_BUSTAN("bustan", "بوستان", Poet.SAADI),
     SAADI_GHAZAL("saadi-ghazal", "غزلیات", Poet.SAADI),

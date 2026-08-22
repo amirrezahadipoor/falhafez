@@ -39,8 +39,8 @@ Built in phases per the master prompt. Each phase is committed separately on `ma
 | 32 — Deep bug hunt | ✅ | back button no longer **exits the app during the Divan animation** (was unhandled); "همه" draw fallback can no longer return a story; source-count zero-guard at first launch; content scan 0 issues |
 
 ## Corpus (complete, offline) — 8,368 poems
-> Hafez 495 · Khayyam 178 · Saadi 1,355 (غزلیات 637 + گلستان 291 + بوستان 230 + رباعیات 146 + قطعات 20 + ملحقات 31) · Rumi 6,240 (مثنوی 972 + شمس 3,274 + رباعیات 1,994) · + ۵۰ مطلبِ «جهان»
-> Saadi: غزلیات (637) + گلستان (291) + بوستان (230) · Rumi: مثنوی (972) + دیوان شمس (3,274) · Hafez 495 · Khayyam 178 · + ۵۰ مطلبِ «جهان»
+> Hafez 692 (غزل 495 + قطعه 34 + رباعی 42 + قصیده 3 + منتسب 118) · Khayyam 178 · Saadi 1,355 (غزلیات 637 + گلستان 291 + بوستان 230 + رباعیات 146 + قطعات 20 + ملحقات 31) · Rumi 6,240 (مثنوی 972 + شمس 3,274 + رباعیات 1,994) · + ۵۰ مطلبِ «جهان»
+> Saadi: غزلیات (637) + گلستان (291) + بوستان (230) · Rumi: مثنوی (972) + دیوان شمس (3,274) · Hafez 692 · Khayyam 178 · + ۵۰ مطلبِ «جهان»
 
 ## Corpus (previous) — for reference
 | Poet | Collection | Count | Beits |

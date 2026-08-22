@@ -49,7 +49,15 @@ class PoemRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getPoemAt(poet: Poet, index: Int): Poem? {
-        val id = poemDao.getPoemIdAtForPoet(poet.key, index) ?: return null
+        val id = poemDao.getPoemIdAtForPoetCollection(poet.key, "ghazal", index) ?: return null
+        return getPoem(id)
+    }
+
+    override suspend fun countForPoetCollection(poet: Poet, collection: Collection): Int =
+        poemDao.countForPoetCollection(poet.key, collection.key)
+
+    override suspend fun getPoemAtForCollection(poet: Poet, collection: Collection, index: Int): Poem? {
+        val id = poemDao.getPoemIdAtForPoetCollection(poet.key, collection.key, index) ?: return null
         return getPoem(id)
     }
 

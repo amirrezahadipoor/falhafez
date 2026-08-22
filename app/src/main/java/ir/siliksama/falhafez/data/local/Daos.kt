@@ -36,29 +36,35 @@ interface PoemDao {
     suspend fun getAllPoemIds(): List<Long>
 
     // چهار شعرِ ملحقاتِ سعدی که متنِ دست‌نویسشان ناقص است (جایِ واژه‌ها «…» است)
-    // در فالگیری شرکت نمی‌کنند — فال باید همیشه از متنِ کامل باشد — ولی در کتابخانه می‌مانند.
+    // و «اشعار منتسب» حافظ که انتسابشان قطعی نیست — در فالگیری شرکت نمی‌کنند،
+    // ولی در کتابخانه می‌مانند. فال باید همیشه از متنِ کامل و انتسابِ قطعی باشد.
     @Query(
-        "SELECT id FROM poems WHERE collection != 'stories' AND id NOT IN (:exclude) " +
-            "AND id NOT IN (10716, 10717, 10724, 10729)"
+        "SELECT id FROM poems WHERE collection != 'stories' AND collection != 'attributed' " +
+            "AND id NOT IN (:exclude) AND id NOT IN (10716, 10717, 10724, 10729)"
     )
     suspend fun getCandidateIds(exclude: List<Long>): List<Long>
 
     @Query(
-        "SELECT id FROM poems WHERE poet = :poet AND collection != 'stories' AND id NOT IN (:exclude) " +
-            "AND id NOT IN (10716, 10717, 10724, 10729)"
+        "SELECT id FROM poems WHERE poet = :poet AND collection != 'stories' AND collection != 'attributed' " +
+            "AND id NOT IN (:exclude) AND id NOT IN (10716, 10717, 10724, 10729)"
     )
     suspend fun getCandidateIdsForPoet(poet: String, exclude: List<Long>): List<Long>
 
     @Query(
-        "SELECT id FROM poems WHERE poet = :poet AND collection != 'stories' " +
+        "SELECT id FROM poems WHERE poet = :poet AND collection != 'stories' AND collection != 'attributed' " +
             "AND id NOT IN (10716, 10717, 10724, 10729)"
     )
     suspend fun getPoemIdsForPoet(poet: String): List<Long>
 
-    @Query("SELECT id FROM poems WHERE poet = :poet AND collection != 'stories' ORDER BY id LIMIT 1 OFFSET :offset")
-    suspend fun getPoemIdAtForPoet(poet: String, offset: Int): Long?
+    // فالِ روز و ویجت: همیشه فقط از غزلیاتِ حافظ — تا با افزوده‌شدنِ بخش‌های دیگر،
+    // شعرِ روز (مراسمِ مشترکِ همه) ثابت بماند.
+    @Query("SELECT id FROM poems WHERE poet = :poet AND collection = :collection ORDER BY id LIMIT 1 OFFSET :offset")
+    suspend fun getPoemIdAtForPoetCollection(poet: String, collection: String, offset: Int): Long?
 
-    @Query("SELECT COUNT(*) FROM poems WHERE poet = :poet AND collection != 'stories'")
+    @Query("SELECT COUNT(*) FROM poems WHERE poet = :poet AND collection = :collection")
+    suspend fun countForPoetCollection(poet: String, collection: String): Int
+
+    @Query("SELECT COUNT(*) FROM poems WHERE poet = :poet AND collection != 'stories' AND collection != 'attributed'")
     suspend fun countForPoet(poet: String): Int
 
     @Query("SELECT COUNT(*) FROM poems WHERE collection = :collection")
