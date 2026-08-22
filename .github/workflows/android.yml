@@ -33,6 +33,13 @@ jobs:
       - name: Validate content quality
         run: python3 tools/validate_content.py
 
+      # کامنت‌های بلوکیِ کاتلین تودرتو می‌شوند، پس یک «/*» داخلِ متنِ KDoc
+      # (مثلاً در مسیری مثل corpus/*.dat) بقیهٔ فایل را می‌بلعد. کامپایلر آن را
+      # ده‌ها خط پایین‌تر و با پیامِ گمراه‌کنندهٔ «Missing '}'» گزارش می‌کند.
+      # این بررسیِ چندثانیه‌ای جلوی هدررفتنِ یک بیلدِ کاملِ گرِیدل را می‌گیرد.
+      - name: Validate Kotlin comments
+        run: python3 tools/validate_kotlin_comments.py
+
       - name: Run unit tests
         run: chmod +x gradlew && ./gradlew testReleaseUnitTest --no-daemon
 
