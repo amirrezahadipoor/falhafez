@@ -5,8 +5,10 @@ import android.util.Log
 
 import ir.siliksama.falhafez.core.sound.Sounds
 import ir.siliksama.falhafez.core.util.SupportStore
+import ir.siliksama.falhafez.data.ads.AdConfig
 import ir.siliksama.falhafez.data.local.seed.CorpusSeeder
 import ir.siliksama.falhafez.domain.repository.SupportRepository
+import ir.tapsell.mediation.Tapsell
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -40,7 +42,12 @@ class FalHafezApp : Application() {
         appScope.launch {
             runCatching { SupportStore.tier = supportRepository.tier.first() }
         }
-        // تپسل به‌صورت خودکار (ContentProvider) با کلیدِ مانیفست راه‌اندازی می‌شود — بدون نیاز به کد.
+
+        // راه‌اندازی صریح SDK تپسل در آغاز برنامه
+        runCatching {
+            Tapsell.initialize(this, AdConfig.TAPSELL_APP_KEY)
+            Log.d("FalHafez", "Tapsell SDK initialized in Application.onCreate")
+        }.onFailure { Log.w("FalHafez", "Tapsell init failed in Application.onCreate", it) }
     }
 
     /**

@@ -9,9 +9,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- کتابخانهٔ تبلیغاتی تپسل این مجوز را اعلام می‌کند؛ ما آن را صریحاً حذف می‌کنیم
-         چون برای نمایش تبلیغات (برخلاف هدف‌گذاریِ تبلیغاتی) لازم نیست. -->
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
+    <!-- شناسه تبلیغاتی گوگل برای تپسل و شبکه‌های تبلیغاتی (الزامی برای پر شدن تبلیغ در اندروید ۱۳+) -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
     <!-- حریم خصوصی: داده (نیّت، تاریخچه، علاقه‌مندی‌ها) هرگز به فضای ابریِ گوگل منتقل نمی‌شود؛
          خروجی دستی از تنظیمات در دسترس است. -->
@@ -37,10 +36,17 @@
             </intent-filter>
         </activity>
 
-        <!-- تپسل: کلید اپ را از پنل tapsell.ir بگیرید و اینجا بگذارید -->
-        <!--
-        <meta-data android:name="TAPSELL_APP_KEY" android:value="YOUR_TAPSELL_APP_KEY" />
-        -->
+        <!-- تپسل: کلیدهای اپلیکیشن برای راه‌اندازی خودکار (Auto-Init) -->
+        <meta-data
+            android:name="TapsellMediationAppKey"
+            android:value="${TapsellMediationAppKey}" />
+        <meta-data
+            android:name="TAPSELL_APP_KEY"
+            android:value="${TapsellMediationAppKey}" />
+        <meta-data
+            android:name="TAPSELL_KEY"
+            android:value="${TapsellMediationAppKey}" />
+
         <!-- بیتِ امروز home-screen widget (offline). -->
         <receiver
             android:name=".presentation.widget.DailyFalWidgetProvider"

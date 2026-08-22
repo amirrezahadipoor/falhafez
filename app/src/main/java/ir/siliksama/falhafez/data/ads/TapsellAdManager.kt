@@ -9,7 +9,10 @@ import ir.tapsell.mediation.ad.AdStateListener
 import ir.tapsell.mediation.ad.request.RequestResultListener
 import ir.tapsell.mediation.ad.show.AdShowCompletionState
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -20,7 +23,9 @@ private const val TAG = "FalHafezAds"
 
 /**
  * شبکهٔ تبلیغاتی تپسل (Mediation SDK) — اصلی برای بازار ایران.
- * SDK به‌صورت خودکار با کلیدِ موجود در مانیفست راه‌اندازی می‌شود (auto-init).
+ *
+ * پیش‌بارگذاری (Preloading) تبلیغات ویدیویی و بین‌صفحه‌ای انجام می‌شود
+ * تا هنگام کلیک کاربر، تبلیغ به‌صورت آنی و بدون تاخیر نمایش داده شود.
  *
  * اگر کاربر یکی از سطح‌های حمایت مالی را خریده باشد (تبلیغات حذف‌شده)،
  * هیچ تبلیغی نمایش داده نمی‌شود — برای همیشه.
@@ -31,7 +36,63 @@ class TapsellAdManager @Inject constructor(
     private val frequencyPolicy: AdFrequencyPolicy
 ) : AdManager {
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    @Volatile
+    private var cachedInterstitialId: String? = null
+
+    @Volatile
+    private var cachedRewardedId: String? = null
+
+    @Volatile
+    private var isInitializing = false
+
     override val enabled: Boolean get() = AdConfig.enabled
+
+    init {
+        ensureInitialized()
+        if (enabled && !SupportStore.tier.adsRemoved) {
+            preloadAds()
+        }
+    }
+
+    private fun ensureInitialized() {
+        if (isInitializing) return
+        isInitializing = true
+        runCatching {
+            Tapsell.initialize(context, AdConfig.TAPSELL_APP_KEY)
+            Log.d(TAG, "Tapsell initialized with key: ${AdConfig.TAPSELL_APP_KEY}")
+        }.onFailure {
+            Log.w(TAG, "Tapsell explicit initialization notice", it)
+        }
+    }
+
+    private fun preloadAds() {
+        scope.launch {
+            if (isNetworkAvailable()) {
+                if (cachedInterstitialId == null) preloadInterstitial()
+                if (cachedRewardedId == null) preloadRewarded()
+            }
+        }
+    }
+
+    private suspend fun preloadInterstitial() {
+        if (SupportStore.tier.adsRemoved) return
+        val adId = request("interstitial-preload") { Tapsell.requestInterstitialAd(AdConfig.ZONE_INTERSTITIAL, it) }
+        if (adId != null) {
+            cachedInterstitialId = adId
+            Log.d(TAG, "interstitial preloaded successfully: adId=$adId")
+        }
+    }
+
+    private suspend fun preloadRewarded() {
+        if (SupportStore.tier.adsRemoved) return
+        val adId = request("rewarded-preload") { Tapsell.requestRewardedAd(AdConfig.ZONE_REWARDED, it) }
+        if (adId != null) {
+            cachedRewardedId = adId
+            Log.d(TAG, "rewarded preloaded successfully: adId=$adId")
+        }
+    }
 
     override suspend fun isNetworkAvailable(): Boolean = isOnline(context)
 
@@ -57,7 +118,21 @@ class TapsellAdManager @Inject constructor(
             return false
         }
 
-        val adId = request("interstitial") { Tapsell.requestInterstitialAd(AdConfig.ZONE_INTERSTITIAL, it) } ?: return false
+        ensureInitialized()
+
+        var adId = cachedInterstitialId
+        if (adId != null) {
+            cachedInterstitialId = null
+            Log.d(TAG, "using preloaded interstitial adId=$adId")
+        } else {
+            Log.d(TAG, "no preloaded interstitial, requesting on-demand...")
+            adId = request("interstitial") { Tapsell.requestInterstitialAd(AdConfig.ZONE_INTERSTITIAL, it) }
+        }
+
+        if (adId == null) {
+            Log.w(TAG, "interstitial request/preload returned null adId")
+            return false
+        }
 
         val shown = withContext(Dispatchers.Main) {
             if (activity.isFinishing || activity.isDestroyed) return@withContext false
@@ -70,7 +145,14 @@ class TapsellAdManager @Inject constructor(
                 })
             }.isSuccess
         }
-        if (shown) frequencyPolicy.recordShown()
+
+        if (shown) {
+            frequencyPolicy.recordShown()
+        }
+
+        // Trigger next preload in background
+        scope.launch { preloadInterstitial() }
+
         return shown
     }
 
@@ -88,9 +170,23 @@ class TapsellAdManager @Inject constructor(
             return false
         }
 
-        val adId = request("rewarded") { Tapsell.requestRewardedAd(AdConfig.ZONE_REWARDED, it) } ?: return false
+        ensureInitialized()
 
-        return withContext(Dispatchers.Main) {
+        var adId = cachedRewardedId
+        if (adId != null) {
+            cachedRewardedId = null
+            Log.d(TAG, "using preloaded rewarded adId=$adId")
+        } else {
+            Log.d(TAG, "no preloaded rewarded, requesting on-demand...")
+            adId = request("rewarded") { Tapsell.requestRewardedAd(AdConfig.ZONE_REWARDED, it) }
+        }
+
+        if (adId == null) {
+            Log.w(TAG, "rewarded request/preload returned null adId")
+            return false
+        }
+
+        val shown = withContext(Dispatchers.Main) {
             if (activity.isFinishing || activity.isDestroyed) return@withContext false
             runCatching {
                 Tapsell.showRewardedAd(adId, activity, object : AdStateListener.Rewarded {
@@ -102,6 +198,11 @@ class TapsellAdManager @Inject constructor(
                 })
             }.isSuccess
         }
+
+        // Trigger next preload in background
+        scope.launch { preloadRewarded() }
+
+        return shown
     }
 
     /** درخواست تبلیغ با zone و لاگِ علتِ شکست. */
@@ -117,7 +218,6 @@ class TapsellAdManager @Inject constructor(
                 }
 
                 override fun onFailure(message: String) {
-                    // رایج‌ترین دلیل: اپ/زون هنوز در پنل تپسل تأیید نشده، منطقهٔ هدف، یا آفلاین.
                     Log.w(TAG, "$kind request failed: $message")
                     if (cont.isActive) cont.resume(null)
                 }
