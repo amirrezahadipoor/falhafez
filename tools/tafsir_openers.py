@@ -146,6 +146,17 @@ OPEN_TOPIC = [
     "{p} در این {f} به {w} می‌پردازد",
 ]
 
+OPEN_PAIR = [
+    "{p} در این {f} از {w} می‌گوید و آن را به {w2} گره می‌زند",
+    "{p} این {f} را بر {w} بنا کرده و از {w2} هم گفته است",
+    "در این {f}، {w} با {w2} در هم تنیده است",
+    "{p} در این {f} میانِ {w} و {w2} رفت‌وآمد می‌کند",
+    "محورِ این {f} {w} است، با نگاهی به {w2}",
+    "{p} در این {f} {w} را در کنارِ {w2} می‌نشانَد",
+    "این {f} از {p} دربارهٔ {w} است و ردِ {w2} هم در آن پیداست",
+    "{p} در این {f} از {w} آغاز می‌کند و به {w2} می‌رسد",
+]
+
 _TOKEN = re.compile(r"[^\u0600-\u06FF\u200c]+")
 
 
@@ -161,6 +172,47 @@ def poem_text(p):
         (v.get("first") or "") + " " + (v.get("second") or "")
         for v in (p.get("verses") or [])
     )
+
+
+def concepts_ranked(p):
+    """همهٔ مفاهیمِ شعر به ترتیبِ بسامد، همراه با شمارِ برخورد."""
+    text = " " + strip_diacritics(poem_text(p)) + " "
+    out = []
+    for label, keys in CONCEPTS:
+        hits = 0
+        for k in keys:
+            hits += text.count(" " + k) + text.count(k + " ")
+        if hits:
+            out.append((hits, label))
+    out.sort(reverse=True)
+    return out
+
+
+def concept_pair(p):
+    """
+    یک یا دو مفهومِ غالبِ شعر.
+
+    با یک مفهوم، فضای حالت به تعدادِ مدخل‌های فرهنگ محدود می‌شود و در پیکرهٔ
+    ۶٬۲۴۰تاییِ مولانا دو مفهومِ «عشق و دل‌سپردن» و «سماع و آواز» روی هم
+    ۱٬۹۳۳ شعر را می‌گرفتند. ترکیبِ دوتایی («عشق و دل‌سپردن، در پیوند با
+    شب و سحر») فضا را مرتبه‌ای بزرگ‌تر می‌کند بی‌آنکه ادعای تازه‌ای بسازد —
+    هر دو مفهوم واقعاً در شعر حاضرند.
+
+    مفهومِ دوم فقط وقتی افزوده می‌شود که خودش هم آستانه را رد کند، تا
+    برچسبِ فرعیِ بی‌پشتوانه ساخته نشود.
+    """
+    ranked = concepts_ranked(p)
+    if not ranked:
+        return None, None
+    n_verses = len(p.get("verses") or [])
+    floor = CONCEPT_MIN_HITS_SHORT if n_verses <= SHORT_VERSE_COUNT else CONCEPT_MIN_HITS
+    if ranked[0][0] < floor:
+        return None, None
+    primary = ranked[0][1]
+    secondary = None
+    if len(ranked) > 1 and ranked[1][0] >= floor:
+        secondary = ranked[1][1]
+    return primary, secondary
 
 
 def concept_of(p):
@@ -203,12 +255,15 @@ def rewrite(p, rnd):
     t = p.get("tafsir") or ""
     if not is_generic(t):
         return None
-    w = concept_of(p)
+    w, w2 = concept_pair(p)
     if not w:
         return None
     poet = POET_FA.get(p.get("poet"), "شاعر")
     form = FORM_FA.get(p.get("collection"), "سروده")
-    opener = rnd.choice(OPEN_TOPIC).format(p=poet, f=form, w=w)
+    if w2 and rnd.random() < 0.75:
+        opener = rnd.choice(OPEN_PAIR).format(p=poet, f=form, w=w, w2=w2)
+    else:
+        opener = rnd.choice(OPEN_TOPIC).format(p=poet, f=form, w=w)
     rest = t.split(".", 1)[1].strip() if "." in t else ""
     out = f"{opener}. {rest}".strip()
     if out and out[-1] not in TERMINALS:
