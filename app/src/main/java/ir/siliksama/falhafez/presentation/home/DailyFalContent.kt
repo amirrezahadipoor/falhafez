@@ -55,6 +55,8 @@ fun DailyFalContent(
     spec: FalThemeSpec,
     poem: Poem,
     isFavorite: Boolean,
+    /** تفسیرِ روز با قابِ متناسب؛ null یعنی همان تفسیرِ خامِ شعر. */
+    tafsirOverride: String? = null,
     onToggleFavorite: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -124,7 +126,11 @@ fun DailyFalContent(
                 Column(modifier = Modifier.padding(18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("تفسیر", style = FalText.heading, color = spec.accent)
                     Spacer(Modifier.height(8.dp))
-                    Text(poem.tafsir, style = FalText.tafsir, color = readingColor(spec.onBackground))
+                    Text(
+                        tafsirOverride?.takeIf { it.isNotBlank() } ?: poem.tafsir,
+                        style = FalText.tafsir,
+                        color = readingColor(spec.onBackground)
+                    )
                 }
             }
             Spacer(Modifier.height(8.dp))

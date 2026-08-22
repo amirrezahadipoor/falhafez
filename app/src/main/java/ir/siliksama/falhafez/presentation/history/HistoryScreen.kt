@@ -27,6 +27,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.Modifier
@@ -61,12 +62,15 @@ fun HistoryScreen() {
     }
 
     if (selectedDraw != null) {
+        // بازسازیِ متن گران نیست، ولی در هر recomposition لازم نیست؛ به شناسهٔ فال گره می‌خورد.
+        val personal = remember(selectedDraw.id) { viewModel.personalTafsirFor(selectedDraw) }
         RitualBackground(spec = spec, showParticles = false) {
             PoemDetail(
                 poem = selectedDraw.poem,
                 category = selectedDraw.category,
                 spec = spec,
                 isFavorite = isFavorite,
+                tafsirOverride = personal,
                 onToggleFavorite = viewModel.favorite::toggleSelected,
                 onBack = viewModel::close
             )

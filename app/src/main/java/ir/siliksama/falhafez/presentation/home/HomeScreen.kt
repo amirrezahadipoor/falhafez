@@ -93,6 +93,7 @@ fun HomeScreen(
                 spec = spec,
                 poem = dailyPoem,
                 isFavorite = isFavorite,
+                tafsirOverride = state.dailyTafsir,
                 onToggleFavorite = viewModel::onToggleFavorite,
                 onBack = viewModel::closeDailyFal
             )

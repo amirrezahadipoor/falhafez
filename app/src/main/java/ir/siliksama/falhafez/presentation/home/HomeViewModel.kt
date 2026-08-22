@@ -62,6 +62,11 @@ data class HomeUiState(
     /** تفسیرِ شخصی‌شدهٔ فالِ جاری — معنای اصیلِ شعر به‌علاوهٔ قابِ متناسب با نیّت. */
     val personalTafsir: String? = null,
     val dailyFal: Poem? = null,
+    /**
+     * تفسیرِ فالِ روز، با قابِ متناسبِ همان روز. بذر عددِ روز است، پس متن در تمامِ
+     * ۲۴ ساعت ثابت می‌ماند و فردا عوض می‌شود — مثل خودِ غزلِ روز.
+     */
+    val dailyTafsir: String? = null,
     val cooldownActive: Boolean = false,
     val remainingToday: Int = DAILY_FREE_LIMIT,
     val access: DrawAccess = DrawAccess.FREE_QUOTA,
@@ -263,6 +268,7 @@ class HomeViewModel @Inject constructor(
                 lastDraw = result,
                 personalTafsir = personal,
                 dailyFal = null,
+                dailyTafsir = null,
                 cooldownActive = !instant,
                 busy = false
             )
@@ -405,13 +411,23 @@ class HomeViewModel @Inject constructor(
             val poem = dailyFal.today()
             if (poem != null) {
                 favoriteTargetId.value = poem.id
-                _uiState.update { it.copy(dailyFal = poem) }
+                // فالِ روز پرسشی ندارد (برای همه یکی است)، پس قاب از روی عددِ روز
+                // ساخته می‌شود؛ نه از روی نیّتِ شخصی.
+                val personal = runCatching {
+                    personalizeTafsir(
+                        poem = poem,
+                        question = null,
+                        category = FalCategory.NONE,
+                        seed = DailyFalUseCase.todayDayNumber()
+                    )
+                }.getOrNull()
+                _uiState.update { it.copy(dailyFal = poem, dailyTafsir = personal) }
             }
         }
     }
 
     fun closeDailyFal() {
-        _uiState.update { it.copy(dailyFal = null) }
+        _uiState.update { it.copy(dailyFal = null, dailyTafsir = null) }
         favoriteTargetId.value = _uiState.value.lastDraw?.poem?.id
     }
 

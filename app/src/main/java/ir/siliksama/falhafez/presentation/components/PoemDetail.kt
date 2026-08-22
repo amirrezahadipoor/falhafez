@@ -51,11 +51,18 @@ fun PoemDetail(
     spec: FalThemeSpec,
     isFavorite: Boolean,
     isRead: Boolean = false,
+    /**
+     * تفسیرِ شخصی‌شده. اگر داده شود، به‌جای [Poem.tafsir] خام نمایش (و کپی) می‌شود.
+     * معنای اصیلِ شعر داخلِ همین متن دست‌نخورده هست؛ فقط قابِ اطرافش شخصی شده.
+     * برای کتابخانه/علاقه‌مندی‌ها که نیّتی در کار نیست، null می‌ماند.
+     */
+    tafsirOverride: String? = null,
     onToggleFavorite: () -> Unit,
     onToggleRead: (() -> Unit)? = null,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val tafsirText = tafsirOverride?.takeIf { it.isNotBlank() } ?: poem.tafsir
     var showMeaning by remember(poem.id) { mutableStateOf(true) }
     var studyMode by remember(poem.id) { mutableStateOf(false) }
 
@@ -116,7 +123,7 @@ fun PoemDetail(
                 Spacer(Modifier.height(12.dp))
                 Text("تفسیر", style = FalText.heading, color = spec.accent)
                 Spacer(Modifier.height(8.dp))
-                Text(poem.tafsir, style = FalText.tafsir, color = readingColor(spec.onBackground))
+                Text(tafsirText, style = FalText.tafsir, color = readingColor(spec.onBackground))
                 Spacer(Modifier.height(10.dp))
             }
         }
@@ -144,7 +151,7 @@ fun PoemDetail(
                     )
                 }
             }
-            IconButton(onClick = { Clipboard.copy(context, "متن شعر", poem.verses.joinToString("\n") { it.fullText } + "\n\n" + poem.tafsir) }) {
+            IconButton(onClick = { Clipboard.copy(context, "متن شعر", poem.verses.joinToString("\n") { it.fullText } + "\n\n" + tafsirText) }) {
                 Icon(Icons.Outlined.ContentCopy, contentDescription = "کپی متن", tint = spec.onBackgroundMuted)
             }
         }
