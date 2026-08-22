@@ -48,10 +48,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FalHafez">
 
+        <!--
+            launchMode: پیش‌تر singleTask بود و باعثِ «صفحهٔ سیاه» می‌شد.
+            وقتی کاربر از تنظیمات با دکمهٔ بازگشت برمی‌گشت و بعد روی آیکونِ اپ
+            در لانچر می‌زد، اندروید یک intentِ MAIN/LAUNCHER تازه می‌فرستاد؛
+            چون اکتیویتی زنده بود، به‌جای ساختِ دوباره فقط onNewIntent صدا زده
+            می‌شد (که پیاده‌سازی نشده بود) و تسک به ریشه برمی‌گشت — در حالی که
+            NavHost هنوز در مقصدِ settings مانده بود. نتیجه: صفحهٔ سیاه یا کراش.
+
+            singleTop همان رفتارِ «یک نمونه» را می‌دهد ولی intentِ لانچر را به
+            onNewIntent می‌سپارد بدونِ آنکه پشتهٔ Compose را از هم بپاشد.
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTask"
+            android:launchMode="singleTop"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.FalHafez">
             <intent-filter>

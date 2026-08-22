@@ -181,7 +181,13 @@ class HomeViewModel @Inject constructor(
      * (آفلاین→آنلاین) که مستقیماً حالتِ دسترسی را تغییر می‌دهد.
      */
     fun refreshQuota() {
-        viewModelScope.launch { recomputeRemaining() }
+        viewModelScope.launch {
+            recomputeRemaining()
+            // اگر اپ در حالتِ آفلاین باز شده بود، گرم‌کردنِ تبلیغات انجام نشده.
+            // هر بار که به پیش‌زمینه برمی‌گردیم شانسِ دوباره می‌دهیم — چون
+            // معمولاً همین‌جاست که اینترنت وصل شده است.
+            runCatching { adManager.retryWarmUpIfNeeded() }
+        }
     }
 
     fun draw() {

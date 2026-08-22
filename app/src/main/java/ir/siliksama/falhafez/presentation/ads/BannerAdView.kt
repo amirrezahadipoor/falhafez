@@ -89,10 +89,20 @@ private fun requestBannerWithRetry(
         return
     }
 
+    // ⚠️ حتماً باید overloadِ دارایِ Activity صدا زده شود.
+    // آداپترهای مدیشن (AppLovin و UnityAds) بدونِ Activity اصلاً بنر نمی‌سازند و
+    // بی‌صدا شکست می‌خورند. نسخهٔ قبل overloadِ سه‌آرگومانی را صدا می‌زد.
+    val activity = ctx.findActivity()
+    if (activity == null || activity.isFinishing || activity.isDestroyed) {
+        Log.w(TAG, "banner: no usable activity — request skipped")
+        return
+    }
+
     runCatching {
         Tapsell.requestBannerAd(
             AdConfig.ZONE_BANNER,
             BannerSize.BANNER_320_50,
+            activity,
             object : RequestResultListener {
                 override fun onSuccess(adId: String) {
                     onLoaded(adId)

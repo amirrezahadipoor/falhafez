@@ -45,24 +45,53 @@ class TapsellAdManager @Inject constructor(
     @Volatile private var cachedRewardedId: String? = null
     @Volatile private var warmedUp = false
 
+    /**
+     * آخرین پیامِ شکست از تپ‌سل — برای صفحهٔ عیب‌یابیِ تنظیمات.
+     * بدونِ این، تنها راهِ فهمیدنِ علت وصل‌کردنِ گوشی به adb بود.
+     */
+    @Volatile var lastError: String? = null
+        private set
+
     override val enabled: Boolean get() = AdConfig.enabled
 
     /** تبلیغات فقط وقتی معنا دارد که: پیکربندی درست باشد و کاربر مشترک نباشد. */
     private val adsAllowed: Boolean
         get() = enabled && !SupportStore.tier.adsRemoved
 
+    /**
+     * گرم‌کردنِ کَش.
+     *
+     * ⚠️ باگی که اینجا رفع شد: پیش‌تر `warmedUp = true` **پیش از** بررسیِ شبکه
+     * ست می‌شد. اگر اپ در لحظهٔ شروع آفلاین بود (خیلی رایج: کاربر اپ را باز
+     * می‌کند بعد اینترنت وصل می‌شود)، این پرچم برای همیشه true می‌ماند و
+     * preload **هرگز** دوباره تلاش نمی‌کرد — یعنی تا بسته‌شدنِ کاملِ اپ هیچ
+     * تبلیغِ آماده‌ای وجود نداشت.
+     *
+     * حالا پرچم فقط پس از یک تلاشِ **واقعی** ست می‌شود.
+     */
     override fun warmUp() {
         if (warmedUp || !adsAllowed) return
-        warmedUp = true
         scope.launch {
             TapsellInit.await()
             if (!isNetworkAvailable()) {
-                Log.d(TAG, "warmUp skipped: offline")
+                // پرچم را ست نمی‌کنیم تا وقتی اینترنت آمد دوباره تلاش شود.
+                Log.d(TAG, "warmUp skipped: offline (will retry later)")
                 return@launch
             }
+            if (!adsAllowed) return@launch
+            warmedUp = true
             preloadInterstitial()
             preloadRewarded()
         }
+    }
+
+    /**
+     * دوباره تلاش کن اگر گرم‌کردنِ اولیه به‌خاطر آفلاین‌بودن انجام نشده.
+     * از `HomeViewModel.refreshQuota()` صدا زده می‌شود، یعنی هر بار که اپ به
+     * پیش‌زمینه برمی‌گردد — دقیقاً همان‌جا که وضعیتِ شبکه ممکن است عوض شده باشد.
+     */
+    override fun retryWarmUpIfNeeded() {
+        if (!warmedUp) warmUp()
     }
 
     private suspend fun preloadInterstitial() {
@@ -110,7 +139,10 @@ class TapsellAdManager @Inject constructor(
         TapsellInit.await()
 
         val adId = cachedInterstitialId?.also { cachedInterstitialId = null }
-            ?: request("interstitial") { Tapsell.requestInterstitialAd(AdConfig.ZONE_INTERSTITIAL, it) }
+            // overloadِ دارایِ Activity — بدونِ آن آداپترهای مدیشن پاسخ نمی‌دهند.
+            ?: request("interstitial") {
+                Tapsell.requestInterstitialAd(AdConfig.ZONE_INTERSTITIAL, activity, it)
+            }
 
         if (adId == null) {
             Log.w(TAG, "interstitial: no ad available")
@@ -148,7 +180,10 @@ class TapsellAdManager @Inject constructor(
         TapsellInit.await()
 
         val adId = cachedRewardedId?.also { cachedRewardedId = null }
-            ?: request("rewarded") { Tapsell.requestRewardedAd(AdConfig.ZONE_REWARDED, it) }
+            // overloadِ دارایِ Activity — بدونِ آن آداپترهای مدیشن پاسخ نمی‌دهند.
+            ?: request("rewarded") {
+                Tapsell.requestRewardedAd(AdConfig.ZONE_REWARDED, activity, it)
+            }
 
         if (adId == null) {
             Log.w(TAG, "rewarded: no ad available")
@@ -206,6 +241,7 @@ class TapsellAdManager @Inject constructor(
 
                 override fun onFailure(message: String) {
                     Log.w(TAG, "$kind failed (attempt ${attempt + 1}/$MAX_REQUEST_ATTEMPTS): $message")
+                    lastError = "$kind: $message"
                     if (cont.isActive) cont.resume(null)
                 }
             })

@@ -401,6 +401,16 @@ fun SettingsScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit = {}) {
                                 modifier = Modifier.background(spec.card, RoundedCornerShape(12.dp))
                             ) { Text("مشاهدهٔ سیاستِ حریم خصوصی", style = FalText.button, color = spec.accent) }
                         }
+                        // ── وضعیتِ تبلیغات ─────────────────────────────────
+                        // بدونِ این کارت، تنها راهِ فهمیدنِ اینکه چرا تبلیغی
+                        // نمایش داده نمی‌شود، وصل‌کردنِ گوشی به adb بود.
+                        // با یک نگاه معلوم می‌شود گیر کجاست.
+                        CardBox(spec = spec) {
+                            Text("وضعیتِ تبلیغات", style = FalText.heading, color = spec.accentSoft)
+                            Spacer(Modifier.height(6.dp))
+                            AdDiagnosticsRows(spec = spec)
+                        }
+
                         CardBox(spec = spec) {
                             Text("فال حافظ | تعبیر هوشمند — نسخهٔ ${PersianText.digits(version)}", style = FalText.body, color = spec.onBackground)
                             Spacer(Modifier.height(4.dp))
@@ -811,6 +821,59 @@ private fun SettingSwitchRow(spec: FalThemeSpec, title: String, subtitle: String
                 uncheckedThumbColor = spec.onBackgroundMuted,
                 uncheckedTrackColor = spec.border
             )
+        )
+    }
+}
+
+/**
+ * چند سطرِ ساده که نشان می‌دهد لایهٔ تبلیغات در چه حالی است.
+ *
+ * هدف: وقتی کاربر می‌گوید «تبلیغ نمی‌آید»، بشود بدونِ adb فهمید کجای زنجیره
+ * گیر کرده — راه‌اندازیِ SDK، اتصالِ اینترنت، سطحِ حمایت، یا پاسخِ سرورِ تپ‌سل.
+ */
+@Composable
+private fun AdDiagnosticsRows(spec: FalThemeSpec) {
+    val context = LocalContext.current
+
+    // هر بار که این کارت دیده می‌شود مقادیر تازه خوانده می‌شوند.
+    val online = remember { ir.siliksama.falhafez.data.ads.isOnline(context) }
+    val sdkReady = ir.siliksama.falhafez.data.ads.TapsellInit.isReady
+    val reason = ir.siliksama.falhafez.data.ads.TapsellInit.readyReason
+    val queued = ir.siliksama.falhafez.data.ads.TapsellInit.queuedCount
+    val tier = ir.siliksama.falhafez.core.util.SupportStore.tier
+
+    @Composable
+    fun row(label: String, value: String, good: Boolean? = null) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(label, style = FalText.caption, color = spec.onBackgroundMuted, modifier = Modifier.weight(1f))
+            Text(
+                value,
+                style = FalText.caption,
+                color = when (good) {
+                    true -> spec.accent
+                    false -> Color(0xFFD98A8A)
+                    null -> spec.onBackground
+                }
+            )
+        }
+        Spacer(Modifier.height(3.dp))
+    }
+
+    row("اتصال به اینترنت", if (online) "برقرار" else "آفلاین", online)
+    row("راه‌اندازیِ تپ‌سل", if (sdkReady) "آماده ($reason)" else "در انتظار", sdkReady)
+    if (queued > 0) row("درخواست‌های در صف", PersianText.number(queued))
+    row(
+        "وضعیتِ حمایت",
+        if (tier.adsRemoved) "حامی — تبلیغات حذف شده" else "رایگان",
+        null
+    )
+
+    if (!online) {
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "آفلاین هستید: فال نامحدود است و هیچ تبلیغی نمایش داده نمی‌شود.",
+            style = FalText.caption,
+            color = spec.onBackgroundMuted
         )
     }
 }

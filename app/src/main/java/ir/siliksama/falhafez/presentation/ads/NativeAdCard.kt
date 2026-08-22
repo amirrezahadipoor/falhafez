@@ -62,8 +62,16 @@ private fun requestNativeWithRetry(ctx: Context, container: NativeAdViewContaine
         return
     }
 
+    // ⚠️ overloadِ دارایِ Activity الزامی است — آداپترهای مدیشن بدونِ آن
+    // بی‌صدا شکست می‌خورند. (maximumCount = 1 چون هر بار یک کارت می‌خواهیم.)
+    val activity = ctx.findActivity()
+    if (activity == null || activity.isFinishing || activity.isDestroyed) {
+        Log.w(TAG, "native: no usable activity — request skipped")
+        return
+    }
+
     runCatching {
-        Tapsell.requestNativeAd(AdConfig.ZONE_NATIVE, object : RequestResultListener {
+        Tapsell.requestNativeAd(AdConfig.ZONE_NATIVE, 1, activity, object : RequestResultListener {
             override fun onSuccess(adId: String) {
                 val act = ctx.findActivity()
                 if (act != null && !act.isFinishing && !act.isDestroyed) {

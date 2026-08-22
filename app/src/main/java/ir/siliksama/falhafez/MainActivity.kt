@@ -1,5 +1,6 @@
 package ir.siliksama.falhafez
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -51,5 +52,22 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * وقتی اپ زنده است و کاربر دوباره روی آیکونِ لانچر می‌زند، اندروید به‌جای
+     * ساختِ اکتیویتیِ تازه این متد را صدا می‌زند.
+     *
+     * نبودِ این متد (به‌همراهِ launchMode="singleTask") باعثِ «صفحهٔ سیاه» می‌شد:
+     * سیستم تسک را به ریشه برمی‌گرداند، اما `setContent` دوباره اجرا نمی‌شد و
+     * NavHost در مقصدِ قبلی (مثلاً settings) گیر می‌کرد — در حالی که سیستم
+     * انتظار داشت صفحهٔ اصلی دیده شود.
+     *
+     * فقط باید intent را به‌روز کنیم؛ با singleTop پشتهٔ Compose دست‌نخورده و
+     * سالم می‌ماند و کاربر همان‌جایی که بود ادامه می‌دهد.
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
     }
 }
