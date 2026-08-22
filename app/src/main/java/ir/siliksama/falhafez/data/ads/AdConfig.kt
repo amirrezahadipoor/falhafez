@@ -39,27 +39,24 @@ object AdConfig {
         "tcgrrdhdhqmccrmqjeobdfsppktsqfhdqpijdkrfmkstiersqilbhfojrjblshbosqdkrb"
 
     /**
-     * الگوهایی که خودِ SDK تپ‌سل کلید را با آن‌ها می‌سنجد.
+     * آیا کلیدِ تپ‌سل شکلِ قابلِ قبولی دارد؟
      *
-     * این دو regex را از بایت‌کدِ `ir.tapsell.mediation.MediatorInitializer`
-     * بیرون کشیدیم؛ اگر کلید هیچ‌کدام را نداشته باشد، SDK با پیامِ
-     * «Invalid mediation app key provided in application manifest» متوقف می‌شود
-     * و `onInitializationComplete` **هرگز** صدا زده نمی‌شود.
-     */
-    private val KEY_24_HEX = Regex("^[a-fA-F0-9]{24}$")
-    private val KEY_UUID = Regex(
-        "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-    )
-
-    /**
-     * آیا کلیدِ تپ‌سل اصلاً شکلِ درستی دارد؟
+     * ### تاریخچه‌ای که مهم است
+     * تپ‌سل **۱.۳.۰** کلید را با دقیقاً دو الگو می‌سنجید — `^[a-fA-F0-9]{24}$`
+     * یا یک UUID — و در غیرِ آن یک `TapsellManifestException` پرتاب می‌کرد
+     * («Invalid mediation app key provided in application manifest»). راه‌اندازی
+     * همان‌جا می‌مرد و `onInitializationComplete` هرگز صدا زده نمی‌شد.
      *
-     * اگر `false` باشد، هیچ مقدار انتظار کشیدن یا تلاشِ مجدد کمکی نمی‌کند —
-     * SDK پیش از هر درخواستی کنار می‌کشد. کارتِ عیب‌یابی همین را نشان می‌دهد
-     * تا وقت صرفِ دنبال‌کردنِ علت‌های خیالی نشود.
+     * کلیدی که پنلِ تپ‌سل امروز می‌دهد ۷۰ نویسه و غیرِهگز است، یعنی با ۱.۳.۰
+     * **ذاتاً ناسازگار** بود. خودِ تپ‌سل هم این را پذیرفته: در
+     * **۱.۴.۰-alpha03** آن اعتبارسنجی به‌کلی حذف شده — نه regex مانده، نه
+     * پیامِ خطا، نه استثنا. (هر سه با استخراج از بایت‌کد تأیید شد.)
+     *
+     * پس پروژه روی ۱.۴.۰-alpha03 است و تنها شرطِ معقول این است که کلید خالی
+     * نباشد؛ اعتبارِ واقعی را سرورِ تپ‌سل تعیین می‌کند، نه یک regex در اپ.
      */
     val tapsellKeyLooksValid: Boolean
-        get() = KEY_24_HEX.matches(TAPSELL_APP_KEY) || KEY_UUID.matches(TAPSELL_APP_KEY)
+        get() = TAPSELL_APP_KEY.isNotBlank()
 
     /** آیا zoneهای تپ‌سل پر شده‌اند؟ */
     val tapsellEnabled: Boolean

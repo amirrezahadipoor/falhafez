@@ -868,7 +868,7 @@ private fun AdDiagnosticsRows(spec: FalThemeSpec) {
     row(
         "راه‌اندازیِ تپ‌سل",
         when {
-            !tapsellKeyOk -> "کلید نامعتبر"
+            !tapsellKeyOk -> "کلید تنظیم نشده"
             sdkReady && reason == "timeout" -> "بدونِ پاسخ (مهلت تمام شد)"
             sdkReady -> "آماده"
             else -> "در انتظار"
@@ -894,8 +894,7 @@ private fun AdDiagnosticsRows(spec: FalThemeSpec) {
     if (!tapsellKeyOk) {
         Spacer(Modifier.height(6.dp))
         Text(
-            "کلیدِ تپ‌سل قالبِ موردِ انتظارِ SDK را ندارد (باید ۲۴ نویسهٔ هگز یا " +
-                "یک UUID باشد)، پس تپ‌سل راه نمی‌افتد. تبلیغات از ادیوری سرو می‌شود.",
+            "کلیدِ تپ‌سل تنظیم نشده است؛ تبلیغات از ادیوری سرو می‌شود.",
             style = FalText.caption,
             color = spec.onBackgroundMuted
         )
