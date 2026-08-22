@@ -25,6 +25,7 @@ import dagger.hilt.components.SingletonComponent
 import ir.siliksama.falhafez.data.local.PoemDao
 import ir.siliksama.falhafez.domain.model.Collection
 import ir.siliksama.falhafez.domain.model.Poet
+import ir.siliksama.falhafez.domain.usecase.DailyFalUseCase
 
 /**
  * بیتِ امروز widget — shows today's deterministic fal verse on the home screen.
@@ -77,9 +78,12 @@ class DailyFalWidgetProvider : AppWidgetProvider() {
 
             val count = poemDao.countForPoetCollection("hafez", "ghazal")
             if (count <= 0) return
-            // همان «روزِ محلی» که فالِ روزِ داخل اپ از آن استفاده می‌کند — تا ویجت و اپ یکی باشند.
+            // همان «روزِ محلی» و **همان فرمولِ** فالِ روزِ داخل اپ — تا ویجت و اپ
+            // دقیقاً یک غزل نشان دهند. (اگر اینجا فرمول جدا بماند، ویجت شعرِ
+            // دیگری نشان می‌دهد و کاربر گمان می‌کند اپ خراب است.)
             val day = DayNumber.local()
-            val poemId = poemDao.getPoemIdAtForPoetCollection("hafez", "ghazal", (day % count.toLong()).toInt()) ?: return
+            val index = DailyFalUseCase.indexForDay(day, count)
+            val poemId = poemDao.getPoemIdAtForPoetCollection("hafez", "ghazal", index) ?: return
             val withVerses = poemDao.getPoemWithVerses(poemId) ?: return
             val opening = withVerses.verses.sortedBy { it.position }
                 .take(3)
